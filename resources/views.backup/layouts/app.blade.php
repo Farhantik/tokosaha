@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dashboard') - Toko Sahabat POS</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #064e3b 0%, #065f46 50%, #047857 100%);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #d1fae5;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 12px;
+            margin: 4px 12px;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .alert-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+        }
+
+        .logo-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .content-area {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-owner {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .badge-kasir {
+            background: rgba(52, 211, 153, 0.2);
+            color: #6ee7b7;
+        }
+
+        /* User Avatar Styles */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.75rem;
+            object-fit: cover;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-avatar-sidebar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .owner-section-label {
+            color: #6ee7b7;
+        }
+
+        .border-green-700 {
+            border-color: #15803d;
+        }
+    </style>
+
+    @stack('styles')
+</head>
+
+<body>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="w-64 sidebar-gradient fixed lg:fixed left-0 top-0 h-screen z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl">
+
+            <!-- Logo & Brand -->
+            <div class="p-6">
+                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl flex-shrink-0 logo-glow">
+                        <i class="fas fa-store text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-white text-lg font-bold leading-tight">Toko Sahabat</div>
+                        <div class="text-emerald-300 text-xs font-medium">POS System</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto py-2">
+                <!-- Main Menu -->
+                <a href="{{ route('dashboard') }}"
+                    class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="{{ route('kasir.index') }}"
+                    class="nav-link {{ request()->routeIs('kasir.*') ? 'active' : '' }}">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Kasir</span>
+                </a>
+
+                <a href="{{ route('transaksi.index') }}"
+                    class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+                    <i class="fas fa-receipt"></i>
+                    <span>Transaksi</span>
+                </a>
+
+                <!-- Profile Menu -->
+                <a href="{{ route('users.profile') }}"
+                    class="nav-link {{ request()->routeIs('users.profile') ? 'active' : '' }}">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profil Saya</span>
+                </a>
+
+                @if (Auth::user()->isOwner())
+                    <!-- Owner Only Section -->
+                    <div class="px-4 mt-6 mb-2">
+                        <div
+                            class="text-xs font-semibold owner-section-label uppercase tracking-wider flex items-center">
+                            <i class="fas fa-crown mr-2 text-yellow-400"></i>
+                            Owner Only
+                        </div>
+                    </div>
+
+                    <a href="{{ route('produk.index') }}"
+                        class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i>
+                        <span>Produk</span>
+                    </a>
+
+                    <a href="{{ route('suppliers.index') }}"
+                        class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
+                        <i class="fas fa-truck"></i>
+                        <span>Supplier</span>
+                    </a>
+
+                    <a href="{{ route('penerimaan.index') }}"
+                        class="nav-link {{ request()->routeIs('penerimaan.*') ? 'active' : '' }}">
+                        <i class="fas fa-box-open"></i>
+                        <span>Penerimaan Barang</span>
+                    </a>
+
+                    <a href="{{ route('users.index') }}"
+                        class="nav-link {{ request()->routeIs('users.*') && !request()->routeIs('users.profile') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span>Kelola User</span>
+                    </a>
+
+                    <a href="{{ route('laporan.index') }}"
+                        class="nav-link {{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Laporan</span>
+                    </a>
+                @endif
+            </nav>
+
+            <!-- User Info & Logout -->
+            <div class="p-5 border-t border-green-700">
+                <div class="mb-3 flex items-start space-x-3">
+                    <!-- User Photo -->
+                    @if (Auth::user()->gambar_user && file_exists(public_path('uploads/users/' . Auth::user()->gambar_user)))
+                        <img src="{{ asset('uploads/users/' . Auth::user()->gambar_user) }}"
+                            alt="{{ Auth::user()->name }}" class="user-avatar-sidebar flex-shrink-0">
+                    @else
+                        <div
+                            class="user-avatar-sidebar flex-shrink-0 bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                        </div>
+                    @endif
+
+                    <!-- User Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white text-sm font-semibold truncate">
+                            {{ Auth::user()->name }}
+                        </div>
+                        <div class="text-emerald-300 text-xs truncate mt-1">
+                            {{ Auth::user()->email }}
+                        </div>
+                        <div class="mt-2">
+                            @if (Auth::user()->isOwner())
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300">
+                                    <i class="fas fa-crown mr-1 text-yellow-400"></i>
+                                    Owner
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-300">
+                                    <i class="fas fa-user mr-1"></i>
+                                    Kasir
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit"
+                        class="w-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 px-4 py-2 rounded-lg transition text-sm font-medium group">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden backdrop-blur-sm"></div>
+
+        <!-- Main Content Area -->
+        <div class="lg:ml-64 flex-1">
+            <!-- Top Navigation Bar -->
+            <header class="glass-effect sticky top-0 z-20 shadow-lg">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button id="sidebarToggle" class="lg:hidden text-gray-700 hover:text-green-600 transition">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <h1
+                                class="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+                                @yield('page-title', 'Dashboard')
+                            </h1>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <!-- User Avatar in Navbar -->
+                            <a href="{{ route('users.profile') }}" class="group relative">
+                                @if (Auth::user()->gambar_user && file_exists(public_path('uploads/users/' . Auth::user()->gambar_user)))
+                                    <img src="{{ asset('uploads/users/' . Auth::user()->gambar_user) }}"
+                                        alt="{{ Auth::user()->name }}"
+                                        class="user-avatar transition-transform group-hover:scale-110">
+                                @else
+                                    <div
+                                        class="user-avatar bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg transition-transform group-hover:scale-110">
+                                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                                    </div>
+                                @endif
+
+                                <!-- Tooltip -->
+                                <div class="absolute right-0 top-full mt-2 hidden group-hover:block">
+                                    <div
+                                        class="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-xl">
+                                        Lihat Profil
+                                        <div
+                                            class="absolute bottom-full right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900">
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="p-6 content-area">
+                <!-- Alert Messages -->
+                @if (session('success'))
+                    <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white p-4 mb-6 rounded-xl alert-slide-in shadow-xl"
+                        role="alert">
+                        <div class="flex items-start">
+                            <div class="bg-white/20 p-2 rounded-lg mr-3">
+                                <i class="fas fa-check-circle text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">Berhasil!</p>
+                                <p class="text-sm opacity-90">{{ session('success') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 mb-6 rounded-xl alert-slide-in shadow-xl"
+                        role="alert">
+                        <div class="flex items-start">
+                            <div class="bg-white/20 p-2 rounded-lg mr-3">
+                                <i class="fas fa-exclamation-circle text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">Error!</p>
+                                <p class="text-sm opacity-90">{{ session('error') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-4 mb-6 rounded-xl alert-slide-in shadow-xl"
+                        role="alert">
+                        <div class="flex items-start">
+                            <div class="bg-white/20 p-2 rounded-lg mr-3">
+                                <i class="fas fa-exclamation-triangle text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-bold mb-2 text-sm">Terdapat kesalahan:</p>
+                                <ul class="space-y-1 text-sm opacity-90">
+                                    @foreach ($errors->all() as $error)
+                                        <li class="flex items-start">
+                                            <span class="mr-2">•</span>
+                                            <span>{{ $error }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Page Content -->
+                @yield('content')
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar Toggle for Mobile
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+        });
+
+        // Auto hide alerts after 5 seconds
+        setTimeout(function() {
+            document.querySelectorAll('[role="alert"]').forEach(function(el) {
+                el.style.transition = 'all 0.5s ease-out';
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(100%)';
+                setTimeout(function() {
+                    el.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Add smooth scroll behavior
+        document.documentElement.style.scrollBehavior = 'smooth';
+    </script>
+
+    @stack('scripts')
+</body>
+
+</html>

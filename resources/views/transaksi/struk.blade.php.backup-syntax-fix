@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Transaksi #{{ str_pad($penjualan->id_penjualan, 6, '0', STR_PAD_LEFT) }} - TOKO SAHABAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #e5e7eb;
+        }
+
+        .store-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #10b981;
+        }
+
+        .store-address {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .store-phone {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .separator {
+            text-align: center;
+            margin: 15px 0;
+            color: #9ca3af;
+            font-size: 10px;
+        }
+
+        .trans-info {
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            color: #6b7280;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .items {
+            margin: 20px 0;
+        }
+
+        .item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #1f2937;
+            font-size: 13px;
+        }
+
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .item-qty-price {
+            flex: 1;
+        }
+
+        .item-subtotal {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .totals {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .total-label {
+            font-weight: bold;
+            color: #4b5563;
+        }
+
+        .total-value {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .grand-total {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .grand-total .total-value {
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .thank-you {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #10b981;
+        }
+
+        .footer-note {
+            font-size: 11px;
+            line-height: 1.5;
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .print-button {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .print-button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .thermal-button {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .thermal-button:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                box-shadow: none;
+                padding: 10px;
+            }
+
+            .print-button,
+            .thermal-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="store-name">TOKO SAHABAT</div>
+            <div class="store-address">
+                Jl. Wonorejo, Rungkut<br>
+                Surabaya
+            </div>
+            <div class="store-phone">Telp: 081234567890</div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="trans-info">
+            <div class="info-row">
+                <span class="info-label">No. Transaksi</span>
+                <span class="info-value">#{{ str_pad($penjualan->id_penjualan, 6, '0', STR_PAD_LEFT) }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tanggal</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Kasir</span>
+                <span class="info-value">{{ $penjualan->kasir }}</span>
+            </div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="items">
+            @foreach($detail as $item)
+            <div class="item">
+                <div class="item-name">{{ $item->nama_produk }}</div>
+                <div class="item-details">
+                    <span class="item-qty-price">{{ $item->qty_produk }} x Rp {{ number_format($item->harga_produk, 0, ',', '.') }}</span>
+                    <span class="item-subtotal">Rp {{ number_format($item->subtotal_harga, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="totals">
+            <div class="total-row grand-total">
+                <span class="total-label">TOTAL</span>
+                <span class="total-value">Rp {{ number_format($penjualan->total_bayar, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="total-row">
+                <span class="total-label">Tunai</span>
+                <span class="total-value">Rp {{ number_format($penjualan->total_pembayaran, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="total-row">
+                <span class="total-label">Kembalian</span>
+                <span class="total-value">Rp {{ number_format($penjualan->kembalian_pembayaran, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="footer">
+            <div class="thank-you">
+                Terima Kasih Atas<br>
+                Kunjungan Anda!
+            </div>
+            <div class="footer-note">
+                Barang yang sudah dibeli<br>
+                tidak dapat ditukar/dikembalikan
+            </div>
+        </div>
+
+        <button onclick="window.print()" class="print-button">
+            <i class="fas fa-print"></i> Cetak Struk (A4/Letter)
+        </button>
+
+        <button onclick="openThermalPrinter()" class="thermal-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Cetak Struk Thermal (58mm)
+        </button>
+    </div>
+
+    <script>
+
+
+
+async function openThermalPrinter() {
+    console.log('🖨️ Direct Print - No Dialog!');
+
+    try {
+        // Ambil stored printer info
+        const printerStatus = localStorage.getItem('thermal_printer_status');
+        
+        if (!printerStatus) {
+            alert('⚠️ Printer belum dikonfigurasi!\n\nBuka: Menu → Settings → Scan printer → Simpan');
+            return;
+        }
+
+        const printer = JSON.parse(printerStatus);
+        console.log('📱 Stored printer:', printer);
+
+        // Data transaksi dari PHP
+        const receiptData = {
+            id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+            tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+            kasir: '{{ $penjualan->kasir }}',
+            total: {{ $penjualan->total_bayar }},
+            tunai: {{ $penjualan->total_pembayaran }},
+            kembalian: {{ $penjualan->kembalian_pembayaran }},
+            items: [
+                @foreach($detail as $item)
+                {
+                    nama: '{{ addslashes($item->nama_produk) }}',
+                    qty: {{ $item->qty_produk }},
+                    harga: {{ $item->harga_produk }},
+                    subtotal: {{ $item->subtotal_harga }}
+                },
+                @endforeach
+            ]
+        };
+
+        let device = null;
+
+        // Coba pakai getDevices()
+        try {
+            const devices = await navigator.bluetooth.getDevices();
+            console.log('🔍 Found devices:', devices);
+            
+            device = devices.find(d => d.name === printer.printerName);
+            
+            if (!device) {
+                device = devices.find(d => 
+                    d.name && (
+                        d.name.includes('RPP02N') || 
+                        d.name.includes('ALGOO') ||
+                        d.name.includes(printer.printerName)
+                    )
+                );
+            }
+            
+            if (device) {
+                console.log('✅ Using paired device:', device.name);
+            } else {
+                throw new Error('Device tidak ditemukan di paired list');
+            }
+        } catch (err) {
+            console.log('⚠️ getDevices error:', err.message);
+            
+            // Fallback: request device
+            device = await navigator.bluetooth.requestDevice({
+                filters: [
+                    { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
+                    { namePrefix: 'RPP02N' },
+                    { namePrefix: 'ALGOO' }
+                ],
+                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+            });
+            
+            localStorage.setItem('thermal_printer_status', JSON.stringify({
+                connected: true,
+                printerName: device.name
+            }));
+        }
+
+        // Connect
+        console.log('🔌 Connecting to:', device.name);
+        
+        if (!device.gatt.connected) {
+            await device.gatt.connect();
+        }
+        
+        const service = await device.gatt.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+        const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+        // ESC/POS
+        const ESC = 0x1B;
+        const GS = 0x1D;
+        
+        await characteristic.writeValue(new Uint8Array([ESC, 0x40]));
+        await new Promise(r => setTimeout(r, 100));
+        await characteristic.writeValue(new Uint8Array([ESC, 0x74, 0x13]));
+        
+        async function printText(text, align = 'left', bold = false) {
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x01]));
+            }
+            
+            if (align === 'center') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x01]));
+            } else if (align === 'right') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x02]));
+            }
+            
+            const encoder = new TextEncoder();
+            await characteristic.writeValue(encoder.encode(text + '\n'));
+            
+            await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x00]));
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x00]));
+            }
+            
+            await new Promise(r => setTimeout(r, 50));
+        }
+
+        // Print receipt
+        await printText('TOKO SAHABAT', 'center', true);
+        await printText('Jl. Wonorejo, Rungkut', 'center');
+        await printText('Surabaya', 'center');
+        await printText('Telp: 081234567890', 'center');
+        await printText('================================', 'center');
+        
+        await printText(`No. Transaksi: ${receiptData.id}`);
+        await printText(`Tanggal: ${receiptData.tanggal}`);
+        await printText(`Kasir: ${receiptData.kasir}`);
+        await printText('================================');
+        
+        for (const item of receiptData.items) {
+            await printText(item.nama);
+            const line = `${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}`;
+            const subtotal = `Rp ${item.subtotal.toLocaleString('id-ID')}`;
+            const spaces = 32 - line.length - subtotal.length;
+            await printText(line + ' '.repeat(Math.max(1, spaces)) + subtotal);
+        }
+        
+        await printText('================================');
+        await printText(`TOTAL`, 'left', true);
+        await printText(`Rp ${receiptData.total.toLocaleString('id-ID')}`, 'right', true);
+        await printText(`Tunai: Rp ${receiptData.tunai.toLocaleString('id-ID')}`);
+        await printText(`Kembalian: Rp ${receiptData.kembalian.toLocaleString('id-ID')}`);
+        await printText('================================');
+        await printText('Terima Kasih Atas', 'center');
+        await printText('Kunjungan Anda!', 'center');
+        await printText('', 'center');
+        
+        await characteristic.writeValue(new Uint8Array([GS, 0x56, 0x41, 0x03]));
+        
+        console.log('✅ Print completed!');
+        
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = '✅ Struk berhasil dicetak!';
+        successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:15px 25px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);z-index:9999;font-weight:bold;';
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+        
+    } catch (error) {
+        console.error('❌ Print error:', error);
+        alert('❌ Gagal mencetak!\n\n' + error.message + '\n\nPastikan:\n1. Printer ON\n2. Dalam jangkauan\n3. Bluetooth aktif');
+    }
+}
+        const printer = JSON.parse(printerStatus);
+        console.log('📱 Stored printer:', printer);
+
+        // Data transaksi dari PHP
+        const receiptData = {
+            id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+            tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+            kasir: '{{ $penjualan->kasir }}',
+            total: {{ $penjualan->total_bayar }},
+            tunai: {{ $penjualan->total_pembayaran }},
+            kembalian: {{ $penjualan->kembalian_pembayaran }},
+            items: [
+                @foreach($detail as $item)
+                {
+                    nama: '{{ addslashes($item->nama_produk) }}',
+                    qty: {{ $item->qty_produk }},
+                    harga: {{ $item->harga_produk }},
+                    subtotal: {{ $item->subtotal_harga }}
+                },
+                @endforeach
+            ]
+        };
+
+        console.log('📄 Receipt data:', receiptData);
+
+        let device = null;
+
+        // SOLUSI: Pakai getDevices() dengan proper permission
+        try {
+            const devices = await navigator.bluetooth.getDevices();
+            console.log('🔍 Found devices:', devices);
+            
+            // Cari device berdasarkan nama yang tersimpan
+            device = devices.find(d => d.name === printer.printerName);
+            
+            if (!device) {
+                // Coba cari berdasarkan prefix
+                device = devices.find(d => 
+                    d.name && (
+                        d.name.includes('RPP02N') || 
+                        d.name.includes('ALGOO') ||
+                        d.name.includes(printer.printerName)
+                    )
+                );
+            }
+            
+            if (device) {
+                console.log('✅ Using paired device:', device.name);
+            } else {
+                console.log('⚠️ Device tidak ditemukan di paired list');
+                throw new Error('Device tidak ditemukan');
+            }
+        } catch (err) {
+            console.log('⚠️ getDevices error:', err.message);
+            
+            // Fallback: request device baru
+            console.log('📱 Requesting new device...');
+            device = await navigator.bluetooth.requestDevice({
+                filters: [
+                    { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
+                    { namePrefix: 'RPP02N' },
+                    { namePrefix: 'ALGOO' }
+                ],
+                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+            });
+            
+            // Update stored printer
+            localStorage.setItem('thermal_printer_status', JSON.stringify({
+                connected: true,
+                printerName: device.name
+            }));
+        }
+
+        // Connect dan print
+        console.log('🔌 Connecting to:', device.name);
+        
+        if (!device.gatt.connected) {
+            await device.gatt.connect();
+        }
+        
+        const service = await device.gatt.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+        const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+        // ESC/POS Commands
+        const ESC = 0x1B;
+        const GS = 0x1D;
+        
+        // Initialize
+        await characteristic.writeValue(new Uint8Array([ESC, 0x40]));
+        await new Promise(r => setTimeout(r, 100));
+        
+        // Set encoding
+        await characteristic.writeValue(new Uint8Array([ESC, 0x74, 0x13]));
+        
+        // Print function
+        async function printText(text, align = 'left', bold = false) {
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x01]));
+            }
+            
+            if (align === 'center') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x01]));
+            } else if (align === 'right') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x02]));
+            }
+            
+            const encoder = new TextEncoder();
+            await characteristic.writeValue(encoder.encode(text + '\n'));
+            
+            await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x00]));
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x00]));
+            }
+            
+            await new Promise(r => setTimeout(r, 50));
+        }
+
+        // Print header
+        await printText('TOKO SAHABAT', 'center', true);
+        await printText('Jl. Wonorejo, Rungkut', 'center');
+        await printText('Surabaya', 'center');
+        await printText('Telp: 081234567890', 'center');
+        await printText('================================', 'center');
+        
+        // Print info
+        await printText(`No. Transaksi: ${receiptData.id}`);
+        await printText(`Tanggal: ${receiptData.tanggal}`);
+        await printText(`Kasir: ${receiptData.kasir}`);
+        await printText('================================');
+        
+        // Print items
+        for (const item of receiptData.items) {
+            await printText(item.nama);
+            const line = `${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}`;
+            const subtotal = `Rp ${item.subtotal.toLocaleString('id-ID')}`;
+            const spaces = 32 - line.length - subtotal.length;
+            await printText(line + ' '.repeat(Math.max(1, spaces)) + subtotal);
+        }
+        
+        await printText('================================');
+        await printText(`TOTAL`, 'left', true);
+        await printText(`Rp ${receiptData.total.toLocaleString('id-ID')}`, 'right', true);
+        await printText(`Tunai: Rp ${receiptData.tunai.toLocaleString('id-ID')}`);
+        await printText(`Kembalian: Rp ${receiptData.kembalian.toLocaleString('id-ID')}`);
+        await printText('================================');
+        await printText('Terima Kasih Atas', 'center');
+        await printText('Kunjungan Anda!', 'center');
+        await printText('', 'center');
+        
+        // Cut paper
+        await characteristic.writeValue(new Uint8Array([GS, 0x56, 0x41, 0x03]));
+        
+        console.log('✅ Print completed!');
+        
+        // Keep connection for next print
+        // device.gatt.disconnect();
+        
+        // Show success without dialog
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = '✅ Struk berhasil dicetak!';
+        successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:15px 25px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);z-index:9999;font-weight:bold;';
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+        
+    } catch (error) {
+        console.error('❌ Print error:', error);
+        alert('❌ Gagal mencetak!\n\n' + error.message + '\n\nPastikan:\n1. Printer ON\n2. Dalam jangkauan\n3. Bluetooth aktif');
+    }
+}
+        const printer = JSON.parse(printerStatus);
+        
+        if (!printer.connected || !printer.printerName) {
+            alert('⚠️ Printer tidak terhubung!\n\nSilakan hubungkan di Settings');
+            return;
+        }
+
+        console.log('✅ Printer tersimpan:', printer.printerName);
+
+        // Data transaksi dari PHP
+        const receiptData = {
+            id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+            tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+            kasir: '{{ $penjualan->kasir }}',
+            total: {{ $penjualan->total_bayar }},
+            tunai: {{ $penjualan->total_pembayaran }},
+            kembalian: {{ $penjualan->kembalian_pembayaran }},
+            items: [
+                @foreach($detail as $item)
+                {
+                    nama: '{{ addslashes($item->nama_produk) }}',
+                    qty: {{ $item->qty_produk }},
+                    harga: {{ $item->harga_produk }},
+                    subtotal: {{ $item->subtotal_harga }}
+                },
+                @endforeach
+            ]
+        };
+
+        // Coba pakai device yang sudah paired
+        let device = null;
+        
+        try {
+            const devices = await navigator.bluetooth.getDevices();
+            device = devices.find(d => 
+                d.name === printer.printerName || 
+                d.name.includes('RPP02N') || 
+                d.name.includes('ALGOO')
+            );
+            
+            if (device) {
+                console.log('✅ Menggunakan device paired:', device.name);
+            }
+        } catch (e) {
+            console.log('⚠️ Tidak bisa ambil paired devices:', e.message);
+        }
+
+        // Jika tidak ada paired device, request baru
+        if (!device) {
+            console.log('📱 Meminta user pilih device...');
+            device = await navigator.bluetooth.requestDevice({
+                filters: [
+                    { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
+                    { namePrefix: 'RPP02N' },
+                    { namePrefix: 'ALGOO' },
+                    { namePrefix: 'AT-58' }
+                ],
+                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+            });
+        }
+
+        // Connect ke printer
+        console.log('🔌 Connecting to:', device.name);
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+        const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+        // ESC/POS Commands
+        const ESC = 0x1B;
+        const GS = 0x1D;
+        
+        // Initialize printer
+        await characteristic.writeValue(new Uint8Array([ESC, 0x40]));
+        await new Promise(r => setTimeout(r, 100));
+
+        // Set encoding
+        await characteristic.writeValue(new Uint8Array([ESC, 0x74, 0x13]));
+        
+        // Fungsi untuk print text
+        async function printText(text, align = 'left', bold = false) {
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x01]));
+            }
+            
+            if (align === 'center') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x01]));
+            } else if (align === 'right') {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x02]));
+            }
+            
+            const encoder = new TextEncoder();
+            await characteristic.writeValue(encoder.encode(text + '\n'));
+            
+            await characteristic.writeValue(new Uint8Array([ESC, 0x61, 0x00]));
+            if (bold) {
+                await characteristic.writeValue(new Uint8Array([ESC, 0x45, 0x00]));
+            }
+            
+            await new Promise(r => setTimeout(r, 50));
+        }
+
+        // Print header
+        await printText('TOKO SAHABAT', 'center', true);
+        await printText('Jl. Wonorejo, Rungkut', 'center');
+        await printText('Surabaya', 'center');
+        await printText('Telp: 081234567890', 'center');
+        await printText('================================', 'center');
+        
+        // Print info transaksi
+        await printText(`No. Transaksi: ${receiptData.id}`);
+        await printText(`Tanggal: ${receiptData.tanggal}`);
+        await printText(`Kasir: ${receiptData.kasir}`);
+        await printText('================================');
+        
+        // Print items
+        for (const item of receiptData.items) {
+            await printText(item.nama);
+            const qtyPrice = `${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}`;
+            const subtotal = `Rp ${item.subtotal.toLocaleString('id-ID')}`;
+            const spaces = 32 - qtyPrice.length - subtotal.length;
+            await printText(qtyPrice + ' '.repeat(Math.max(1, spaces)) + subtotal);
+        }
+        
+        await printText('================================');
+        
+        // Print total
+        await printText(`TOTAL`, 'left', true);
+        await printText(`Rp ${receiptData.total.toLocaleString('id-ID')}`, 'right', true);
+        await printText(`Tunai: Rp ${receiptData.tunai.toLocaleString('id-ID')}`);
+        await printText(`Kembalian: Rp ${receiptData.kembalian.toLocaleString('id-ID')}`);
+        
+        await printText('================================');
+        await printText('Terima Kasih Atas', 'center');
+        await printText('Kunjungan Anda!', 'center');
+        await printText('', 'center');
+        
+        // Cut paper
+        await characteristic.writeValue(new Uint8Array([GS, 0x56, 0x41, 0x03]));
+        
+        console.log('✅ Struk berhasil dicetak!');
+        
+        // Disconnect
+        await new Promise(r => setTimeout(r, 500));
+        device.gatt.disconnect();
+        
+        alert('✅ Struk berhasil dicetak!');
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert('❌ Gagal mencetak struk!\n\n' + error.message + '\n\nPastikan:\n1. Printer ON\n2. Dalam jangkauan Bluetooth\n3. Bluetooth browser aktif');
+    }
+}
+        // Auto focus untuk print
+        window.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

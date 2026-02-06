@@ -1,0 +1,676 @@
+@extends('layouts.app')
+
+@section('title', 'Transaksi - Toko Sahabat')
+@section('page-title', 'Transaksi Kasir')
+
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+@endpush
+
+@section('content')
+    <div class="space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+                <i class="fas fa-cash-register mr-2 text-emerald-600"></i>Transaksi
+            </h1>
+            <button id="btnShowCart" class="lg:hidden bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-lg">
+                <i class="fas fa-shopping-cart mr-2"></i>
+                Keranjang <span id="cartBadge"
+                    class="bg-white text-emerald-600 px-2 py-0.5 rounded-full text-xs font-bold ml-1">0</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Daftar Produk -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <div
+                                class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
+                                <i class="fas fa-box text-white"></i>
+                            </div>
+                            Daftar Produk
+                        </h2>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <input type="text" id="searchProduk"
+                                class="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
+                                placeholder="Cari produk...">
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Product Grid -->
+                    <div id="produkList"
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[calc(100vh-20rem)] overflow-y-auto pr-2">
+                        @foreach ($produk as $item)
+                            <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl cursor-pointer transition-all duration-300 {{ $item->stock_produk <= 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                data-id="{{ $item->id_produk }}" data-nama="{{ $item->nama_produk }}"
+                                data-harga="{{ $item->harga_produk }}" data-stok="{{ $item->stock_produk }}"
+                                data-gambar="{{ $item->gambar_produk ?? '' }}">
+                                <div class="text-center">
+                                    @if ($item->gambar_produk)
+                                        <img src="{{ asset('uploads/produk/' . $item->gambar_produk) }}"
+                                            alt="{{ $item->nama_produk }}"
+                                            class="w-full h-20 object-cover rounded-lg mb-2 group-hover:scale-105 transition-transform">
+                                    @else
+                                        <div
+                                            class="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg p-4 mb-2 h-20 flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-colors">
+                                            <i class="fas fa-box text-3xl text-blue-600"></i>
+                                        </div>
+                                    @endif
+                                    <h3 class="font-semibold text-xs mb-1 line-clamp-2 text-gray-800">
+                                        {{ $item->nama_produk }}</h3>
+                                    <p class="text-emerald-600 font-bold text-sm">Rp
+                                        {{ number_format($item->harga_produk, 0, ',', '.') }}</p>
+                                    <p
+                                        class="text-xs mt-1 {{ $item->stock_produk <= 10 ? 'text-red-600 font-bold' : 'text-gray-500' }}">
+                                        Stok: {{ $item->stock_produk }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keranjang - Desktop -->
+            <div class="hidden lg:block">
+                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <div
+                                class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3">
+                                <i class="fas fa-shopping-cart text-white"></i>
+                            </div>
+                            Keranjang
+                        </h2>
+                        <span id="cartCount"
+                            class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0</span>
+                    </div>
+
+                    <!-- Cart Items -->
+                    <div id="cartItems" class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                        <div class="text-center py-8">
+                            <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
+                            <p class="text-gray-500 text-sm">Keranjang kosong</p>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="border-t-2 border-gray-200 pt-4 space-y-3">
+                        <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-3">
+                            <div class="flex justify-between text-lg font-bold text-gray-800">
+                                <span>Total:</span>
+                                <span id="totalAmount" class="text-emerald-600">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">Bayar</label>
+                            <input type="number" id="bayar" min="0" step="1000"
+                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
+                                placeholder="Masukkan jumlah bayar">
+                        </div>
+
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
+                            <div class="flex justify-between text-lg">
+                                <span class="text-gray-700 font-semibold">Kembalian:</span>
+                                <span id="kembalian" class="font-bold text-blue-600">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <button id="btnProses" disabled
+                            class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:transform-none">
+                            <i class="fas fa-check-circle mr-2"></i>Proses Transaksi
+                        </button>
+
+                        <button id="btnReset"
+                            class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]">
+                            <i class="fas fa-trash-alt mr-2"></i>Reset Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-shopping-cart text-emerald-600 mr-2"></i>
+                        Keranjang Belanja
+                    </h2>
+                    <button id="btnCloseCart" class="text-gray-500 hover:text-gray-700 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Cart Items Mobile -->
+                <div id="cartItemsMobile" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                    <div class="text-center py-8">
+                        <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-500 text-sm">Keranjang kosong</p>
+                    </div>
+                </div>
+
+                <!-- Total Mobile -->
+                <div class="border-t-2 border-gray-200 pt-4 space-y-3">
+                    <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-3">
+                        <div class="flex justify-between text-lg font-bold text-gray-800">
+                            <span>Total:</span>
+                            <span id="totalAmountMobile" class="text-emerald-600">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Bayar</label>
+                        <input type="number" id="bayarMobile" min="0" step="1000"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
+                            placeholder="Masukkan jumlah bayar">
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-700 font-semibold">Kembalian:</span>
+                            <span id="kembalianMobile" class="font-bold text-blue-600">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <button id="btnProsesMobile" disabled
+                        class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed">
+                        <i class="fas fa-check-circle mr-2"></i>Proses Transaksi
+                    </button>
+
+                    <button id="btnResetMobile"
+                        class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md">
+                        <i class="fas fa-trash-alt mr-2"></i>Reset Keranjang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            let cart = [];
+            let totalBelanja = 0;
+
+            // Mobile cart modal
+            document.getElementById('btnShowCart').addEventListener('click', () => {
+                document.getElementById('cartModal').classList.remove('hidden');
+            });
+
+            document.getElementById('btnCloseCart').addEventListener('click', () => {
+                document.getElementById('cartModal').classList.add('hidden');
+            });
+
+            // Search produk
+            document.getElementById('searchProduk').addEventListener('input', function(e) {
+                const search = e.target.value.toLowerCase();
+                document.querySelectorAll('.produk-item').forEach(item => {
+                    const nama = item.dataset.nama.toLowerCase();
+                    item.style.display = nama.includes(search) ? 'block' : 'none';
+                });
+            });
+
+            // Add to cart
+            document.querySelectorAll('.produk-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const stok = parseInt(this.dataset.stok);
+
+                    if (stok <= 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Stok Habis!',
+                            text: 'Produk ini sedang tidak tersedia',
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                popup: 'rounded-2xl',
+                                confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    const id = this.dataset.id;
+                    const nama = this.dataset.nama;
+                    const harga = parseFloat(this.dataset.harga);
+                    const gambar = this.dataset.gambar;
+
+                    const existingItem = cart.find(i => i.id === id);
+
+                    if (existingItem) {
+                        if (existingItem.qty < stok) {
+                            existingItem.qty++;
+                            updateCart();
+
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Ditambahkan ke keranjang',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Stok Tidak Cukup!',
+                                text: `Stok tersedia: ${stok} pcs`,
+                                confirmButtonColor: '#f59e0b',
+                                customClass: {
+                                    popup: 'rounded-2xl',
+                                    confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
+                    } else {
+                        cart.push({
+                            id,
+                            nama,
+                            harga,
+                            qty: 1,
+                            stok,
+                            gambar
+                        });
+                        updateCart();
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Ditambahkan ke keranjang',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            });
+
+            // Update cart display
+            function updateCart() {
+                const cartContainer = document.getElementById('cartItems');
+                const cartContainerMobile = document.getElementById('cartItemsMobile');
+
+                const emptyHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-500 text-sm">Keranjang kosong</p>
+                    </div>
+                `;
+
+                if (cart.length === 0) {
+                    cartContainer.innerHTML = emptyHTML;
+                    cartContainerMobile.innerHTML = emptyHTML;
+                    totalBelanja = 0;
+                } else {
+                    const cartHTML = cart.map(item => `
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200 hover:border-emerald-300 transition-all">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <p class="font-bold text-sm text-gray-800 line-clamp-1">${item.nama}</p>
+                                    <p class="text-xs text-gray-600 mt-1">Rp ${item.harga.toLocaleString('id-ID')} × ${item.qty}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-bold text-emerald-600">Rp ${(item.harga * item.qty).toLocaleString('id-ID')}</p>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="changeQty('${item.id}', -1)" class="bg-red-500 text-white w-7 h-7 rounded-lg hover:bg-red-600 transition-colors text-sm font-bold">-</button>
+                                    <span class="font-bold w-8 text-center text-sm">${item.qty}</span>
+                                    <button onclick="changeQty('${item.id}', 1)" class="bg-emerald-500 text-white w-7 h-7 rounded-lg hover:bg-emerald-600 transition-colors text-sm font-bold">+</button>
+                                    <button onclick="removeItem('${item.id}')" class="text-red-600 hover:text-red-800 ml-2 w-7 h-7 flex items-center justify-center">
+                                        <i class="fas fa-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    cartContainer.innerHTML = cartHTML;
+                    cartContainerMobile.innerHTML = cartHTML;
+                    totalBelanja = cart.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+                }
+
+                // Update cart count
+                document.getElementById('cartCount').textContent = cart.length;
+                document.getElementById('cartBadge').textContent = cart.length;
+
+                // Update total
+                document.getElementById('totalAmount').textContent = `Rp ${totalBelanja.toLocaleString('id-ID')}`;
+                document.getElementById('totalAmountMobile').textContent = `Rp ${totalBelanja.toLocaleString('id-ID')}`;
+
+                calculateKembalian();
+                syncMobileInputs();
+            }
+
+            // Sync mobile and desktop inputs
+            function syncMobileInputs() {
+                const bayar = document.getElementById('bayar');
+                const bayarMobile = document.getElementById('bayarMobile');
+
+                bayar.addEventListener('input', () => {
+                    bayarMobile.value = bayar.value;
+                    calculateKembalian();
+                });
+
+                bayarMobile.addEventListener('input', () => {
+                    bayar.value = bayarMobile.value;
+                    calculateKembalian();
+                });
+            }
+
+            // Change quantity
+            function changeQty(id, delta) {
+                const item = cart.find(i => i.id === id);
+                if (item) {
+                    const newQty = item.qty + delta;
+                    if (newQty > 0 && newQty <= item.stok) {
+                        item.qty = newQty;
+                        updateCart();
+                    } else if (newQty === 0) {
+                        removeItem(id);
+                    } else if (newQty > item.stok) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stok Tidak Cukup!',
+                            text: `Stok tersedia: ${item.stok} pcs`,
+                            confirmButtonColor: '#f59e0b',
+                            customClass: {
+                                popup: 'rounded-2xl',
+                                confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                }
+            }
+
+            // Remove item
+            function removeItem(id) {
+                const item = cart.find(i => i.id === id);
+
+                Swal.fire({
+                    title: 'Hapus Item?',
+                    html: `<p class="text-gray-600">Hapus <strong>${item.nama}</strong> dari keranjang?</p>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: '<i class="fas fa-trash mr-2"></i>Hapus',
+                    cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        title: 'text-xl font-bold text-gray-800',
+                        confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
+                        cancelButton: 'px-6 py-3 rounded-xl font-semibold'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        cart = cart.filter(i => i.id !== id);
+                        updateCart();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Dihapus!',
+                            text: 'Item berhasil dihapus dari keranjang',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'rounded-2xl'
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Calculate kembalian
+            document.getElementById('bayar').addEventListener('input', calculateKembalian);
+            document.getElementById('bayarMobile').addEventListener('input', calculateKembalian);
+
+            function calculateKembalian() {
+                const bayar = parseFloat(document.getElementById('bayar').value) || 0;
+                const kembalian = bayar - totalBelanja;
+
+                const kembalianText = `Rp ${kembalian >= 0 ? kembalian.toLocaleString('id-ID') : '0'}`;
+                document.getElementById('kembalian').textContent = kembalianText;
+                document.getElementById('kembalianMobile').textContent = kembalianText;
+
+                const canProcess = cart.length > 0 && bayar >= totalBelanja;
+                document.getElementById('btnProses').disabled = !canProcess;
+                document.getElementById('btnProsesMobile').disabled = !canProcess;
+            }
+
+            // Process transaction
+            async function processTransaction() {
+                const bayar = parseFloat(document.getElementById('bayar').value);
+
+                if (cart.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Keranjang Kosong!',
+                        text: 'Tambahkan produk terlebih dahulu',
+                        confirmButtonColor: '#10b981',
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                if (bayar < totalBelanja) {
+                    const kurang = totalBelanja - bayar;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pembayaran Kurang!',
+                        html: `<p class="text-gray-600">Kurang: <strong class="text-red-600">Rp ${kurang.toLocaleString('id-ID')}</strong></p>`,
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                const result = await Swal.fire({
+                    title: 'Proses Transaksi?',
+                    html: `
+                        <div class="text-left space-y-2 bg-gray-50 rounded-xl p-4 mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Belanja:</span>
+                                <span class="font-bold text-gray-800">Rp ${totalBelanja.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Bayar:</span>
+                                <span class="font-bold text-emerald-600">Rp ${bayar.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex justify-between border-t pt-2">
+                                <span class="text-gray-600">Kembalian:</span>
+                                <span class="font-bold text-blue-600">Rp ${(bayar - totalBelanja).toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600">Pastikan semua data sudah benar</p>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: '<i class="fas fa-check-circle mr-2"></i>Proses',
+                    cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        title: 'text-xl font-bold text-gray-800',
+                        confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
+                        cancelButton: 'px-6 py-3 rounded-xl font-semibold'
+                    },
+                    buttonsStyling: false
+                });
+
+                if (!result.isConfirmed) return;
+
+                const btnProses = document.getElementById('btnProses');
+                const btnProsesMobile = document.getElementById('btnProsesMobile');
+
+                btnProses.disabled = true;
+                btnProsesMobile.disabled = true;
+                btnProses.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+                btnProsesMobile.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+
+                const data = {
+                    items: cart.map(item => ({
+                        id_produk: item.id,
+                        qty: item.qty,
+                        harga: item.harga
+                    })),
+                    total_bayar: bayar,
+                    total_pembayaran: totalBelanja
+                };
+
+                try {
+                    const response = await fetch('{{ route('transaksi.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Transaksi Berhasil!',
+                            html: `
+                                <p class="text-gray-600 mb-4">Transaksi telah berhasil diproses</p>
+                                <div class="bg-emerald-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">ID Transaksi</p>
+                                    <p class="text-2xl font-bold text-emerald-600">#${result.data.id_penjualan}</p>
+                                </div>
+                            `,
+                            confirmButtonColor: '#10b981',
+                            confirmButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
+                            customClass: {
+                                popup: 'rounded-2xl',
+                                confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg'
+                            },
+                            buttonsStyling: false
+                        });
+
+                        window.open(`{{ url('transaksi/struk') }}/${result.data.id_penjualan}`, '_blank');
+                        resetForm();
+                        setTimeout(() => location.reload(), 500);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Transaksi Gagal!',
+                            text: result.message || 'Terjadi kesalahan',
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                popup: 'rounded-2xl',
+                                confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                            },
+                            buttonsStyling: false
+                        });
+
+                        btnProses.disabled = false;
+                        btnProsesMobile.disabled = false;
+                        btnProses.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
+                        btnProsesMobile.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Gagal memproses transaksi: ' + error.message,
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    btnProses.disabled = false;
+                    btnProsesMobile.disabled = false;
+                    btnProses.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
+                    btnProsesMobile.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
+                }
+            }
+
+            document.getElementById('btnProses').addEventListener('click', processTransaction);
+            document.getElementById('btnProsesMobile').addEventListener('click', processTransaction);
+
+            // Reset form
+            function resetForm() {
+                if (cart.length > 0) {
+                    Swal.fire({
+                        title: 'Konfirmasi Reset',
+                        html: '<p class="text-gray-600">Yakin ingin menghapus semua item di keranjang?</p>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i>Ya, Reset',
+                        cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            title: 'text-xl font-bold text-gray-800',
+                            confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
+                            cancelButton: 'px-6 py-3 rounded-xl font-semibold'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            cart = [];
+                            updateCart();
+                            document.getElementById('bayar').value = '';
+                            document.getElementById('bayarMobile').value = '';
+                            document.getElementById('cartModal').classList.add('hidden');
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Keranjang telah dikosongkan',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                customClass: {
+                                    popup: 'rounded-2xl'
+                                }
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                cart = [];
+                updateCart();
+                document.getElementById('bayar').value = '';
+                document.getElementById('bayarMobile').value = '';
+                document.getElementById('cartModal').classList.add('hidden');
+            }
+
+            document.getElementById('btnReset').addEventListener('click', resetForm);
+            document.getElementById('btnResetMobile').addEventListener('click', resetForm);
+        </script>
+    @endpush
+@endsection

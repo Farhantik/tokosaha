@@ -1,0 +1,39 @@
+// Handle upload gambar
+        if ($request->hasFile('gambar_user')) {
+            $file = $request->file('gambar_user');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            Log::info("Uploading file: " . $filename);
+            
+            // Upload ke storage (manual method)
+            try {
+                $destinationPath = storage_path('app/public/users');
+                
+                // Pastikan folder exists
+                if (!File::exists($destinationPath)) {
+                    File::makeDirectory($destinationPath, 0755, true);
+                    Log::info("Created directory: " . $destinationPath);
+                }
+                
+                // Move file ke storage
+                $file->move($destinationPath, $filename);
+                Log::info("File moved to storage: " . $filename);
+                
+                // Verifikasi file ada
+                $fullPath = $destinationPath . '/' . $filename;
+                if (File::exists($fullPath)) {
+                    Log::info("✅ File verified in storage: " . $filename);
+                } else {
+                    Log::error("❌ File NOT found after move: " . $fullPath);
+                }
+                
+            } catch (\Exception $e) {
+                Log::error("❌ Failed to upload file: " . $e->getMessage());
+                throw $e;
+            }
+            
+            // Copy ke public_html/storage
+            $this->copyToPublicStorage($filename);
+            
+            $data['gambar_user'] = $filename;
+        }

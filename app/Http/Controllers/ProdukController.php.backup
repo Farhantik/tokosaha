@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Produk;
+use App\Models\ProdukKategori;
+use App\Models\ProdukLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
+class ProdukController extends Controller
+{
+    public function index()
+    {
+        $produk = Produk::with('kategori')
+            ->orderBy('nama_produk', 'asc')
+            ->paginate(15);
+        $kategori = ProdukKategori::orderBy('nama_kategori', 'asc')->get();
+        return view('produk.index', compact('produk', 'kategori'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_produk' => 'required|string|max:150',
+            'code_produk' => 'nullable|string|max:50',
+            'id_produk_kategori' => 'nullable|exists:produk_kategori,id_produk_kategori',
+            'harga_produk' => 'required|numeric|min:0',
+            'stock_produk' => 'required|integer|min:0',
+            'gambar_produk' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
+        ]);
+
+        $data = $request->except('gambar_produk');
+
+        // Handle upload gambar
+        if ($request->hasFile('gambar_produk')) {
+            $file = $request->file('gambar_produk');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/produk'), $filename);
+            $data['gambar_produk'] = $filename;
+        }
+
+        $produk = Produk::create($data);
+
+        // Create log untuk produk baru
+        ProdukLog::create([
+            'id_produk' => $produk->id_produk,
+            'jenis_aktivitas' => 'tambah',
+            'keterangan' => 'Produk baru ditambahkan: ' . $produk->nama_produk,
+            'stok_sebelum' => 0,
+            'stok_sesudah' => $produk->stock_produk,
+            'jumlah_perubahan' => $produk->stock_produk,
+            'harga_saat_itu' => $produk->harga_produk,
+            'user_nama' => Auth::user()->name ?? 'System'
+        ]);
+
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil ditambahkan');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_produk' => 'required|string|max:150',
+            'code_produk' => 'nullable|string|max:50',
+            'id_produk_kategori' => 'nullable|exists:produk_kategori,id_produk_kategori',
+            'harga_produk' => 'required|numeric|min:0',
+            'stock_produk' => 'required|integer|min:0',
+            'gambar_produk' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'hapus_gambar' => 'nullable|boolean'
+        ]);
+
+        $produk = Produk::findOrFail($id);
+        $data = $request->except(['gambar_produk', 'hapus_gambar']);
+
+        // Simpan data lama untuk log
+        $stokLama = $produk->stock_produk;
+        $hargaLama = $produk->harga_produk;
+
+        // Handle hapus gambar
+        if ($request->input('hapus_gambar') == '1') {
+            if ($produk->gambar_produk && file_exists(public_path('uploads/produk/' . $produk->gambar_produk))) {
+                unlink(public_path('uploads/produk/' . $produk->gambar_produk));
+            }
+            $data['gambar_produk'] = null;
+        }
+        // Handle upload gambar baru
+        elseif ($request->hasFile('gambar_produk')) {
+            // Hapus gambar lama jika ada
+            if ($produk->gambar_produk && file_exists(public_path('uploads/produk/' . $produk->gambar_produk))) {
+                unlink(public_path('uploads/produk/' . $produk->gambar_produk));
+            }
+            // Upload gambar baru
+            $file = $request->file('gambar_produk');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/produk'), $filename);
+            $data['gambar_produk'] = $filename;
+        }
+
+        $produk->update($data);
+
+        // Create log untuk edit produk
+        $perubahan = [];
+        if ($stokLama != $request->stock_produk) {
+            $perubahan[] = 'Stok: ' . $stokLama . ' → ' . $request->stock_produk;
+        }
+        if ($hargaLama != $request->harga_produk) {
+            $perubahan[] = 'Harga: Rp ' . number_format($hargaLama, 0, ',', '.') . ' → Rp ' . number_format($request->harga_produk, 0, ',', '.');
+        }
+
+        if (!empty($perubahan)) {
+            ProdukLog::create([
+                'id_produk' => $produk->id_produk,
+                'jenis_aktivitas' => 'edit',
+                'keterangan' => 'Produk diperbarui: ' . implode(', ', $perubahan),
+                'stok_sebelum' => $stokLama,
+                'stok_sesudah' => $request->stock_produk,
+                'jumlah_perubahan' => $request->stock_produk - $stokLama,
+                'harga_saat_itu' => $request->harga_produk,
+                'user_nama' => Auth::user()->name ?? 'System'
+            ]);
+        }
+
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $produk = Produk::findOrFail($id);
+
+        // Create log sebelum hapus
+        ProdukLog::create([
+            'id_produk' => $produk->id_produk,
+            'jenis_aktivitas' => 'hapus',
+            'keterangan' => 'Produk dihapus: ' . $produk->nama_produk,
+            'stok_sebelum' => $produk->stock_produk,
+            'stok_sesudah' => 0,
+            'jumlah_perubahan' => -$produk->stock_produk,
+            'harga_saat_itu' => $produk->harga_produk,
+            'user_nama' => Auth::user()->name ?? 'System'
+        ]);
+
+        // Hapus gambar jika ada
+        if ($produk->gambar_produk && file_exists(public_path('uploads/produk/' . $produk->gambar_produk))) {
+            unlink(public_path('uploads/produk/' . $produk->gambar_produk));
+        }
+
+        $produk->delete();
+
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil dihapus');
+    }
+
+    public function showLog($id)
+    {
+        $produk = Produk::with('kategori')->findOrFail($id);
+        
+        $logs = ProdukLog::where('id_produk', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $totalLogs = $logs->count();
+        $totalPenjualan = $logs->where('jenis_aktivitas', 'penjualan')->count();
+        $totalPenerimaan = $logs->whereIn('jenis_aktivitas', ['penerimaan', 'tambah_stok'])->count();
+        $totalStokKeluar = $logs->where('jenis_aktivitas', 'penjualan')->count();
+        
+        return view('produk.logs', compact('produk', 'logs', 'totalLogs', 'totalPenjualan', 'totalPenerimaan', 'totalStokKeluar'));
+    }
+}

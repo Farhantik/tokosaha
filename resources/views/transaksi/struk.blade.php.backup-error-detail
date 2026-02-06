@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Transaksi #{{ str_pad($penjualan->id_penjualan, 6, '0', STR_PAD_LEFT) }} - TOKO SAHABAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #e5e7eb;
+        }
+
+        .store-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #10b981;
+        }
+
+        .store-address {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .store-phone {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .separator {
+            text-align: center;
+            margin: 15px 0;
+            color: #9ca3af;
+            font-size: 10px;
+        }
+
+        .trans-info {
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            color: #6b7280;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .items {
+            margin: 20px 0;
+        }
+
+        .item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #1f2937;
+            font-size: 13px;
+        }
+
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .item-qty-price {
+            flex: 1;
+        }
+
+        .item-subtotal {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .totals {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .total-label {
+            font-weight: bold;
+            color: #4b5563;
+        }
+
+        .total-value {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .grand-total {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .grand-total .total-value {
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .thank-you {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #10b981;
+        }
+
+        .footer-note {
+            font-size: 11px;
+            line-height: 1.5;
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .print-button {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .print-button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .thermal-button {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .thermal-button:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                box-shadow: none;
+                padding: 10px;
+            }
+
+            .print-button,
+            .thermal-button {
+                display: none;
+            }
+        }
+    </style>
+
+
+    <script src="{{ asset('/js/auto-print-trigger.js') }}"></script>
+
+function openThermalPrinter() {
+    console.log('🖨️ Direct Print dari Struk');
+
+    // Cek printer
+    const printerStatus = localStorage.getItem('thermal_printer_status');
+    
+    if (!printerStatus) {
+        alert('⚠️ Printer belum dikonfigurasi!\n\nBuka: Menu → Settings → Scan & pilih printer → Simpan');
+        return;
+    }
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung!\n\nSilakan hubungkan printer di Settings');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dengan FIELD YANG BENAR
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $item)
+            {
+                nama: '{{ addslashes($item->nama_produk) }}',
+                qty: {{ $item->qty_produk }},
+                harga: {{ $item->harga_produk }},
+                subtotal: {{ $item->subtotal_harga }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect ke Bluetooth printer
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting to:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        console.log('✅ GATT Connected');
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        console.log('✅ Service found');
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Characteristic found - Building receipt...');
+        
+        // ESC/POS Commands
+        const cmd = [];
+        
+        // Initialize printer
+        cmd.push(0x1B, 0x40); // ESC @
+        
+        // Center align + Bold
+        cmd.push(0x1B, 0x61, 0x01); // Center
+        cmd.push(0x1B, 0x45, 0x01); // Bold ON
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00); // Bold OFF
+        
+        // Store info
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction details
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Totals
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending ' + cmd.length + ' bytes to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak ke ' + printer.printerName + '!');
+    })
+    .catch(err => {
+        console.error('❌ Print error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer dalam keadaan ON\n2. Printer dalam jangkauan Bluetooth\n3. Bluetooth device aktif');
+    });
+}
+
+
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung!\n\nSilakan hubungkan printer di Settings');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dari controller (sudah di-JOIN)
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $item)
+            {
+                nama: '{{ addslashes($item->nama_produk) }}',
+                qty: {{ $item->qty_produk }},
+                harga: {{ $item->harga_produk }},
+                subtotal: {{ $item->subtotal_harga }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect ke Bluetooth printer
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting to:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        console.log('✅ GATT Connected');
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        console.log('✅ Service found');
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Characteristic found - Building receipt...');
+        
+        // ESC/POS Commands
+        const cmd = [];
+        
+        // Initialize printer
+        cmd.push(0x1B, 0x40); // ESC @
+        
+        // Center align + Bold
+        cmd.push(0x1B, 0x61, 0x01); // Center
+        cmd.push(0x1B, 0x45, 0x01); // Bold ON
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00); // Bold OFF
+        
+        // Store info
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction details
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Totals
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending ' + cmd.length + ' bytes to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak ke ' + printer.printerName + '!');
+    })
+    .catch(err => {
+        console.error('❌ Print error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer dalam keadaan ON\n2. Printer dalam jangkauan Bluetooth\n3. Bluetooth device aktif');
+    });
+}
+
+
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung di Settings!');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dari PHP
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $detail)
+            {
+                nama: '{{ addslashes($detail->nama_produk->nama_produk) }}',
+                qty: {{ $detail->jumlah }},
+                harga: {{ $detail->harga_jual }},
+                subtotal: {{ $detail->subtotal }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect Bluetooth
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Connected - Building receipt');
+        
+        const cmd = [];
+        
+        // Init printer
+        cmd.push(0x1B, 0x40);
+        
+        // Center + Bold
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(0x1B, 0x45, 0x01);
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00);
+        
+        // Info toko
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction info
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Total
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak!');
+    })
+    .catch(err => {
+        console.error('❌ Error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer ON\n2. Dalam jangkauan\n3. Bluetooth aktif');
+    });
+}
+
+
+        
+        // Print totals
+        const totals = 
+            '================================\n' +
+            'TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n' +
+            'Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n' +
+            'Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n';
+        commands.push(...new TextEncoder().encode(totals));
+        
+        // Center align
+        commands.push(0x1B, 0x61, 0x01);
+        
+        // Footer
+        const footer = 'Terima Kasih\nAtas Kunjungan Anda\n\n';
+        commands.push(...new TextEncoder().encode(footer));
+        
+        // Cut paper
+        commands.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        commands.push(0x0A, 0x0A, 0x0A);
+        
+        const data = new Uint8Array(commands);
+        
+        console.log('📤 Sending data to printer...');
+        return characteristic.writeValue(data);
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak!');
+    })
+    .catch(error => {
+        console.error('❌ Print error:', error);
+        alert('❌ Gagal mencetak!\n\n' + error.message + '\n\nPastikan:\n1. Printer ON\n2. Printer dalam jangkauan\n3. Bluetooth aktif');
+    });
+}
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="store-name">TOKO SAHABAT</div>
+            <div class="store-address">
+                Jl. Wonorejo, Rungkut<br>
+                Surabaya
+            </div>
+            <div class="store-phone">Telp: 081234567890</div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="trans-info">
+            <div class="info-row">
+                <span class="info-label">No. Transaksi</span>
+                <span class="info-value">#{{ str_pad($penjualan->id_penjualan, 6, '0', STR_PAD_LEFT) }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tanggal</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Kasir</span>
+                <span class="info-value">{{ $penjualan->kasir }}</span>
+            </div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="items">
+            @foreach($detail as $item)
+            <div class="item">
+                <div class="item-name">{{ $item->nama_produk }}</div>
+                <div class="item-details">
+                    <span class="item-qty-price">{{ $item->qty_produk }} x Rp {{ number_format($item->harga_produk, 0, ',', '.') }}</span>
+                    <span class="item-subtotal">Rp {{ number_format($item->subtotal_harga, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="totals">
+            <div class="total-row grand-total">
+                <span class="total-label">TOTAL</span>
+                <span class="total-value">Rp {{ number_format($penjualan->total_bayar, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="total-row">
+                <span class="total-label">Tunai</span>
+                <span class="total-value">Rp {{ number_format($penjualan->total_pembayaran, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="total-row">
+                <span class="total-label">Kembalian</span>
+                <span class="total-value">Rp {{ number_format($penjualan->kembalian_pembayaran, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <div class="separator">================================</div>
+
+        <div class="footer">
+            <div class="thank-you">
+                Terima Kasih Atas<br>
+                Kunjungan Anda!
+            </div>
+            <div class="footer-note">
+                Barang yang sudah dibeli<br>
+                tidak dapat ditukar/dikembalikan
+            </div>
+        </div>
+
+        <button onclick="window.print()" class="print-button">
+            <i class="fas fa-print"></i> Cetak Struk (A4/Letter)
+        </button>
+
+        <button onclick="openThermalPrinter()" class="thermal-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Cetak Struk Thermal (58mm)
+        </button>
+    </div>
+
+    <script>
+
+        // Auto focus untuk print
+        window.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+
+
+    </script>
+
+function openThermalPrinter() {
+    console.log('🖨️ Direct Print dari Struk');
+
+    // Cek printer
+    const printerStatus = localStorage.getItem('thermal_printer_status');
+    
+    if (!printerStatus) {
+        alert('⚠️ Printer belum dikonfigurasi!\n\nBuka: Menu → Settings → Scan & pilih printer → Simpan');
+        return;
+    }
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung!\n\nSilakan hubungkan printer di Settings');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dengan FIELD YANG BENAR
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $item)
+            {
+                nama: '{{ addslashes($item->nama_produk) }}',
+                qty: {{ $item->qty_produk }},
+                harga: {{ $item->harga_produk }},
+                subtotal: {{ $item->subtotal_harga }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect ke Bluetooth printer
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting to:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        console.log('✅ GATT Connected');
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        console.log('✅ Service found');
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Characteristic found - Building receipt...');
+        
+        // ESC/POS Commands
+        const cmd = [];
+        
+        // Initialize printer
+        cmd.push(0x1B, 0x40); // ESC @
+        
+        // Center align + Bold
+        cmd.push(0x1B, 0x61, 0x01); // Center
+        cmd.push(0x1B, 0x45, 0x01); // Bold ON
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00); // Bold OFF
+        
+        // Store info
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction details
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Totals
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending ' + cmd.length + ' bytes to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak ke ' + printer.printerName + '!');
+    })
+    .catch(err => {
+        console.error('❌ Print error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer dalam keadaan ON\n2. Printer dalam jangkauan Bluetooth\n3. Bluetooth device aktif');
+    });
+}
+
+
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung!\n\nSilakan hubungkan printer di Settings');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dari controller (sudah di-JOIN)
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $item)
+            {
+                nama: '{{ addslashes($item->nama_produk) }}',
+                qty: {{ $item->qty_produk }},
+                harga: {{ $item->harga_produk }},
+                subtotal: {{ $item->subtotal_harga }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect ke Bluetooth printer
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting to:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        console.log('✅ GATT Connected');
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        console.log('✅ Service found');
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Characteristic found - Building receipt...');
+        
+        // ESC/POS Commands
+        const cmd = [];
+        
+        // Initialize printer
+        cmd.push(0x1B, 0x40); // ESC @
+        
+        // Center align + Bold
+        cmd.push(0x1B, 0x61, 0x01); // Center
+        cmd.push(0x1B, 0x45, 0x01); // Bold ON
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00); // Bold OFF
+        
+        // Store info
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction details
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Totals
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending ' + cmd.length + ' bytes to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak ke ' + printer.printerName + '!');
+    })
+    .catch(err => {
+        console.error('❌ Print error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer dalam keadaan ON\n2. Printer dalam jangkauan Bluetooth\n3. Bluetooth device aktif');
+    });
+}
+
+
+
+    const printer = JSON.parse(printerStatus);
+    
+    if (!printer.connected || !printer.printerName) {
+        alert('⚠️ Printer belum terhubung di Settings!');
+        return;
+    }
+
+    if (!navigator.bluetooth) {
+        alert('❌ Browser tidak support Bluetooth!\n\nGunakan Chrome/Edge/Opera');
+        return;
+    }
+
+    console.log('🔌 Printer:', printer.printerName);
+
+    // Data transaksi dari PHP
+    const receiptData = {
+        id: '{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
+        tanggal: '{{ date("d/m/Y H:i", strtotime($penjualan->tanggal_penjualan)) }}',
+        kasir: '{{ $penjualan->kasir }}',
+        total: {{ $penjualan->total_bayar }},
+        tunai: {{ $penjualan->total_pembayaran }},
+        kembalian: {{ $penjualan->kembalian_pembayaran }},
+        items: [
+            @foreach($detail as $detail)
+            {
+                nama: '{{ addslashes($detail->nama_produk->nama_produk) }}',
+                qty: {{ $detail->jumlah }},
+                harga: {{ $detail->harga_jual }},
+                subtotal: {{ $detail->subtotal }}
+            },
+            @endforeach
+        ]
+    };
+
+    console.log('📄 Data struk:', receiptData);
+
+    // Connect Bluetooth
+    navigator.bluetooth.requestDevice({
+        filters: [
+            { namePrefix: 'RPP02N' },
+            { namePrefix: 'ALGOO' },
+            { namePrefix: 'BlueTooth Printer' },
+            { namePrefix: 'Printer' }
+        ],
+        optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            '0000fee0-0000-1000-8000-00805f9b34fb',
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+        ]
+    })
+    .then(device => {
+        console.log('🔌 Connecting:', device.name);
+        return device.gatt.connect();
+    })
+    .then(server => {
+        return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+            .catch(() => server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455'))
+            .catch(() => server.getPrimaryService('0000fee0-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(service => {
+        return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+            .catch(() => service.getCharacteristic('49535343-8841-43f4-a8d4-ecbe34729bb3'))
+            .catch(() => service.getCharacteristic('0000fee1-0000-1000-8000-00805f9b34fb'));
+    })
+    .then(characteristic => {
+        console.log('✅ Connected - Building receipt');
+        
+        const cmd = [];
+        
+        // Init printer
+        cmd.push(0x1B, 0x40);
+        
+        // Center + Bold
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(0x1B, 0x45, 0x01);
+        cmd.push(...new TextEncoder().encode('TOKO SAHABAT\n'));
+        cmd.push(0x1B, 0x45, 0x00);
+        
+        // Info toko
+        cmd.push(...new TextEncoder().encode('Jl. Merdeka, Bungkus\n'));
+        cmd.push(...new TextEncoder().encode('Surabaya\n'));
+        cmd.push(...new TextEncoder().encode('Telp: 0512345678\n\n'));
+        
+        // Left align
+        cmd.push(0x1B, 0x61, 0x00);
+        
+        // Transaction info
+        cmd.push(...new TextEncoder().encode('No.      : #' + receiptData.id + '\n'));
+        cmd.push(...new TextEncoder().encode('Tanggal  : ' + receiptData.tanggal + '\n'));
+        cmd.push(...new TextEncoder().encode('Kasir    : ' + receiptData.kasir + '\n'));
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        
+        // Items
+        receiptData.items.forEach(item => {
+            cmd.push(...new TextEncoder().encode(item.nama + '\n'));
+            const line = item.qty + ' x Rp ' + item.harga.toLocaleString('id-ID') + 
+                        ' = Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+            cmd.push(...new TextEncoder().encode(line));
+        });
+        
+        // Total
+        cmd.push(...new TextEncoder().encode('================================\n'));
+        cmd.push(...new TextEncoder().encode('TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n'));
+        cmd.push(...new TextEncoder().encode('Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n'));
+        
+        // Center footer
+        cmd.push(0x1B, 0x61, 0x01);
+        cmd.push(...new TextEncoder().encode('Terima Kasih\n'));
+        cmd.push(...new TextEncoder().encode('Atas Kunjungan Anda\n\n'));
+        
+        // Cut paper
+        cmd.push(0x1D, 0x56, 0x00);
+        cmd.push(0x0A, 0x0A, 0x0A);
+        
+        console.log('📤 Sending to printer...');
+        return characteristic.writeValue(new Uint8Array(cmd));
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak!');
+    })
+    .catch(err => {
+        console.error('❌ Error:', err);
+        alert('❌ Gagal mencetak!\n\n' + err.message + '\n\nPastikan:\n1. Printer ON\n2. Dalam jangkauan\n3. Bluetooth aktif');
+    });
+}
+
+
+        
+        // Print totals
+        const totals = 
+            '================================\n' +
+            'TOTAL    Rp ' + receiptData.total.toLocaleString('id-ID') + '\n' +
+            'Tunai    Rp ' + receiptData.tunai.toLocaleString('id-ID') + '\n' +
+            'Kembali  Rp ' + receiptData.kembalian.toLocaleString('id-ID') + '\n\n';
+        commands.push(...new TextEncoder().encode(totals));
+        
+        // Center align
+        commands.push(0x1B, 0x61, 0x01);
+        
+        // Footer
+        const footer = 'Terima Kasih\nAtas Kunjungan Anda\n\n';
+        commands.push(...new TextEncoder().encode(footer));
+        
+        // Cut paper
+        commands.push(0x1D, 0x56, 0x00);
+        
+        // Feed paper
+        commands.push(0x0A, 0x0A, 0x0A);
+        
+        const data = new Uint8Array(commands);
+        
+        console.log('📤 Sending data to printer...');
+        return characteristic.writeValue(data);
+    })
+    .then(() => {
+        console.log('✅ Print berhasil!');
+        alert('✅ Struk berhasil dicetak!');
+    })
+    .catch(error => {
+        console.error('❌ Print error:', error);
+        alert('❌ Gagal mencetak!\n\n' + error.message + '\n\nPastikan:\n1. Printer ON\n2. Printer dalam jangkauan\n3. Bluetooth aktif');
+    });
+}
+
+</body>
+</html>
