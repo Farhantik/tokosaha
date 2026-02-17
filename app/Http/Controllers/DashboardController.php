@@ -6,6 +6,7 @@ use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
 use App\Models\Produk;
 use App\Models\Kasir;
+use App\Models\ProdukKategori;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,21 +31,46 @@ class DashboardController extends Controller
                 ->whereNull('waktu_close')
                 ->first();
 
-            // Produk Stok Menipis (stok <= 10) - ALTERNATIF dengan RAW QUERY
+            // Produk Stok Menipis dengan detail - SESUAI DATABASE ASLI
             $produkStokMenupis = DB::table('produk')
                 ->leftJoin('produk_kategori', 'produk.id_produk_kategori', '=', 'produk_kategori.id_produk_kategori')
                 ->select(
                     'produk.id_produk',
+                    'produk.id_produk_kategori',
+                    'produk.code_produk as kode_produk',
                     'produk.nama_produk',
                     'produk.stock_produk',
+                    'produk.harga_produk',
+                    'produk.gambar_produk',
                     'produk_kategori.nama_kategori'
                 )
-                ->where('produk.stock_produk', '<=', 10)
+                ->where('produk.stock_produk', '<=', 20)
+                ->whereNull('produk.deleted_at')
+                ->orderByRaw('
+                    CASE 
+                        WHEN produk.stock_produk <= 0 THEN 1
+                        WHEN produk.stock_produk BETWEEN 1 AND 5 THEN 2
+                        WHEN produk.stock_produk BETWEEN 6 AND 10 THEN 3
+                        ELSE 4
+                    END
+                ')
                 ->orderBy('produk.stock_produk', 'asc')
                 ->get();
 
+            // Ambil semua kategori untuk filter
+            $kategoris = ProdukKategori::all();
+
+            // Hitung jumlah produk per kategori (yang stok menipis)
+            $kategoriCounts = DB::table('produk')
+                ->leftJoin('produk_kategori', 'produk.id_produk_kategori', '=', 'produk_kategori.id_produk_kategori')
+                ->select('produk.id_produk_kategori', DB::raw('COUNT(*) as total'))
+                ->where('produk.stock_produk', '<=', 20)
+                ->whereNull('produk.deleted_at')
+                ->groupBy('produk.id_produk_kategori')
+                ->pluck('total', 'id_produk_kategori');
+
             // Debug
-            Log::info('Produk Stok Menipis (Raw Query): ' . $produkStokMenupis->count());
+            Log::info('Produk Stok Menipis: ' . $produkStokMenupis->count());
             foreach ($produkStokMenupis as $produk) {
                 Log::info('Produk: ' . $produk->nama_produk . ' | Stok: ' . $produk->stock_produk . ' | Kategori: ' . ($produk->nama_kategori ?? 'NULL'));
             }
@@ -88,7 +114,8 @@ class DashboardController extends Controller
                     $produk = Produk::find($item->id_produk);
                     return (object) [
                         'nama_produk' => $produk->nama_produk ?? 'Unknown',
-                        'total_terjual' => $item->total_terjual
+                        'total_terjual' => $item->total_terjual,
+                        'gambar_produk' => $produk->gambar_produk ?? null
                     ];
                 });
 
@@ -98,10 +125,13 @@ class DashboardController extends Controller
                 'kasirAktif',
                 'produkStokMenupis',
                 'grafikPenjualan',
-                'produkTerlaris'
+                'produkTerlaris',
+                'kategoris',
+                'kategoriCounts'
             ));
         } catch (\Exception $e) {
             Log::error('Dashboard Error: ' . $e->getMessage());
+            Log::error('Stack Trace: ' . $e->getTraceAsString());
 
             // Return with empty data if error
             return view('dashboard', [
@@ -110,7 +140,9 @@ class DashboardController extends Controller
                 'kasirAktif' => null,
                 'produkStokMenupis' => collect([]),
                 'grafikPenjualan' => collect([]),
-                'produkTerlaris' => collect([])
+                'produkTerlaris' => collect([]),
+                'kategoris' => collect([]),
+                'kategoriCounts' => collect([])
             ]);
         }
     }
