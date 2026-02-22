@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;  // ← tambahkan ini
 
 class PenerimaanController extends Controller
 {
@@ -145,7 +146,7 @@ class PenerimaanController extends Controller
                 // Get stock setelah update
                 $stock_sesudah = $stock_sebelum + $item['qty_produk'];
 
-                // ✅ CATAT LOG STOCK - HANYA SATU INSERT (Konsisten dengan nama kolom)
+                // ✅ CATAT LOG STOCK
                 DB::table('log_stock')->insert([
                     'id_aktivitas' => $id_penerimaan,
                     'id_produk' => $item['id_produk'],
@@ -154,7 +155,7 @@ class PenerimaanController extends Controller
                     'jumlah_awal' => $stock_sebelum,
                     'jumlah_akhir' => $stock_sesudah,
                 ]);
-                
+
                 // ✅ CATAT LOG KE PRODUK_LOGS (Optional - jika tabel ada)
                 if (DB::getSchemaBuilder()->hasTable('produk_logs')) {
                     DB::table('produk_logs')->insert([
@@ -188,11 +189,9 @@ class PenerimaanController extends Controller
 
     /**
      * Display the specified penerimaan
-     * 🔧 FIXED: Menghindari duplikasi log stock
      */
     public function show($id)
     {
-        // Get penerimaan with supplier
         $penerimaan = DB::table('penerimaan')
             ->leftJoin('supplier', 'penerimaan.id_supplier', '=', 'supplier.id_supplier')
             ->select(
@@ -208,7 +207,6 @@ class PenerimaanController extends Controller
             abort(404, 'Penerimaan tidak ditemukan');
         }
 
-        // Get penerimaan detail
         $detail = DB::table('penerimaan_detail')
             ->leftJoin('produk', 'penerimaan_detail.id_produk', '=', 'produk.id_produk')
             ->leftJoin('produk_kategori', 'produk.id_produk_kategori', '=', 'produk_kategori.id_produk_kategori')
@@ -221,14 +219,12 @@ class PenerimaanController extends Controller
             ->where('penerimaan_detail.id_penerimaan', $id)
             ->get();
 
-        // Calculate statistics
         $stats = [
             'total_item' => $detail->count(),
             'total_qty' => $detail->sum('qty_produk'),
             'total_harga' => $penerimaan->total_harga,
         ];
 
-        // 🔧 FIXED: Get log stock dengan GROUP BY untuk menghindari duplikasi
         $logStock = DB::table('log_stock')
             ->leftJoin('produk', 'log_stock.id_produk', '=', 'produk.id_produk')
             ->select(
@@ -248,8 +244,81 @@ class PenerimaanController extends Controller
     }
 
     /**
+     * ✅ Export penerimaan ke PDF (menggantikan fitur Print)
+     * Route: GET /penerimaan/{id}/export-pdf
+     * Name : penerimaan.exportPdf
+     */
+    public function exportPdf($id)
+    {
+        // Ambil data penerimaan + supplier
+        $penerimaan = DB::table('penerimaan')
+            ->leftJoin('supplier', 'penerimaan.id_supplier', '=', 'supplier.id_supplier')
+            ->select(
+                'penerimaan.*',
+                'supplier.nama_supplier',
+                'supplier.telp_supplier',
+                'supplier.alamat_supplier'
+            )
+            ->where('penerimaan.id_penerimaan', $id)
+            ->first();
+
+        if (!$penerimaan) {
+            abort(404, 'Penerimaan tidak ditemukan');
+        }
+
+        // Ambil detail produk
+        $detail = DB::table('penerimaan_detail')
+            ->leftJoin('produk', 'penerimaan_detail.id_produk', '=', 'produk.id_produk')
+            ->leftJoin('produk_kategori', 'produk.id_produk_kategori', '=', 'produk_kategori.id_produk_kategori')
+            ->select(
+                'penerimaan_detail.*',
+                'produk.nama_produk',
+                'produk.code_produk',
+                'produk_kategori.nama_kategori'
+            )
+            ->where('penerimaan_detail.id_penerimaan', $id)
+            ->get();
+
+        // Statistik
+        $stats = [
+            'total_item'  => $detail->count(),
+            'total_qty'   => $detail->sum('qty_produk'),
+            'total_harga' => $penerimaan->total_harga,
+        ];
+
+        // Ambil log stock (pakai struktur tabel yang sama dengan method show)
+        $logStock = DB::table('log_stock')
+            ->leftJoin('produk', 'log_stock.id_produk', '=', 'produk.id_produk')
+            ->select(
+                'log_stock.id_produk',
+                'produk.nama_produk',
+                'produk.code_produk',
+                DB::raw('SUM(log_stock.jumlah_aktivitas) as jumlah_aktivitas'),
+                DB::raw('MIN(log_stock.jumlah_awal) as jumlah_awal'),
+                DB::raw('MAX(log_stock.jumlah_akhir) as jumlah_akhir')
+            )
+            ->where('log_stock.id_aktivitas', $id)
+            ->where('log_stock.jenis_aktivitas', 'PENERIMAAN')
+            ->groupBy('log_stock.id_produk', 'produk.nama_produk', 'produk.code_produk')
+            ->get();
+
+        // Generate PDF dari view resources/views/penerimaan/pdf.blade.php
+        $pdf = Pdf::loadView('penerimaan.pdf', compact('penerimaan', 'detail', 'stats', 'logStock'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled'      => false,
+                'defaultFont'          => 'DejaVu Sans',
+                'dpi'                  => 150,
+            ]);
+
+        $filename = 'Penerimaan-PNM-' . str_pad($penerimaan->id_penerimaan, 6, '0', STR_PAD_LEFT) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
      * Remove the specified penerimaan
-     * 🔧 FIXED: Menghindari duplikasi log saat delete
      */
     public function destroy($id)
     {
@@ -261,51 +330,42 @@ class PenerimaanController extends Controller
 
         DB::beginTransaction();
         try {
-            // Get all detail before delete
             $details = DB::table('penerimaan_detail')
                 ->where('id_penerimaan', $id)
                 ->get();
 
-            // Reduce stock for each product (ROLLBACK STOK)
             foreach ($details as $detail) {
-                // Get stock sebelum update
                 $produk = DB::table('produk')
                     ->where('id_produk', $detail->id_produk)
                     ->first();
 
                 $stock_sebelum = $produk->stock_produk ?? 0;
 
-                // Kurangi stok
                 DB::table('produk')
                     ->where('id_produk', $detail->id_produk)
                     ->decrement('stock_produk', $detail->qty_produk);
 
                 $stock_sesudah = $stock_sebelum - $detail->qty_produk;
 
-                // ✅ CATAT LOG STOCK PENGURANGAN (untuk audit trail)
                 DB::table('log_stock')->insert([
                     'id_aktivitas' => $id,
                     'id_produk' => $detail->id_produk,
-                    'jenis_aktivitas' => 'HAPUS_PENERIMAAN', // Ubah jenis untuk membedakan
-                    'jumlah_aktivitas' => -$detail->qty_produk, // negatif karena dikurangi
+                    'jenis_aktivitas' => 'HAPUS_PENERIMAAN',
+                    'jumlah_aktivitas' => -$detail->qty_produk,
                     'jumlah_awal' => $stock_sebelum,
                     'jumlah_akhir' => $stock_sesudah,
                 ]);
             }
 
-            // 🔧 FIXED: Hapus log stock lama SETELAH insert log baru
-            // Jangan hapus semua, hanya yang jenis_aktivitas = 'PENERIMAAN'
             DB::table('log_stock')
                 ->where('id_aktivitas', $id)
                 ->where('jenis_aktivitas', 'PENERIMAAN')
                 ->delete();
 
-            // Delete penerimaan detail
             DB::table('penerimaan_detail')
                 ->where('id_penerimaan', $id)
                 ->delete();
 
-            // Delete penerimaan
             DB::table('penerimaan')
                 ->where('id_penerimaan', $id)
                 ->delete();
@@ -360,7 +420,6 @@ class PenerimaanController extends Controller
      */
     public function print($id)
     {
-        // Get penerimaan with supplier
         $penerimaan = DB::table('penerimaan')
             ->leftJoin('supplier', 'penerimaan.id_supplier', '=', 'supplier.id_supplier')
             ->select(
@@ -376,7 +435,6 @@ class PenerimaanController extends Controller
             abort(404, 'Penerimaan tidak ditemukan');
         }
 
-        // Get penerimaan detail
         $detail = DB::table('penerimaan_detail')
             ->leftJoin('produk', 'penerimaan_detail.id_produk', '=', 'produk.id_produk')
             ->select(
@@ -418,10 +476,8 @@ class PenerimaanController extends Controller
         $callback = function () use ($penerimaan) {
             $file = fopen('php://output', 'w');
 
-            // Header CSV
             fputcsv($file, ['No. Penerimaan', 'Tanggal', 'Supplier', 'Total Harga']);
 
-            // Data
             foreach ($penerimaan as $item) {
                 fputcsv($file, [
                     'PNM-' . str_pad($item->id_penerimaan, 6, '0', STR_PAD_LEFT),

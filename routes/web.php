@@ -143,10 +143,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [PenerimaanController::class, 'index'])->name('index');
             Route::get('/create', [PenerimaanController::class, 'create'])->name('create');
             Route::post('/', [PenerimaanController::class, 'store'])->name('store');
+            Route::get('/export/csv', [PenerimaanController::class, 'export'])->name('export');         // ← static dulu
             Route::get('/{id}', [PenerimaanController::class, 'show'])->name('show');
             Route::delete('/{id}', [PenerimaanController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/print', [PenerimaanController::class, 'print'])->name('print');
-            Route::get('/export/csv', [PenerimaanController::class, 'export'])->name('export');
+            Route::get('/{id}/export-pdf', [PenerimaanController::class, 'exportPdf'])->name('exportPdf'); // ← BARU
         });
 
         // User Management

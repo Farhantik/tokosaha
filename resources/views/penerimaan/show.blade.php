@@ -38,7 +38,7 @@
                             <div>
                                 <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Tanggal Penerimaan</p>
                                 <p class="text-gray-900 font-semibold flex items-center">
-                                    <i class="fas fa-calendar text-blue-500 mr-2"></i>
+                                    <i class="fas fa-calendar text-green-500 mr-2"></i>
                                     {{ \Carbon\Carbon::parse($penerimaan->tanggal_penerimaan)->format('d/m/Y H:i') }}
                                 </p>
                             </div>
@@ -77,7 +77,7 @@
 
                 <!-- Detail Items -->
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                    <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
                         <h3 class="text-xl font-bold text-white flex items-center">
                             <i class="fas fa-list mr-3"></i>
                             Detail Produk
@@ -100,7 +100,7 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 @foreach ($detail as $index => $item)
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <tr class="hover:bg-green-50/30 transition-colors duration-150">
                                         <td class="px-6 py-4 text-gray-700">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4">
                                             <div>
@@ -118,7 +118,7 @@
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <span
-                                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                                class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                                                 {{ $item->qty_produk }}
                                             </span>
                                         </td>
@@ -172,7 +172,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($logStock as $log)
-                                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                        <tr class="hover:bg-green-50/30 transition-colors duration-150">
                                             <td class="px-6 py-4">
                                                 <div>
                                                     <p class="font-semibold text-gray-900">{{ $log->nama_produk }}</p>
@@ -187,9 +187,7 @@
                                                     +{{ $log->jumlah_aktivitas }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 text-center text-gray-700">
-                                                {{ $log->jumlah_awal }}
-                                            </td>
+                                            <td class="px-6 py-4 text-center text-gray-700">{{ $log->jumlah_awal }}</td>
                                             <td class="px-6 py-4 text-center">
                                                 <span class="font-bold text-green-600">{{ $log->jumlah_akhir }}</span>
                                             </td>
@@ -205,44 +203,54 @@
             <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
                 <!-- Statistics Card -->
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-6 border border-blue-100">
+                <div
+                    class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg p-6 border border-green-100">
                     <div class="flex items-center mb-4">
                         <div
-                            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white mr-3">
+                            class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white mr-3">
                             <i class="fas fa-chart-bar text-xl"></i>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800">Statistik</h3>
                     </div>
-                    <div class="space-y-4">
-                        <div class="bg-white rounded-xl p-4">
-                            <p class="text-sm text-gray-600 mb-1">Total Item</p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-xl p-4 border border-green-100">
+                            <p class="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">Total Item</p>
                             <p class="text-2xl font-bold text-gray-900">{{ $stats['total_item'] }}</p>
+                            <p class="text-xs text-gray-400 mt-1">jenis produk diterima</p>
                         </div>
-                        <div class="bg-white rounded-xl p-4">
-                            <p class="text-sm text-gray-600 mb-1">Total Qty</p>
-                            <p class="text-2xl font-bold text-blue-600">{{ $stats['total_qty'] }}</p>
+                        <div class="bg-white rounded-xl p-4 border border-green-100">
+                            <p class="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">Total Qty</p>
+                            <p class="text-2xl font-bold text-green-600">{{ $stats['total_qty'] }}</p>
+                            <p class="text-xs text-gray-400 mt-1">unit barang masuk</p>
                         </div>
-                        <div class="bg-white rounded-xl p-4">
-                            <p class="text-sm text-gray-600 mb-1">Total Harga</p>
-                            <p class="text-xl font-bold text-green-600">
+                        <div class="bg-white rounded-xl p-4 border border-green-100">
+                            <p class="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">Total Harga</p>
+                            <p class="text-lg font-bold text-green-600">
                                 Rp {{ number_format($stats['total_harga'], 0, ',', '.') }}
                             </p>
+                            <p class="text-xs text-gray-400 mt-1">nilai penerimaan</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Actions Card -->
                 <div class="bg-white rounded-2xl shadow-lg p-6 space-y-3">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Aksi</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bolt text-green-600 text-xs"></i>
+                        </span>
+                        Aksi
+                    </h3>
 
-                    <button onclick="window.print()"
-                        class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
-                        <i class="fas fa-print mr-2"></i>
-                        Print
-                    </button>
+                    {{-- ── TOMBOL EXPORT PDF (menggantikan Print) ─────────── --}}
+                    <a href="{{ route('penerimaan.exportPdf', $penerimaan->id_penerimaan) }}" target="_blank"
+                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:shadow-lg hover:from-green-700 hover:to-emerald-700 transform hover:-translate-y-0.5 transition-all duration-200">
+                        <i class="fas fa-file-pdf mr-2 text-lg"></i>
+                        Export PDF
+                    </a>
 
                     <a href="{{ route('suppliers.show', $penerimaan->id_supplier) }}"
-                        class="w-full inline-block text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
                         <i class="fas fa-truck mr-2"></i>
                         Lihat Supplier
                     </a>
@@ -323,18 +331,12 @@
             document.getElementById('deleteModal').classList.add('hidden');
         }
 
-        // Close modal when clicking outside
         document.getElementById('deleteModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDeleteModal();
-            }
+            if (e.target === this) closeDeleteModal();
         });
 
-        // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeDeleteModal();
-            }
+            if (e.key === 'Escape') closeDeleteModal();
         });
     </script>
 @endpush

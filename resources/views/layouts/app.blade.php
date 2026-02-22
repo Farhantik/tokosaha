@@ -530,14 +530,14 @@
                     <a href="{{ route('kasir.index') }}"
                         class="nav-link {{ request()->routeIs('kasir.*') ? 'active' : '' }}" title="Kasir">
                         <i class="fas fa-cash-register"></i>
-                        <span class="sidebar-text">Kasir</span>
+                        <span class="sidebar-text">Buka/Tutup Kasir</span>
                     </a>
                 @endif
 
                 <a href="{{ route('transaksi.index') }}"
                     class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}" title="Transaksi">
                     <i class="fas fa-receipt"></i>
-                    <span class="sidebar-text">Transaksi</span>
+                    <span class="sidebar-text">Transaksi Kasir</span>
                 </a>
 
                 {{-- @if (Auth::user()->isOwner())
@@ -551,7 +551,7 @@
                 <a href="{{ route('settings.index') }}"
                     class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" title="Pengaturan">
                     <i class="fas fa-cog"></i>
-                    <span class="sidebar-text">Pengaturan</span>
+                    <span class="sidebar-text">Pengaturan Sistem</span>
                 </a>
 
                 @if (Auth::user()->isOwner())
@@ -566,13 +566,13 @@
                     <a href="{{ route('produk.index') }}"
                         class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}" title="Produk">
                         <i class="fas fa-box"></i>
-                        <span class="sidebar-text">Produk</span>
+                        <span class="sidebar-text">Manajemen Produk</span>
                     </a>
 
                     <a href="{{ route('suppliers.index') }}"
                         class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}" title="Supplier">
                         <i class="fas fa-truck"></i>
-                        <span class="sidebar-text">Supplier</span>
+                        <span class="sidebar-text">Kelola Supplier</span>
                     </a>
 
                     <a href="{{ route('penerimaan.index') }}"

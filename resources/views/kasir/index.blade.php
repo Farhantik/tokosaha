@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Kasir - Toko Sahabat')
-@section('page-title', 'Manajemen Kasir')
+@section('title', 'Buka/Tutup Kasir - WPOS')
+@section('page-title', 'Buka/Tutup Kasir')
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
                     <i class="fas fa-cash-register text-white text-lg sm:text-xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Manajemen Kasir</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Buka/Tutup Kasir</h2>
                     <p class="text-xs sm:text-sm text-gray-500">Kelola sesi kasir harian</p>
                 </div>
             </div>
@@ -98,8 +98,8 @@
                                     </div>
                                     {{-- Jam buka statis (WIB) + jam sekarang realtime --}}
                                     <div class="text-right">
-                                        <span
-                                            class="font-semibold text-gray-800 text-sm">{{ $waktuOpenJkt->format('H:i') }} WIB</span>
+                                        <span class="font-semibold text-gray-800 text-sm">{{ $waktuOpenJkt->format('H:i') }}
+                                            WIB</span>
                                         <span class="text-gray-400 text-xs mx-1">→</span>
                                         <span id="jamSekarang" class="font-semibold text-blue-600 text-sm"></span>
                                     </div>
@@ -399,7 +399,8 @@
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs text-gray-500">Jam Tutup</span>
                                         <span class="text-xs font-semibold text-gray-700">
-                                            {{ \Carbon\Carbon::parse($logAutoClose->waktu_close)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                            {{ \Carbon\Carbon::parse($logAutoClose->waktu_close)->setTimezone('Asia/Jakarta')->format('H:i') }}
+                                            WIB
                                         </span>
                                     </div>
                                     <div class="flex items-center justify-between">
@@ -532,7 +533,9 @@
                         @forelse ($riwayatKasir as $index => $kasir)
                             @php
                                 $waktuOpenTbl = $kasir->waktu_open->setTimezone('Asia/Jakarta');
-                                $waktuCloseTbl = $kasir->waktu_close ? $kasir->waktu_close->setTimezone('Asia/Jakarta') : null;
+                                $waktuCloseTbl = $kasir->waktu_close
+                                    ? $kasir->waktu_close->setTimezone('Asia/Jakarta')
+                                    : null;
                             @endphp
                             <tr class="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 transition-colors">
                                 <td class="px-4 py-4 text-sm font-medium text-gray-800">
@@ -633,7 +636,9 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken()
                 },
-                body: JSON.stringify({ is_auto: isAuto })
+                body: JSON.stringify({
+                    is_auto: isAuto
+                })
             });
             const data = await response.json();
             if (!response.ok || !data.success) throw new Error(data.message || 'Gagal menutup kasir');
@@ -736,7 +741,9 @@
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': csrfToken()
                         },
-                        body: JSON.stringify({ modal_awal: modalAwal })
+                        body: JSON.stringify({
+                            modal_awal: modalAwal
+                        })
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
@@ -905,8 +912,8 @@
                             html: `<p class="text-gray-600 text-sm">${data.message}</p>
                                     ${payload.auto_close_kasir
                                         ? `<div class="mt-3 bg-indigo-50 rounded-xl p-3 text-sm font-semibold text-indigo-700">
-                                                <i class="fas fa-clock mr-1"></i>Jadwal: Setiap hari pukul ${payload.auto_close_time} WIB
-                                               </div>`
+                                                        <i class="fas fa-clock mr-1"></i>Jadwal: Setiap hari pukul ${payload.auto_close_time} WIB
+                                                       </div>`
                                         : '<p class="text-xs text-gray-400 mt-2">Auto-close kasir dinonaktifkan.</p>'
                                     }`,
                             confirmButtonColor: '#6366f1',
@@ -932,16 +939,17 @@
         // JAM SEKARANG & DURASI KASIR — Realtime WIB (Asia/Jakarta)
         // ═══════════════════════════════════════════════════════════════
         @if ($kasirAktif)
-            (function () {
+            (function() {
                 /**
                  * PERBAIKAN UTAMA:
                  * Gunakan Unix timestamp (detik) dari server → kalikan 1000 → milidetik.
                  * Cara ini bebas dari masalah parsing timezone string antar browser.
                  * Server HARUS dikonfigurasi timezone = Asia/Jakarta di config/app.php.
                  */
-                const waktuBuka = new Date({{ $kasirAktif->waktu_open->setTimezone('Asia/Jakarta')->timestamp }} * 1000);
+                const waktuBuka = new Date({{ $kasirAktif->waktu_open->setTimezone('Asia/Jakarta')->timestamp }} *
+                    1000);
 
-                const elJam    = document.getElementById('jamSekarang');
+                const elJam = document.getElementById('jamSekarang');
                 const elDurasi = document.getElementById('durasiKasir');
 
                 function pad(n) {
@@ -949,7 +957,7 @@
                 }
 
                 function formatDurasi(totalDetik) {
-                    const jam   = Math.floor(totalDetik / 3600);
+                    const jam = Math.floor(totalDetik / 3600);
                     const menit = Math.floor((totalDetik % 3600) / 60);
                     const detik = totalDetik % 60;
 

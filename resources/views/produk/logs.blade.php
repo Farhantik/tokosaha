@@ -49,53 +49,47 @@
         </div>
 
         <!-- Statistik Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <!-- Total Log -->
             <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center justify-between mb-4">
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
                         <i class="fas fa-clipboard-list text-2xl text-blue-600"></i>
                     </div>
+                    <span class="text-xs font-semibold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg">Semua</span>
                 </div>
                 <p class="text-gray-500 text-xs sm:text-sm font-medium mb-1">Total Log</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-800">{{ $totalLogs }}</p>
+                <p class="text-xs text-gray-400 mt-2">Seluruh aktivitas tercatat pada produk ini</p>
             </div>
-
-            <!-- Penjualan -->
-            <!--<div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">-->
-            <!--    <div class="flex items-center justify-between mb-3">-->
-            <!--        <div-->
-            <!--            class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center">-->
-            <!--            <i class="fas fa-shopping-cart text-2xl text-purple-600"></i>-->
-            <!--        </div>-->
-            <!--    </div>-->
-            <!--    <p class="text-gray-500 text-xs sm:text-sm font-medium mb-1">Penjualan</p>-->
-            <!--    <p class="text-2xl sm:text-3xl font-bold text-gray-800">{{ $totalPenjualan }}</p>-->
-            <!--</div>-->
 
             <!-- Tambah Stok -->
             <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center justify-between mb-4">
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
                         <i class="fas fa-arrow-up text-2xl text-green-600"></i>
                     </div>
+                    <span class="text-xs font-semibold text-green-500 bg-green-50 px-2 py-1 rounded-lg">Masuk</span>
                 </div>
                 <p class="text-gray-500 text-xs sm:text-sm font-medium mb-1">Tambah Stok</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-800">{{ $totalPenerimaan }}</p>
+                <p class="text-xs text-gray-400 mt-2">Total kali stok ditambahkan / diterima</p>
             </div>
 
             <!-- Penjualan Stok -->
             <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center justify-between mb-4">
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
                         <i class="fas fa-arrow-down text-2xl text-orange-600"></i>
                     </div>
+                    <span class="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-1 rounded-lg">Keluar</span>
                 </div>
                 <p class="text-gray-500 text-xs sm:text-sm font-medium mb-1">Penjualan Stok</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-800">{{ $totalStokKeluar }}</p>
+                <p class="text-xs text-gray-400 mt-2">Total kali stok terjual melalui transaksi</p>
             </div>
         </div>
 
