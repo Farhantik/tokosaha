@@ -47,11 +47,7 @@ class DashboardController extends Controller
                 ->where('produk.stock_produk', '<=', 20)
                 ->whereNull('produk.deleted_at')
                 ->orderByRaw('
-<<<<<<< HEAD
                     CASE
-=======
-                    CASE 
->>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                         WHEN produk.stock_produk <= 0 THEN 1
                         WHEN produk.stock_produk BETWEEN 1 AND 5 THEN 2
                         WHEN produk.stock_produk BETWEEN 6 AND 10 THEN 3
