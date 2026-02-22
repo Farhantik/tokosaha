@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', 'Manajemen Kasir - Toko Sahabat')
-
 @section('page-title', 'Manajemen Kasir')
 
 @push('styles')
@@ -10,10 +9,12 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <!-- Header with Date Badge -->
+
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="flex items-center">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                <div
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
                     <i class="fas fa-cash-register text-white text-lg sm:text-xl"></i>
                 </div>
                 <div>
@@ -21,30 +22,59 @@
                     <p class="text-xs sm:text-sm text-gray-500">Kelola sesi kasir harian</p>
                 </div>
             </div>
-            <div class="px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 shadow-sm">
-                <i class="fas fa-calendar-day text-emerald-600 mr-2 text-sm"></i>
-                <span class="text-xs sm:text-sm font-semibold text-gray-700">{{ date('d F Y') }}</span>
+            <div class="flex items-center gap-2">
+                {{-- Tombol Auto-Close All (hanya untuk owner) --}}
+                @if (auth()->user()->role_user === 'owner' && $kasirAktif)
+                    <button id="btnAutoCloseAll"
+                        class="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="fas fa-robot mr-1.5"></i>Tutup Semua Otomatis
+                    </button>
+                @endif
+                <div
+                    class="px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 shadow-sm">
+                    <i class="fas fa-calendar-day text-emerald-600 mr-2 text-sm"></i>
+                    {{-- Gunakan Carbon dengan timezone Asia/Jakarta --}}
+                    <span class="text-xs sm:text-sm font-semibold text-gray-700">
+                        {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}
+                    </span>
+                </div>
             </div>
         </div>
 
         <!-- Main Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
             <!-- Status Kasir Card -->
             <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow">
                 <div class="flex items-center mb-4 sm:mb-6">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                         <i class="fas fa-info-circle text-white text-lg sm:text-xl"></i>
                     </div>
                     <h2 class="text-lg sm:text-xl font-bold text-gray-800">Status Kasir</h2>
                 </div>
 
                 @if ($kasirAktif)
-                    <!-- Kasir Aktif Status -->
-                    <div class="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 bg-emerald-200 rounded-full -mr-10 sm:-mr-12 -mt-10 sm:-mt-12 opacity-30"></div>
+                    @php
+                        $totalPenjualanAktif = DB::table('penjualan')
+                            ->where('id_kasir', $kasirAktif->id_kasir)
+                            ->whereNull('deleted_at')
+                            ->sum('total_pembayaran');
+                        $saldoEstimasi = $kasirAktif->modal_awal + $totalPenjualanAktif;
+
+                        // Pastikan waktu_open pakai timezone Asia/Jakarta
+                        $waktuOpenJkt = $kasirAktif->waktu_open->setTimezone('Asia/Jakarta');
+                    @endphp
+
+                    <!-- Kasir Aktif -->
+                    <div
+                        class="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-4 sm:p-5 mb-4 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-200 rounded-full -mr-12 -mt-12 opacity-30">
+                        </div>
                         <div class="relative z-10">
-                            <div class="flex items-center mb-3 sm:mb-4">
-                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                            <div class="flex items-center mb-4">
+                                <div
+                                    class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                                     <i class="fas fa-check-circle text-white text-lg sm:text-xl"></i>
                                 </div>
                                 <div>
@@ -52,50 +82,72 @@
                                     <p class="text-xs sm:text-sm text-emerald-600">Sesi kasir sedang berjalan</p>
                                 </div>
                             </div>
-
-                            <div class="space-y-2.5 sm:space-y-3">
+                            <div class="space-y-2.5">
                                 <div class="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
-                                    <div class="flex items-center min-w-0 flex-1">
-                                        <i class="fas fa-wallet text-emerald-600 mr-2 text-sm flex-shrink-0"></i>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-wallet text-emerald-600 mr-2 text-sm"></i>
                                         <span class="text-sm text-gray-600 font-medium">Modal Awal</span>
                                     </div>
-                                    <span class="font-bold text-gray-800 text-sm ml-2 whitespace-nowrap">Rp {{ number_format($kasirAktif->modal_awal, 0, ',', '.') }}</span>
+                                    <span class="font-bold text-gray-800 text-sm">Rp
+                                        {{ number_format($kasirAktif->modal_awal, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
-                                    <div class="flex items-center min-w-0 flex-1">
-                                        <i class="fas fa-clock text-blue-600 mr-2 text-sm flex-shrink-0"></i>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock text-blue-600 mr-2 text-sm"></i>
                                         <span class="text-sm text-gray-600 font-medium">Waktu Buka</span>
                                     </div>
-                                    <span class="font-semibold text-gray-800 text-sm ml-2 whitespace-nowrap">{{ $kasirAktif->waktu_open->format('H:i') }}</span>
+                                    {{-- Jam buka statis (WIB) + jam sekarang realtime --}}
+                                    <div class="text-right">
+                                        <span
+                                            class="font-semibold text-gray-800 text-sm">{{ $waktuOpenJkt->format('H:i') }} WIB</span>
+                                        <span class="text-gray-400 text-xs mx-1">→</span>
+                                        <span id="jamSekarang" class="font-semibold text-blue-600 text-sm"></span>
+                                    </div>
                                 </div>
                                 <div class="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
-                                    <div class="flex items-center min-w-0 flex-1">
-                                        <i class="fas fa-hourglass-half text-orange-600 mr-2 text-sm flex-shrink-0"></i>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-hourglass-half text-orange-600 mr-2 text-sm"></i>
                                         <span class="text-sm text-gray-600 font-medium">Durasi</span>
                                     </div>
-                                    <span class="font-semibold text-gray-800 text-sm ml-2 whitespace-nowrap">{{ $kasirAktif->waktu_open->diffForHumans(null, true) }}</span>
+                                    {{-- Durasi realtime diupdate JS setiap detik --}}
+                                    <span id="durasiKasir" class="font-semibold text-orange-600 text-sm">
+                                        Menghitung...
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Close Button -->
-                    <button id="btnTutupKasir" data-kasir-id="{{ $kasirAktif->id_kasir }}" class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
+                    <!-- Info saldo otomatis -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-2">
+                        <i class="fas fa-robot text-blue-500 mt-0.5 flex-shrink-0 text-sm"></i>
+                        <p class="text-xs text-blue-700">
+                            Saldo akhir dihitung <strong>otomatis</strong>: Modal Awal + Total Penjualan.
+                            Tidak perlu input manual.
+                        </p>
+                    </div>
+
+                    <!-- Tombol Tutup Kasir -->
+                    <button id="btnTutupKasir" data-kasir-id="{{ $kasirAktif->id_kasir }}"
+                        data-modal-awal="{{ $kasirAktif->modal_awal }}" data-total-penjualan="{{ $totalPenjualanAktif }}"
+                        data-saldo-estimasi="{{ $saldoEstimasi }}"
+                        class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
                         <i class="fas fa-lock mr-2"></i>Tutup Kasir
                     </button>
                 @else
                     <!-- Kasir Belum Dibuka -->
-                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 bg-amber-200 rounded-full -mr-10 sm:-mr-12 -mt-10 sm:-mt-12 opacity-30"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
-                                    <i class="fas fa-exclamation-triangle text-white text-lg sm:text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-amber-800 text-base sm:text-lg">Kasir Belum Dibuka</h3>
-                                    <p class="text-xs sm:text-sm text-amber-600">Buka kasir untuk memulai transaksi</p>
-                                </div>
+                    <div
+                        class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 sm:p-5 mb-4 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-amber-200 rounded-full -mr-12 -mt-12 opacity-30">
+                        </div>
+                        <div class="relative z-10 flex items-center">
+                            <div
+                                class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-white text-lg sm:text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-amber-800 text-base sm:text-lg">Kasir Belum Dibuka</h3>
+                                <p class="text-xs sm:text-sm text-amber-600">Buka kasir untuk memulai transaksi</p>
                             </div>
                         </div>
                     </div>
@@ -105,29 +157,33 @@
                         @csrf
                         <div class="mb-4 sm:mb-5">
                             <label class="flex items-center text-gray-700 font-semibold mb-2 text-sm">
-                                <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mr-2 shadow-md flex-shrink-0">
+                                <div
+                                    class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mr-2 shadow-md flex-shrink-0">
                                     <i class="fas fa-money-bill-wave text-white text-xs"></i>
                                 </div>
-                                <span>Modal Awal <span class="text-red-500">*</span></span>
+                                Modal Awal <span class="text-red-500 ml-1">*</span>
                             </label>
-                            <input type="number" name="modal_awal" id="modal_awal" required min="1" step="any" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all text-gray-800 placeholder-gray-400 text-sm" placeholder="Contoh: 500000">
-                            <p class="text-gray-500 text-xs mt-2 flex items-start">
-                                <i class="fas fa-info-circle text-blue-500 mr-1 mt-0.5 flex-shrink-0"></i>
-                                <span>Masukkan jumlah uang di laci kasir saat ini</span>
+                            <input type="number" name="modal_awal" id="modal_awal" required min="1" step="any"
+                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all text-gray-800 placeholder-gray-400 text-sm"
+                                placeholder="Contoh: 500000">
+                            <p class="text-gray-500 text-xs mt-2 flex items-start gap-1">
+                                <i class="fas fa-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i>
+                                Masukkan jumlah uang di laci kasir saat ini
                             </p>
                         </div>
-
-                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
                             <i class="fas fa-unlock-alt mr-2"></i>Buka Kasir Sekarang
                         </button>
                     </form>
                 @endif
             </div>
 
-            <!-- Statistik Hari Ini Card -->
+            <!-- Statistik Hari Ini -->
             <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow">
                 <div class="flex items-center mb-4 sm:mb-6">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                         <i class="fas fa-chart-line text-white text-lg sm:text-xl"></i>
                     </div>
                     <h2 class="text-lg sm:text-xl font-bold text-gray-800">Statistik Hari Ini</h2>
@@ -135,19 +191,21 @@
 
                 @if ($kasirAktif)
                     @php
-                        $transaksiHariIni = DB::table('penjualan')->where('id_kasir', $kasirAktif->id_kasir)->count();
-                        $totalPenjualan = DB::table('penjualan')->where('id_kasir', $kasirAktif->id_kasir)->sum('total_pembayaran');
-                        $saldoSaatIni = $kasirAktif->modal_awal + $totalPenjualan;
+                        $transaksiHariIni = DB::table('penjualan')
+                            ->where('id_kasir', $kasirAktif->id_kasir)
+                            ->whereNull('deleted_at')
+                            ->count();
                     @endphp
-
                     <div class="space-y-3">
-                        <!-- Transaksi -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 hover:shadow-md transition-shadow">
+                        <!-- Total Transaksi -->
+                        <div
+                            class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 hover:shadow-md transition-shadow">
                             <div class="flex items-center">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                                     <i class="fas fa-shopping-cart text-white text-xl"></i>
                                 </div>
-                                <div class="min-w-0 flex-1">
+                                <div>
                                     <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Transaksi</p>
                                     <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $transaksiHariIni }}</p>
                                 </div>
@@ -155,35 +213,47 @@
                         </div>
 
                         <!-- Total Penjualan -->
-                        <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 hover:shadow-md transition-shadow">
+                        <div
+                            class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 hover:shadow-md transition-shadow">
                             <div class="flex items-center">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                                     <i class="fas fa-money-bill-wave text-white text-xl"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Penjualan</p>
-                                    <p class="text-lg sm:text-xl font-bold text-gray-800 mt-1 break-words">Rp {{ number_format($totalPenjualan, 0, ',', '.') }}</p>
+                                    <p class="text-lg sm:text-xl font-bold text-gray-800 mt-1 break-words">Rp
+                                        {{ number_format($totalPenjualanAktif, 0, ',', '.') }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Saldo Saat Ini -->
-                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200 hover:shadow-md transition-shadow">
+                        <!-- Estimasi Saldo Akhir -->
+                        <div
+                            class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200 hover:shadow-md transition-shadow">
                             <div class="flex items-center">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                                     <i class="fas fa-wallet text-white text-xl"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-xs sm:text-sm text-gray-600 font-medium">Saldo Kasir</p>
-                                    <p class="text-lg sm:text-xl font-bold text-gray-800 mt-1 break-words">Rp {{ number_format($saldoSaatIni, 0, ',', '.') }}</p>
+                                    <p class="text-xs sm:text-sm text-gray-600 font-medium flex items-center gap-1">
+                                        Estimasi Saldo Akhir
+                                        <span
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                                            <i class="fas fa-robot mr-1 text-xs"></i>Otomatis
+                                        </span>
+                                    </p>
+                                    <p class="text-lg sm:text-xl font-bold text-gray-800 mt-1 break-words">Rp
+                                        {{ number_format($saldoEstimasi, 0, ',', '.') }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 @else
-                    <!-- Empty State -->
                     <div class="text-center py-10 sm:py-12">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <div
+                            class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-chart-line text-4xl sm:text-5xl text-gray-400"></i>
                         </div>
                         <p class="text-gray-500 font-medium text-sm sm:text-base">Buka kasir untuk melihat statistik</p>
@@ -193,10 +263,177 @@
             </div>
         </div>
 
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- PENGATURAN AUTO-CLOSE KASIR (Khusus Owner)              -->
+        <!-- ════════════════════════════════════════════════════════ -->
+        @if (auth()->user()->role_user === 'owner')
+            @php
+                $setting = DB::table('settings')->first();
+                $autoCloseAktif = $setting && isset($setting->auto_close_kasir) && $setting->auto_close_kasir;
+                $autoCloseTime = $setting && isset($setting->auto_close_time) ? $setting->auto_close_time : '23:59';
+            @endphp
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center mb-4 sm:mb-6">
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                        <i class="fas fa-robot text-white text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800">Pengaturan Auto-Close Kasir</h2>
+                        <p class="text-xs sm:text-sm text-gray-500">Atur waktu tutup kasir otomatis setiap hari</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    {{-- Kiri: Form Setting --}}
+                    <div>
+                        <form id="formAutoClose">
+                            @csrf
+
+                            {{-- Toggle Aktif/Nonaktif --}}
+                            <div
+                                class="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-9 h-9 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-power-off text-indigo-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">Aktifkan Auto-Close</p>
+                                        <p class="text-xs text-gray-500">Tutup kasir otomatis setiap hari</p>
+                                    </div>
+                                </div>
+                                {{-- Toggle Switch --}}
+                                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-3">
+                                    <input type="checkbox" id="auto_close_kasir" name="auto_close_kasir" value="1"
+                                        class="sr-only peer" {{ $autoCloseAktif ? 'checked' : '' }}>
+                                    <div
+                                        class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300
+                                        rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white
+                                        after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white
+                                        after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all
+                                        peer-checked:bg-indigo-600">
+                                    </div>
+                                </label>
+                            </div>
+
+                            {{-- Input Waktu --}}
+                            <div id="wrapperWaktu"
+                                class="transition-all {{ $autoCloseAktif ? '' : 'opacity-50 pointer-events-none' }}">
+                                <label class="flex items-center text-gray-700 font-semibold mb-2 text-sm">
+                                    <div
+                                        class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-2 shadow-md flex-shrink-0">
+                                        <i class="fas fa-clock text-white text-xs"></i>
+                                    </div>
+                                    Waktu Auto-Close
+                                </label>
+                                <input type="time" id="auto_close_time" name="auto_close_time"
+                                    value="{{ $autoCloseTime }}"
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:outline-none transition-all text-gray-800 text-sm font-semibold">
+                                <p class="text-gray-500 text-xs mt-2 flex items-start gap-1">
+                                    <i class="fas fa-info-circle text-indigo-500 mt-0.5 flex-shrink-0"></i>
+                                    Kasir aktif akan ditutup otomatis setiap hari pada jam ini
+                                </p>
+                            </div>
+
+                            {{-- Tombol Simpan --}}
+                            <button type="submit"
+                                class="mt-4 w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                                <i class="fas fa-save mr-2"></i>Simpan Pengaturan
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Kanan: Info Status --}}
+                    <div class="space-y-3">
+                        {{-- Status saat ini --}}
+                        <div
+                            class="{{ $autoCloseAktif ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200' : 'bg-gray-50 border-gray-200' }} border rounded-xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div
+                                    class="w-9 h-9 {{ $autoCloseAktif ? 'bg-indigo-100' : 'bg-gray-100' }} rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i
+                                        class="fas fa-{{ $autoCloseAktif ? 'check-circle text-indigo-600' : 'times-circle text-gray-400' }} text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">Status Auto-Close</p>
+                                    <p
+                                        class="text-xs {{ $autoCloseAktif ? 'text-indigo-600' : 'text-gray-400' }} font-medium">
+                                        {{ $autoCloseAktif ? 'Aktif' : 'Tidak Aktif' }}
+                                    </p>
+                                </div>
+                            </div>
+                            @if ($autoCloseAktif)
+                                <div class="bg-white rounded-lg p-3 border border-indigo-100">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-600">Jadwal Harian</span>
+                                        <span class="text-sm font-bold text-indigo-700">
+                                            <i class="fas fa-clock mr-1 text-xs"></i>{{ $autoCloseTime }} WIB
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Riwayat terakhir auto-close --}}
+                        @php
+                            $logAutoClose = DB::table('kasir')
+                                ->where('is_auto_closed', true)
+                                ->orderByDesc('waktu_close')
+                                ->first();
+                        @endphp
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                            <p class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                                <i class="fas fa-history text-gray-400"></i>
+                                Riwayat Auto-Close Terakhir
+                            </p>
+                            @if ($logAutoClose)
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-500">Tanggal</span>
+                                        <span class="text-xs font-semibold text-gray-700">
+                                            {{ \Carbon\Carbon::parse($logAutoClose->waktu_close)->setTimezone('Asia/Jakarta')->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-500">Jam Tutup</span>
+                                        <span class="text-xs font-semibold text-gray-700">
+                                            {{ \Carbon\Carbon::parse($logAutoClose->waktu_close)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-500">Saldo Akhir</span>
+                                        <span class="text-xs font-bold text-emerald-600">
+                                            Rp {{ number_format($logAutoClose->saldo_akhir, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-xs text-gray-400 italic">Belum ada riwayat auto-close</p>
+                            @endif
+                        </div>
+
+                        {{-- Info cara kerja --}}
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                            <p class="text-xs text-amber-700 flex items-start gap-1.5">
+                                <i class="fas fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
+                                <span>Agar auto-close berjalan, pastikan <strong>Laravel Scheduler</strong> sudah aktif di
+                                    server dengan perintah:<br>
+                                    <code class="bg-amber-100 px-1 rounded text-xs font-mono mt-1 inline-block">* * * * *
+                                        php artisan schedule:run</code></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Riwayat Kasir -->
         <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow">
             <div class="flex items-center mb-4 sm:mb-6">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
+                <div
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
                     <i class="fas fa-history text-white text-lg sm:text-xl"></i>
                 </div>
                 <h2 class="text-lg sm:text-xl font-bold text-gray-800">Riwayat Kasir</h2>
@@ -205,36 +442,50 @@
             <!-- Mobile: Card View -->
             <div class="block lg:hidden space-y-3">
                 @forelse ($riwayatKasir as $index => $kasir)
-                    <div class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
+                    @php
+                        $waktuOpenCard = $kasir->waktu_open->setTimezone('Asia/Jakarta');
+                        $waktuCloseCard = $kasir->waktu_close ? $kasir->waktu_close->setTimezone('Asia/Jakarta') : null;
+                    @endphp
+                    <div
+                        class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center">
-                                <span class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-sm mr-2">
+                                <span
+                                    class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-sm mr-2">
                                     {{ ($riwayatKasir->currentPage() - 1) * $riwayatKasir->perPage() + $index + 1 }}
                                 </span>
                                 <div>
-                                    <p class="text-sm font-semibold text-gray-800">{{ $kasir->waktu_open->format('d/m/Y') }}</p>
-                                    <p class="text-xs text-gray-500">{{ $kasir->waktu_open->format('H:i') }} - {{ $kasir->waktu_close ? $kasir->waktu_close->format('H:i') : 'Aktif' }}</p>
+                                    <p class="text-sm font-semibold text-gray-800">
+                                        {{ $waktuOpenCard->format('d/m/Y') }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ $waktuOpenCard->format('H:i') }} -
+                                        {{ $waktuCloseCard ? $waktuCloseCard->format('H:i') : 'Aktif' }}
+                                        @if (!is_null($kasir->waktu_close) && $kasir->is_auto_closed)
+                                            <span class="ml-1 text-blue-500"><i class="fas fa-robot"></i></span>
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
-                            @if ($kasir->status === 'open')
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border border-emerald-200">
-                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>
-                                    Aktif
+                            @if (is_null($kasir->waktu_close))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>Aktif
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
-                                    <i class="fas fa-check-circle text-gray-500 mr-1 text-xs"></i>
-                                    Tutup
+                                <span
+                                    class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-700 border border-gray-300">
+                                    <i class="fas fa-check-circle text-gray-500 mr-1 text-xs"></i>Tutup
                                 </span>
                             @endif
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="bg-white rounded-lg p-2.5 border border-gray-200">
                                 <p class="text-xs text-gray-500 mb-0.5">Modal</p>
-                                <p class="text-sm font-bold text-gray-800">Rp {{ number_format($kasir->modal_awal, 0, ',', '.') }}</p>
+                                <p class="text-sm font-bold text-gray-800">Rp
+                                    {{ number_format($kasir->modal_awal, 0, ',', '.') }}</p>
                             </div>
                             <div class="bg-white rounded-lg p-2.5 border border-gray-200">
-                                <p class="text-xs text-gray-500 mb-0.5">Saldo</p>
+                                <p class="text-xs text-gray-500 mb-0.5">Saldo Akhir</p>
                                 <p class="text-sm font-bold text-emerald-600">
                                     @if ($kasir->saldo_akhir)
                                         Rp {{ number_format($kasir->saldo_akhir, 0, ',', '.') }}
@@ -247,11 +498,11 @@
                     </div>
                 @empty
                     <div class="text-center py-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <div
+                            class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-inbox text-3xl text-gray-400"></i>
                         </div>
                         <p class="text-gray-500 font-medium text-sm">Belum ada riwayat kasir</p>
-                        <p class="text-gray-400 text-xs mt-1">Riwayat akan muncul setelah kasir dibuka</p>
                     </div>
                 @endforelse
             </div>
@@ -261,53 +512,75 @@
                 <table class="min-w-full">
                     <thead>
                         <tr class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buka</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tutup</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Modal</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Saldo</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Tanggal</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buka
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tutup
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Modal
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Saldo
+                                Akhir</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
                         @forelse ($riwayatKasir as $index => $kasir)
+                            @php
+                                $waktuOpenTbl = $kasir->waktu_open->setTimezone('Asia/Jakarta');
+                                $waktuCloseTbl = $kasir->waktu_close ? $kasir->waktu_close->setTimezone('Asia/Jakarta') : null;
+                            @endphp
                             <tr class="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 transition-colors">
-                                <td class="px-4 py-4 text-sm font-medium text-gray-800">{{ ($riwayatKasir->currentPage() - 1) * $riwayatKasir->perPage() + $index + 1 }}</td>
+                                <td class="px-4 py-4 text-sm font-medium text-gray-800">
+                                    {{ ($riwayatKasir->currentPage() - 1) * $riwayatKasir->perPage() + $index + 1 }}
+                                </td>
                                 <td class="px-4 py-4 text-sm text-gray-700">
                                     <i class="fas fa-calendar text-gray-400 mr-2 text-xs"></i>
-                                    {{ $kasir->waktu_open->format('d/m/Y') }}
+                                    {{ $waktuOpenTbl->format('d/m/Y') }}
                                 </td>
                                 <td class="px-4 py-4 text-sm text-gray-700">
                                     <i class="fas fa-clock text-green-500 mr-2 text-xs"></i>
-                                    {{ $kasir->waktu_open->format('H:i') }}
+                                    {{ $waktuOpenTbl->format('H:i') }} WIB
                                 </td>
                                 <td class="px-4 py-4 text-sm text-gray-700">
-                                    @if ($kasir->waktu_close)
+                                    @if ($waktuCloseTbl)
                                         <i class="fas fa-clock text-red-500 mr-2 text-xs"></i>
-                                        {{ $kasir->waktu_close->format('H:i') }}
+                                        {{ $waktuCloseTbl->format('H:i') }} WIB
+                                        @if ($kasir->is_auto_closed)
+                                            <span
+                                                class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                                                <i class="fas fa-robot mr-1 text-xs"></i>Auto
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-4 text-sm font-bold text-gray-800">Rp {{ number_format($kasir->modal_awal, 0, ',', '.') }}</td>
+                                <td class="px-4 py-4 text-sm font-bold text-gray-800">
+                                    Rp {{ number_format($kasir->modal_awal, 0, ',', '.') }}
+                                </td>
                                 <td class="px-4 py-4 text-sm font-bold text-emerald-600">
                                     @if ($kasir->saldo_akhir)
                                         Rp {{ number_format($kasir->saldo_akhir, 0, ',', '.') }}
                                     @else
-                                        <span class="text-gray-400">-</span>
+                                        <span class="text-gray-400 font-normal">-</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-4 text-center">
-                                    @if ($kasir->status === 'open')
-                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border border-emerald-200">
-                                            <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-                                            Aktif
+                                    @if (is_null($kasir->waktu_close))
+                                        <span
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                            <span
+                                                class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>Aktif
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
-                                            <i class="fas fa-check-circle text-gray-500 mr-1.5 text-xs"></i>
-                                            Ditutup
+                                        <span
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700 border border-gray-300">
+                                            <i class="fas fa-check-circle text-gray-500 mr-1.5 text-xs"></i>Ditutup
                                         </span>
                                     @endif
                                 </td>
@@ -316,7 +589,8 @@
                             <tr>
                                 <td colspan="7" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center">
-                                        <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-3">
+                                        <div
+                                            class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-3">
                                             <i class="fas fa-inbox text-4xl text-gray-400"></i>
                                         </div>
                                         <p class="text-gray-500 font-medium">Belum ada riwayat kasir</p>
@@ -329,7 +603,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             @if ($riwayatKasir->hasPages())
                 <div class="mt-4 sm:mt-6 border-t pt-4">
                     {{ $riwayatKasir->links() }}
@@ -342,226 +615,381 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Form Buka Kasir
+        const rupiah = (n) => parseFloat(n).toLocaleString('id-ID');
+        const csrfToken = () => document.querySelector('meta[name="csrf-token"]').content;
+        const swalClass = {
+            popup: 'rounded-2xl',
+            title: 'text-xl font-bold text-gray-800',
+            confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
+            cancelButton: 'px-6 py-3 rounded-xl font-semibold'
+        };
+
+        // ─── Tutup kasir request ─────────────────────────────────────
+        async function tutupKasirRequest(kasirId, isAuto = false) {
+            const response = await fetch(`/kasir/${kasirId}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                body: JSON.stringify({ is_auto: isAuto })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Gagal menutup kasir');
+            return data;
+        }
+
+        // ─── Ringkasan konfirmasi tutup ──────────────────────────────
+        function ringkasanHTML(modalAwal, totalJual, saldoEstimasi) {
+            return `
+                <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-left text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Modal Awal:</span>
+                        <span class="font-bold text-gray-800">Rp ${rupiah(modalAwal)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Penjualan:</span>
+                        <span class="font-bold text-emerald-600">Rp ${rupiah(totalJual)}</span>
+                    </div>
+                    <div class="flex justify-between border-t pt-2">
+                        <span class="text-gray-700 font-semibold">Saldo Akhir (Otomatis):</span>
+                        <span class="font-bold text-purple-600">Rp ${rupiah(saldoEstimasi)}</span>
+                    </div>
+                </div>
+                <div class="flex items-start gap-2 bg-blue-50 rounded-xl p-3 text-left">
+                    <i class="fas fa-robot text-blue-500 flex-shrink-0 mt-0.5 text-sm"></i>
+                    <p class="text-xs text-blue-700">Saldo akhir dihitung otomatis. Pastikan semua transaksi sudah selesai.</p>
+                </div>`;
+        }
+
+        // ─── Tampil hasil tutup ──────────────────────────────────────
+        async function tampilHasilTutup(data) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Kasir Ditutup!',
+                html: `
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-2 mb-3 text-left text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Modal Awal:</span>
+                            <span class="font-bold">Rp ${rupiah(data.modal_awal)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Total Penjualan:</span>
+                            <span class="font-bold text-emerald-600">Rp ${rupiah(data.total_penjualan)}</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2">
+                            <span class="text-gray-700 font-semibold">Saldo Akhir:</span>
+                            <span class="font-bold text-purple-600">Rp ${rupiah(data.saldo_akhir)}</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm">${data.message}</p>`,
+                confirmButtonColor: '#10b981',
+                customClass: swalClass,
+                buttonsStyling: false
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FORM BUKA KASIR
+        // ═══════════════════════════════════════════════════════════════
         const formBukaKasir = document.getElementById('formBukaKasir');
         if (formBukaKasir) {
             formBukaKasir.addEventListener('submit', async function(e) {
                 e.preventDefault();
-
                 const modalAwal = document.getElementById('modal_awal').value;
-
                 if (!modalAwal || modalAwal <= 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Perhatian!',
                         text: 'Masukkan modal awal yang valid',
                         confirmButtonColor: '#f59e0b',
-                        customClass: {
-                            popup: 'rounded-2xl',
-                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
-                        },
+                        customClass: swalClass,
                         buttonsStyling: false
                     });
                     return;
                 }
-
-                const result = await Swal.fire({
+                const confirm = await Swal.fire({
                     title: 'Buka Kasir?',
-                    html: `
-                        <div class="text-left space-y-2 bg-gray-50 rounded-xl p-4 mb-4">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Modal Awal:</span>
-                                <span class="font-bold text-emerald-600">Rp ${parseInt(modalAwal).toLocaleString('id-ID')}</span>
+                    html: `<div class="bg-gray-50 rounded-xl p-4 mb-4 text-left text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Modal Awal:</span>
+                                    <span class="font-bold text-emerald-600">Rp ${rupiah(modalAwal)}</span>
+                                </div>
                             </div>
-                        </div>
-                        <p class="text-gray-600">Pastikan modal awal sudah sesuai dengan uang di kasir</p>
-                    `,
+                            <p class="text-gray-600 text-sm">Pastikan modal awal sesuai uang di laci kasir</p>`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#10b981',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: '<i class="fas fa-unlock-alt mr-2"></i>Ya, Buka Kasir',
                     cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        title: 'text-xl font-bold text-gray-800',
-                        confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
-                        cancelButton: 'px-6 py-3 rounded-xl font-semibold'
-                    },
+                    customClass: swalClass,
                     buttonsStyling: false
                 });
-
-                if (!result.isConfirmed) return;
-
+                if (!confirm.isConfirmed) return;
                 try {
-                    const response = await fetch('{{ route('kasir.open') }}', {
+                    const res = await fetch('{{ route('kasir.open') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': csrfToken()
                         },
-                        body: JSON.stringify({
-                            modal_awal: modalAwal
-                        })
+                        body: JSON.stringify({ modal_awal: modalAwal })
                     });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.success) {
+                    const data = await res.json();
+                    if (res.ok && data.success) {
                         await Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
                             text: data.message || 'Kasir berhasil dibuka',
                             confirmButtonColor: '#10b981',
-                            customClass: {
-                                popup: 'rounded-2xl',
-                                confirmButton: 'px-6 py-3 rounded-xl font-semibold'
-                            },
+                            customClass: swalClass,
                             buttonsStyling: false
                         });
                         window.location.reload();
-                    } else {
-                        throw new Error(data.message || 'Gagal membuka kasir');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
+                    } else throw new Error(data.message || 'Gagal membuka kasir');
+                } catch (err) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal!',
-                        text: error.message || 'Terjadi kesalahan saat membuka kasir',
+                        text: err.message,
                         confirmButtonColor: '#ef4444',
-                        customClass: {
-                            popup: 'rounded-2xl',
-                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
-                        },
+                        customClass: swalClass,
                         buttonsStyling: false
                     });
                 }
             });
         }
 
-        // Button Tutup Kasir - DENGAN PERBAIKAN VALIDASI
+        // ═══════════════════════════════════════════════════════════════
+        // TOMBOL TUTUP KASIR MANUAL
+        // ═══════════════════════════════════════════════════════════════
         const btnTutupKasir = document.getElementById('btnTutupKasir');
         if (btnTutupKasir) {
             btnTutupKasir.addEventListener('click', async function() {
-                const kasirId = this.getAttribute('data-kasir-id');
-
-                const result = await Swal.fire({
+                const kasirId = this.dataset.kasirId;
+                const modalAwal = parseFloat(this.dataset.modalAwal);
+                const totalJual = parseFloat(this.dataset.totalPenjualan);
+                const saldoEstimasi = parseFloat(this.dataset.saldoEstimasi);
+                const confirm = await Swal.fire({
                     title: 'Tutup Kasir?',
-                    html: `
-                        <div class="bg-amber-50 rounded-xl p-4 mb-4">
-                            <i class="fas fa-exclamation-triangle text-amber-500 text-2xl mb-2"></i>
-                            <p class="text-gray-700 font-medium">Pastikan semua transaksi sudah selesai</p>
-                        </div>
-                        <p class="text-gray-600 text-sm">Anda akan diminta memasukkan saldo akhir kasir</p>
-                    `,
+                    html: ringkasanHTML(modalAwal, totalJual, saldoEstimasi),
                     icon: 'warning',
-                    input: 'number',
-                    inputLabel: 'Saldo Akhir Kasir',
-                    inputPlaceholder: 'Masukkan total uang di kasir',
-                    inputAttributes: {
-                        min: 1,  // Minimal 1, tidak boleh 0
-                        step: 1,  // DIUBAH dari 1000 ke 1 untuk fleksibilitas
-                        required: true
-                    },
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: '<i class="fas fa-lock mr-2"></i>Ya, Tutup Kasir',
                     cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        title: 'text-xl font-bold text-gray-800',
-                        input: 'rounded-xl border-2 border-gray-300 px-4 py-3',
-                        confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg',
-                        cancelButton: 'px-6 py-3 rounded-xl font-semibold'
-                    },
-                    buttonsStyling: false,
-                    preConfirm: (saldoAkhir) => {
-                        // PERBAIKAN VALIDASI
-                        const nominal = parseFloat(saldoAkhir);
-                        
-                        if (isNaN(nominal)) {
-                            Swal.showValidationMessage('Masukkan angka yang valid');
-                            return false;
-                        }
-                        
-                        if (nominal <= 0) {
-                            Swal.showValidationMessage('Saldo akhir harus lebih dari 0');
-                            return false;
-                        }
-                        
-                        return nominal;
-                    }
+                    customClass: swalClass,
+                    buttonsStyling: false
                 });
-
-                if (!result.isConfirmed) return;
-
-                const saldoAkhir = result.value;
-
+                if (!confirm.isConfirmed) return;
                 try {
-                    const response = await fetch(`/kasir/${kasirId}/close`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            saldo_akhir: saldoAkhir
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.success) {
-                        await Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            html: `
-                                <div class="bg-gray-50 rounded-xl p-4 space-y-2 mb-4">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Modal Awal:</span>
-                                        <span class="font-bold">Rp ${parseFloat(data.modal_awal).toLocaleString('id-ID')}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Saldo Akhir:</span>
-                                        <span class="font-bold">Rp ${parseFloat(saldoAkhir).toLocaleString('id-ID')}</span>
-                                    </div>
-                                    <div class="flex justify-between border-t pt-2">
-                                        <span class="text-gray-600 font-semibold">Selisih:</span>
-                                        <span class="font-bold text-emerald-600">Rp ${parseFloat(data.selisih || (saldoAkhir - data.modal_awal)).toLocaleString('id-ID')}</span>
-                                    </div>
-                                </div>
-                                <p class="text-gray-600">${data.message || 'Kasir berhasil ditutup'}</p>
-                            `,
-                            confirmButtonColor: '#10b981',
-                            customClass: {
-                                popup: 'rounded-2xl',
-                                confirmButton: 'px-6 py-3 rounded-xl font-semibold'
-                            },
-                            buttonsStyling: false
-                        });
-                        window.location.reload();
-                    } else {
-                        throw new Error(data.message || 'Gagal menutup kasir');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
+                    const data = await tutupKasirRequest(kasirId, false);
+                    await tampilHasilTutup(data);
+                    window.location.reload();
+                } catch (err) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal!',
-                        text: error.message || 'Terjadi kesalahan saat menutup kasir',
+                        text: err.message,
                         confirmButtonColor: '#ef4444',
-                        customClass: {
-                            popup: 'rounded-2xl',
-                            confirmButton: 'px-6 py-3 rounded-xl font-semibold'
-                        },
+                        customClass: swalClass,
                         buttonsStyling: false
                     });
                 }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TOMBOL AUTO-CLOSE ALL (Owner)
+        // ═══════════════════════════════════════════════════════════════
+        const btnAutoCloseAll = document.getElementById('btnAutoCloseAll');
+        if (btnAutoCloseAll) {
+            btnAutoCloseAll.addEventListener('click', async function() {
+                const confirm = await Swal.fire({
+                    title: 'Tutup Semua Kasir Otomatis?',
+                    html: `<div class="flex items-start gap-3 bg-amber-50 rounded-xl p-4 mb-4 text-left">
+                                <i class="fas fa-exclamation-triangle text-amber-500 text-xl flex-shrink-0 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-semibold text-amber-800">Tindakan ini akan menutup semua sesi kasir aktif.</p>
+                                    <p class="text-xs text-amber-600 mt-1">Saldo akhir tiap sesi dihitung otomatis: Modal Awal + Total Penjualan.</p>
+                                </div>
+                            </div>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3b82f6',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: '<i class="fas fa-robot mr-2"></i>Ya, Tutup Semua',
+                    cancelButtonText: '<i class="fas fa-times mr-2"></i>Batal',
+                    customClass: swalClass,
+                    buttonsStyling: false
+                });
+                if (!confirm.isConfirmed) return;
+                try {
+                    const res = await fetch('{{ route('kasir.auto-close-all') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken()
+                        }
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Selesai!',
+                            text: data.message,
+                            confirmButtonColor: '#10b981',
+                            customClass: swalClass,
+                            buttonsStyling: false
+                        });
+                        window.location.reload();
+                    } else throw new Error(data.message || 'Gagal menutup kasir');
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: err.message,
+                        confirmButtonColor: '#ef4444',
+                        customClass: swalClass,
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FORM PENGATURAN AUTO-CLOSE (Owner)
+        // ═══════════════════════════════════════════════════════════════
+        const toggleAutoClose = document.getElementById('auto_close_kasir');
+        const wrapperWaktu = document.getElementById('wrapperWaktu');
+        const inputWaktu = document.getElementById('auto_close_time');
+
+        if (toggleAutoClose) {
+            toggleAutoClose.addEventListener('change', function() {
+                if (this.checked) {
+                    wrapperWaktu.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    wrapperWaktu.classList.add('opacity-50', 'pointer-events-none');
+                }
+            });
+        }
+
+        const formAutoClose = document.getElementById('formAutoClose');
+        if (formAutoClose) {
+            formAutoClose.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const payload = {
+                    auto_close_kasir: toggleAutoClose.checked ? 1 : 0,
+                    auto_close_time: inputWaktu.value || '23:59',
+                };
+                try {
+                    const res = await fetch('{{ route('kasir.auto-close.setting') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken()
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Tersimpan!',
+                            html: `<p class="text-gray-600 text-sm">${data.message}</p>
+                                    ${payload.auto_close_kasir
+                                        ? `<div class="mt-3 bg-indigo-50 rounded-xl p-3 text-sm font-semibold text-indigo-700">
+                                                <i class="fas fa-clock mr-1"></i>Jadwal: Setiap hari pukul ${payload.auto_close_time} WIB
+                                               </div>`
+                                        : '<p class="text-xs text-gray-400 mt-2">Auto-close kasir dinonaktifkan.</p>'
+                                    }`,
+                            confirmButtonColor: '#6366f1',
+                            customClass: swalClass,
+                            buttonsStyling: false
+                        });
+                        window.location.reload();
+                    } else throw new Error(data.message || 'Gagal menyimpan');
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: err.message,
+                        confirmButtonColor: '#ef4444',
+                        customClass: swalClass,
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // JAM SEKARANG & DURASI KASIR — Realtime WIB (Asia/Jakarta)
+        // ═══════════════════════════════════════════════════════════════
+        @if ($kasirAktif)
+            (function () {
+                /**
+                 * PERBAIKAN UTAMA:
+                 * Gunakan Unix timestamp (detik) dari server → kalikan 1000 → milidetik.
+                 * Cara ini bebas dari masalah parsing timezone string antar browser.
+                 * Server HARUS dikonfigurasi timezone = Asia/Jakarta di config/app.php.
+                 */
+                const waktuBuka = new Date({{ $kasirAktif->waktu_open->setTimezone('Asia/Jakarta')->timestamp }} * 1000);
+
+                const elJam    = document.getElementById('jamSekarang');
+                const elDurasi = document.getElementById('durasiKasir');
+
+                function pad(n) {
+                    return String(n).padStart(2, '0');
+                }
+
+                function formatDurasi(totalDetik) {
+                    const jam   = Math.floor(totalDetik / 3600);
+                    const menit = Math.floor((totalDetik % 3600) / 60);
+                    const detik = totalDetik % 60;
+
+                    if (jam > 0) {
+                        return `${jam} jam ${pad(menit)} menit`;
+                    } else if (menit > 0) {
+                        return `${menit} menit ${pad(detik)} detik`;
+                    } else {
+                        return `${detik} detik`;
+                    }
+                }
+
+                function tick() {
+                    // Ambil waktu sekarang di WIB menggunakan Intl API
+                    const sekarang = new Date();
+
+                    // Format jam WIB menggunakan toLocaleTimeString — akurat di semua browser
+                    const jamWIB = sekarang.toLocaleTimeString('id-ID', {
+                        timeZone: 'Asia/Jakarta',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+
+                    if (elJam) {
+                        elJam.textContent = jamWIB + ' WIB';
+                    }
+
+                    // Hitung durasi sejak kasir dibuka
+                    const selisihDetik = Math.floor((sekarang - waktuBuka) / 1000);
+                    if (elDurasi && selisihDetik >= 0) {
+                        elDurasi.textContent = formatDurasi(selisihDetik);
+                    }
+                }
+
+                // Jalankan langsung lalu setiap detik
+                tick();
+                setInterval(tick, 1000);
+            })();
+        @endif
     </script>
 @endpush

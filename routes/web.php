@@ -39,10 +39,16 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Kasir Management
+    // ─── Kasir Management ────────────────────────────────────────
     Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.index');
     Route::post('/kasir/open', [KasirController::class, 'open'])->name('kasir.open');
     Route::post('/kasir/{id}/close', [KasirController::class, 'close'])->name('kasir.close');
+
+    // Kasir — Owner only
+    Route::middleware(CheckRole::class . ':owner')->group(function () {
+        Route::post('/kasir/auto-close-all', [KasirController::class, 'autoCloseAll'])->name('kasir.auto-close-all');
+        Route::post('/kasir/auto-close/setting', [KasirController::class, 'updateAutoCloseSetting'])->name('kasir.auto-close.setting');
+    });
 
     // Transaksi Routes
     Route::prefix('transaksi')->name('transaksi.')->group(function () {
@@ -87,7 +93,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [PelangganController::class, 'update'])->name('update');
         Route::delete('/{id}', [PelangganController::class, 'destroy'])->name('destroy');
     });
-    
+
     // Routes Piutang (Accessible by ALL authenticated users - Kasir & Owner)
     Route::prefix('piutang')->name('piutang.')->group(function () {
         Route::get('/', [PiutangController::class, 'index'])->name('index');
@@ -172,7 +178,7 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
 
     // Kategori API
     Route::get('/kategori/list', [KategoriController::class, 'list'])->name('kategori.list');
-    
+
     // Pelanggan API
     Route::get('/pelanggan/search', [PelangganController::class, 'search'])->name('pelanggan.search');
 
