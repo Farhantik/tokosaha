@@ -266,7 +266,10 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -349,12 +352,18 @@
         }
 
         @keyframes pulse-red {
+<<<<<<< HEAD
 
             0%,
             100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
             }
 
+=======
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
             50% {
                 box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
             }
@@ -508,7 +517,11 @@
                         <i class="fas fa-store text-white text-base"></i>
                     </div>
                     <div class="logo-text">
+<<<<<<< HEAD
                         <div class="text-white text-base font-bold leading-tight sidebar-text">WPOS</div>
+=======
+                        <div class="text-white text-base font-bold leading-tight sidebar-text">Toko Sahabat</div>
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                         <div class="text-emerald-300 text-xs font-medium sidebar-text">POS System</div>
                     </div>
                 </a>
@@ -516,6 +529,7 @@
 
             <!-- Navigation - Scrollable -->
             <nav class="flex-1 overflow-y-auto py-2 nav-scroll-area">
+<<<<<<< HEAD
 
                 @if (Auth::user()->isOwner())
                     <!-- Dashboard - Owner Only -->
@@ -525,6 +539,22 @@
                         <span class="sidebar-text">Dashboard</span>
                     </a>
                 @endif
+=======
+                <!-- Main Menu -->
+                <a href="{{ route('dashboard') }}"
+                    class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                    title="Dashboard">
+                    <i class="fas fa-home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+
+                <a href="{{ route('kasir.index') }}"
+                    class="nav-link {{ request()->routeIs('kasir.*') ? 'active' : '' }}"
+                    title="Kasir">
+                    <i class="fas fa-cash-register"></i>
+                    <span class="sidebar-text">Kasir</span>
+                </a>
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
 
                 <!-- Kasir - Semua Role (tapi tampil di nav hanya Owner) -->
                 @if (Auth::user()->isOwner())
@@ -537,11 +567,17 @@
 
                 <!-- Transaksi - Semua Role -->
                 <a href="{{ route('transaksi.index') }}"
+<<<<<<< HEAD
                     class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}" title="Transaksi">
+=======
+                    class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}"
+                    title="Transaksi">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                     <i class="fas fa-receipt"></i>
                     <span class="sidebar-text">Transaksi</span>
                 </a>
 
+<<<<<<< HEAD
 
 
                 <!-- Profile Menu - Sembunyikan dari Kasir -->
@@ -556,6 +592,28 @@
                 <!-- Settings Menu -->
                 <a href="{{ route('settings.index') }}"
                     class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" title="Pengaturan">
+=======
+                <!-- Laporan Penjualan - Accessible by All Users -->
+                <a href="{{ route('laporan.index') }}"
+                    class="nav-link {{ request()->routeIs('laporan.*') && !request()->routeIs('keuangan.*') ? 'active' : '' }}"
+                    title="Laporan Penjualan">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="sidebar-text">Laporan Penjualan</span>
+                </a>
+
+                <!-- Profile Menu -->
+                <a href="{{ route('users.profile') }}"
+                    class="nav-link {{ request()->routeIs('users.profile') ? 'active' : '' }}"
+                    title="Profil Saya">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="sidebar-text">Profil Saya</span>
+                </a>
+                
+                <!-- Settings Menu -->
+                <a href="{{ route('settings.index') }}"
+                    class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+                    title="Pengaturan">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                     <i class="fas fa-cog"></i>
                     <span class="sidebar-text">Pengaturan</span>
                 </a>
@@ -571,13 +629,23 @@
                     </div>
 
                     <a href="{{ route('produk.index') }}"
+<<<<<<< HEAD
                         class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}" title="Produk">
+=======
+                        class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}"
+                        title="Produk">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                         <i class="fas fa-box"></i>
                         <span class="sidebar-text">Produk</span>
                     </a>
 
                     <a href="{{ route('suppliers.index') }}"
+<<<<<<< HEAD
                         class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}" title="Supplier">
+=======
+                        class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"
+                        title="Supplier">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                         <i class="fas fa-truck"></i>
                         <span class="sidebar-text">Supplier</span>
                     </a>
@@ -600,7 +668,11 @@
                     <div class="px-4 mt-4 mb-2 section-label">
                         <div class="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center">
                             <i class="fas fa-file-invoice-dollar mr-2"></i>
+<<<<<<< HEAD
                             <span class="sidebar-text">Laporan </span>
+=======
+                            <span class="sidebar-text">Laporan Keuangan</span>
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                         </div>
                     </div>
 
@@ -625,7 +697,11 @@
             </nav>
 
             <!-- User Info - Fixed at bottom (Simple Display) -->
+<<<<<<< HEAD
             {{-- <div class="flex-shrink-0 p-3 border-t border-green-700">
+=======
+            <div class="flex-shrink-0 p-3 border-t border-green-700">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                 <div class="mb-2 flex items-center space-x-2 user-info-compact">
                     <!-- User Photo -->
                     @if (Auth::user()->gambar_user)
@@ -663,7 +739,11 @@
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
             </div> --}}
+=======
+            </div>
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
         </aside>
 
         <!-- Overlay for mobile -->
@@ -702,19 +782,29 @@
                                 </button>
 
                                 <!-- Dropdown Menu -->
+<<<<<<< HEAD
                                 <div id="navUserDropdown"
                                     class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 z-50">
                                     <!-- User Info in Dropdown -->
                                     <div
                                         class="px-4 py-3 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-gray-200">
+=======
+                                <div id="navUserDropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 z-50">
+                                    <!-- User Info in Dropdown -->
+                                    <div class="px-4 py-3 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-gray-200">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                                         <div class="flex items-center space-x-3">
                                             @if (Auth::user()->gambar_user)
                                                 <img src="{{ asset('storage/users/' . Auth::user()->gambar_user) }}"
                                                     alt="{{ Auth::user()->name }}"
                                                     class="w-10 h-10 rounded-full object-cover border-2 border-emerald-300">
                                             @else
+<<<<<<< HEAD
                                                 <div
                                                     class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm border-2 border-emerald-300">
+=======
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm border-2 border-emerald-300">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                                                     {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
                                                 </div>
                                             @endif
@@ -727,14 +817,22 @@
                                                 </div>
                                                 <div class="mt-1">
                                                     @if (Auth::user()->isOwner())
+<<<<<<< HEAD
                                                         <span
                                                             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+=======
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                                                             <i class="fas fa-crown mr-1 text-yellow-500 text-xs"></i>
                                                             Owner
                                                         </span>
                                                     @else
+<<<<<<< HEAD
                                                         <span
                                                             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+=======
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                                                             <i class="fas fa-user mr-1 text-xs"></i>
                                                             Kasir
                                                         </span>
@@ -746,6 +844,7 @@
 
                                     <!-- Menu Items -->
                                     <div class="py-2">
+<<<<<<< HEAD
                                         <a href="{{ route('users.profile') }}"
                                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-emerald-50 transition text-sm group">
                                             <i
@@ -755,6 +854,16 @@
 
                                         <div class="border-t border-gray-200 my-1"></div>
 
+=======
+                                        <a href="{{ route('users.profile') }}" 
+                                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-emerald-50 transition text-sm group">
+                                            <i class="fas fa-user-circle mr-3 text-emerald-600 group-hover:text-emerald-700"></i>
+                                            <span>Lihat Profil</span>
+                                        </a>
+                                        
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                        
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
                                         <form action="{{ route('logout') }}" method="POST">
                                             @csrf
                                             <button type="submit"
@@ -857,7 +966,11 @@
         function toggleSidebarCollapse() {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
             // Save state to localStorage
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebarCollapsed', isCollapsed);
@@ -873,7 +986,11 @@
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('navUserDropdown');
             const userButton = event.target.closest('button[onclick="toggleNavUserDropdown()"]');
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 930047ac1763748d4e7621981cc5da996819a2ec
             if (!userButton && dropdown && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
