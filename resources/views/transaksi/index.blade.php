@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Transaksi - Toko Sahabat')
+@section('title', 'Transaksi - WPOS')
 @section('page-title', 'Transaksi Kasir')
 
 @push('styles')
@@ -39,6 +39,52 @@
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
         }
+
+        .payment-row {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f9fafb;
+        }
+
+        .payment-row .payment-method-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pay-method-btn {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pay-method-btn:hover {
+            border-color: #10b981;
+        }
+
+        .pay-method-btn.active {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .pay-method-btn.active-qris {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+        }
+
+        .pay-method-btn.active-piutang {
+            border-color: #f97316;
+            background: linear-gradient(135deg, #ffedd5, #fed7aa);
+        }
     </style>
 @endpush
 
@@ -51,7 +97,7 @@
 
                 <!-- Title -->
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
-                    <i class="fas fa-cash-register mr-2 text-emerald-600"></i>Transaksi
+                    <i class="fas fa-cash-register mr-2 text-emerald-600"></i>Transaksi Kasir
                 </h1>
 
                 <!-- Right Side Buttons -->
@@ -281,37 +327,26 @@
                             </div>
                         </div>
 
-                        <!-- Tipe Pembayaran -->
+                        <!-- Payment Section Desktop -->
                         <div>
-                            <label class="block text-gray-700 font-semibold mb-3 text-sm">Pilih Metode Pembayaran</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="payment-type-card active bg-white rounded-xl p-3 text-center"
-                                    data-type="tunai">
-                                    <i class="fas fa-money-bill-wave text-3xl text-emerald-600 mb-2"></i>
-                                    <p class="font-bold text-sm text-gray-800">Tunai</p>
-                                    <p class="text-xs text-gray-500">Bayar Langsung</p>
-                                </div>
-                                <div class="payment-type-card bg-white rounded-xl p-3 text-center" data-type="piutang">
-                                    <i class="fas fa-clock text-3xl text-orange-600 mb-2"></i>
-                                    <p class="font-bold text-sm text-gray-800">Piutang</p>
-                                    <p class="text-xs text-gray-500">Bayar Nanti</p>
-                                </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
                             </div>
+                            <div id="paymentRowsDesktop" class="space-y-2">
+                                <!-- Rows injected by JS -->
+                            </div>
+                            <button id="btnAddPaymentDesktop"
+                                class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition hidden">
+                                <i class="fas fa-plus"></i> Tambah Metode Bayar
+                            </button>
                         </div>
 
-                        <!-- Form Tunai -->
-                        <div id="formTunai">
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2 text-sm">Bayar</label>
-                                <input type="number" id="bayar" min="0" step="1000"
-                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
-                                    placeholder="Masukkan jumlah bayar">
-                            </div>
-                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 mt-3">
-                                <div class="flex justify-between text-lg">
-                                    <span class="text-gray-700 font-semibold">Kembalian:</span>
-                                    <span id="kembalian" class="font-bold text-blue-600">Rp 0</span>
-                                </div>
+                        <!-- Kembalian -->
+                        <div id="kembalianSectionDesktop"
+                            class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
+                            <div class="flex justify-between text-lg">
+                                <span class="text-gray-700 font-semibold">Kembalian:</span>
+                                <span id="kembalian" class="font-bold text-blue-600">Rp 0</span>
                             </div>
                         </div>
 
@@ -373,35 +408,29 @@
                         </div>
                     </div>
 
+                    <!-- Payment Section Mobile -->
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-3 text-sm">Pilih Metode Pembayaran</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="payment-type-card active bg-white rounded-xl p-3 text-center" data-type="tunai">
-                                <i class="fas fa-money-bill-wave text-2xl text-emerald-600 mb-1"></i>
-                                <p class="font-bold text-xs text-gray-800">Tunai</p>
-                            </div>
-                            <div class="payment-type-card bg-white rounded-xl p-3 text-center" data-type="piutang">
-                                <i class="fas fa-clock text-2xl text-orange-600 mb-1"></i>
-                                <p class="font-bold text-xs text-gray-800">Piutang</p>
-                            </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
+                        </div>
+                        <div id="paymentRowsMobile" class="space-y-2">
+                            <!-- Rows injected by JS -->
+                        </div>
+                        <button id="btnAddPaymentMobile"
+                            class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition hidden">
+                            <i class="fas fa-plus"></i> Tambah Metode Bayar
+                        </button>
+                    </div>
+
+                    <!-- Kembalian Mobile -->
+                    <div id="kembalianSectionMobile" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-700 font-semibold">Kembalian:</span>
+                            <span id="kembalianMobile" class="font-bold text-blue-600">Rp 0</span>
                         </div>
                     </div>
 
-                    <div id="formTunaiMobile">
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2 text-sm">Bayar</label>
-                            <input type="number" id="bayarMobile" min="0" step="1000"
-                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
-                                placeholder="Masukkan jumlah bayar">
-                        </div>
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 mt-3">
-                            <div class="flex justify-between text-lg">
-                                <span class="text-gray-700 font-semibold">Kembalian:</span>
-                                <span id="kembalianMobile" class="font-bold text-blue-600">Rp 0</span>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- Info Piutang Mobile -->
                     <div id="infoPiutangMobile" class="hidden">
                         <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-3">
                             <div class="flex items-start">
@@ -483,6 +512,9 @@
                             data-status="belum_bayar">Belum Bayar</button>
                         <button
                             class="piutang-filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold text-sm"
+                            data-status="bayar_sebagian">Bayar Sebagian</button>
+                        <button
+                            class="piutang-filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold text-sm"
                             data-status="lunas">Lunas</button>
                     </div>
                     <div id="piutangList" class="space-y-3">
@@ -551,11 +583,12 @@
         (function() {
             'use strict';
 
+            // Payment rows state: array of { method: 'tunai'|'qris'|'piutang', amount: number }
             const AppState = {
                 cart: [],
                 totalBelanja: 0,
                 currentDetailProduct: null,
-                paymentType: 'tunai',
+                paymentRows: [], // [{method, amount}]
                 piutangData: [],
                 currentPiutangFilter: 'all'
             };
@@ -570,15 +603,12 @@
                 cartBadge: document.getElementById('cartBadge'),
                 totalAmount: document.getElementById('totalAmount'),
                 totalAmountMobile: document.getElementById('totalAmountMobile'),
-                paymentTypeCards: document.querySelectorAll('.payment-type-card'),
-                formTunai: document.getElementById('formTunai'),
-                formTunaiMobile: document.getElementById('formTunaiMobile'),
-                infoPiutang: document.getElementById('infoPiutang'),
-                infoPiutangMobile: document.getElementById('infoPiutangMobile'),
-                bayar: document.getElementById('bayar'),
-                bayarMobile: document.getElementById('bayarMobile'),
                 kembalian: document.getElementById('kembalian'),
                 kembalianMobile: document.getElementById('kembalianMobile'),
+                kembalianSectionDesktop: document.getElementById('kembalianSectionDesktop'),
+                kembalianSectionMobile: document.getElementById('kembalianSectionMobile'),
+                infoPiutang: document.getElementById('infoPiutang'),
+                infoPiutangMobile: document.getElementById('infoPiutangMobile'),
                 btnProses: document.getElementById('btnProses'),
                 btnProsesMobile: document.getElementById('btnProsesMobile'),
                 btnReset: document.getElementById('btnReset'),
@@ -598,11 +628,15 @@
                 piutangFilterBtns: document.querySelectorAll('.piutang-filter-btn'),
                 detailPiutangModal: document.getElementById('detailPiutangModal'),
                 closeDetailPiutangBtn: document.getElementById('closeDetailPiutangBtn'),
-                detailPiutangContent: document.getElementById('detailPiutangContent')
+                detailPiutangContent: document.getElementById('detailPiutangContent'),
+                paymentRowsDesktop: document.getElementById('paymentRowsDesktop'),
+                paymentRowsMobile: document.getElementById('paymentRowsMobile'),
+                btnAddPaymentDesktop: document.getElementById('btnAddPaymentDesktop'),
+                btnAddPaymentMobile: document.getElementById('btnAddPaymentMobile'),
             };
 
             const Utils = {
-                formatRupiah: (amount) => `Rp ${parseFloat(amount).toLocaleString('id-ID')}`,
+                formatRupiah: (amount) => `Rp ${parseFloat(amount || 0).toLocaleString('id-ID')}`,
                 showToast: (title, icon = 'success') => {
                     Swal.fire({
                         toast: true,
@@ -633,31 +667,216 @@
                 }
             };
 
+            // ================================================================
+            // PAYMENT MANAGER (multi-method rows)
+            // ================================================================
             const PaymentManager = {
-                init() {
-                    DOM.paymentTypeCards.forEach(card => {
-                        card.addEventListener('click', (e) => this.selectPaymentType(e.currentTarget));
-                    });
-                },
-                selectPaymentType(card) {
-                    const type = card.dataset.type;
-                    DOM.paymentTypeCards.forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    AppState.paymentType = type;
-                    if (type === 'tunai') {
-                        DOM.formTunai?.classList.remove('hidden');
-                        DOM.infoPiutang?.classList.add('hidden');
-                        DOM.formTunaiMobile?.classList.remove('hidden');
-                        DOM.infoPiutangMobile?.classList.add('hidden');
-                    } else {
-                        DOM.formTunai?.classList.add('hidden');
-                        DOM.infoPiutang?.classList.remove('hidden');
-                        DOM.formTunaiMobile?.classList.add('hidden');
-                        DOM.infoPiutangMobile?.classList.remove('hidden');
+                METHODS: {
+                    tunai: {
+                        label: 'Tunai',
+                        icon: 'fa-money-bill-wave',
+                        color: 'emerald',
+                        activeClass: 'active'
+                    },
+                    qris: {
+                        label: 'QRIS',
+                        icon: 'fa-qrcode',
+                        color: 'indigo',
+                        activeClass: 'active-qris'
+                    },
+                    piutang: {
+                        label: 'Piutang',
+                        icon: 'fa-clock',
+                        color: 'orange',
+                        activeClass: 'active-piutang'
                     }
-                    CartManager.calculateKembalian();
+                },
+
+                init() {
+                    // Start with one payment row (tunai)
+                    AppState.paymentRows = [{
+                        method: 'tunai',
+                        amount: 0
+                    }];
+                    this.renderAll();
+
+                    DOM.btnAddPaymentDesktop?.addEventListener('click', () => this.addRow());
+                    DOM.btnAddPaymentMobile?.addEventListener('click', () => this.addRow());
+                },
+
+                addRow() {
+                    // Max 3 rows
+                    if (AppState.paymentRows.length >= 3) return;
+                    // Don't allow piutang as a second row
+                    AppState.paymentRows.push({
+                        method: 'tunai',
+                        amount: 0
+                    });
+                    this.renderAll();
+                    PaymentManager.recalculate();
+                },
+
+                removeRow(index) {
+                    if (AppState.paymentRows.length <= 1) return;
+                    AppState.paymentRows.splice(index, 1);
+                    this.renderAll();
+                    PaymentManager.recalculate();
+                },
+
+                setMethod(index, method) {
+                    AppState.paymentRows[index].method = method;
+                    // If piutang is selected, it must be the ONLY row
+                    if (method === 'piutang') {
+                        AppState.paymentRows = [{
+                            method: 'piutang',
+                            amount: 0
+                        }];
+                    }
+                    this.renderAll();
+                    PaymentManager.recalculate();
+                },
+
+                setAmount(index, value) {
+                    AppState.paymentRows[index].amount = parseFloat(value) || 0;
+                    PaymentManager.recalculate();
+                },
+
+                isPiutangMode() {
+                    return AppState.paymentRows.length === 1 && AppState.paymentRows[0].method === 'piutang';
+                },
+
+                getTotalPaid() {
+                    // QRIS rows are counted as exact (no change from QRIS)
+                    // Tunai rows contribute to paid amount
+                    if (this.isPiutangMode()) return 0;
+                    return AppState.paymentRows.reduce((s, r) => s + (r.amount || 0), 0);
+                },
+
+                getTunaiAmount() {
+                    return AppState.paymentRows
+                        .filter(r => r.method === 'tunai')
+                        .reduce((s, r) => s + (r.amount || 0), 0);
+                },
+
+                recalculate() {
+                    if (this.isPiutangMode()) {
+                        // Hide kembalian, show piutang info
+                        DOM.kembalianSectionDesktop?.classList.add('hidden');
+                        DOM.kembalianSectionMobile?.classList.add('hidden');
+                        DOM.infoPiutang?.classList.remove('hidden');
+                        DOM.infoPiutangMobile?.classList.remove('hidden');
+                        const canProcess = AppState.cart.length > 0;
+                        if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
+                        if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
+                        return;
+                    }
+
+                    DOM.infoPiutang?.classList.add('hidden');
+                    DOM.infoPiutangMobile?.classList.add('hidden');
+
+                    // Check if any tunai method exists
+                    const hasTunai = AppState.paymentRows.some(r => r.method === 'tunai');
+                    const hasQrisOnly = AppState.paymentRows.every(r => r.method === 'qris');
+
+                    if (hasQrisOnly) {
+                        // QRIS only: hide kembalian
+                        DOM.kembalianSectionDesktop?.classList.add('hidden');
+                        DOM.kembalianSectionMobile?.classList.add('hidden');
+                    } else {
+                        // Show kembalian based on tunai amount
+                        DOM.kembalianSectionDesktop?.classList.remove('hidden');
+                        DOM.kembalianSectionMobile?.classList.remove('hidden');
+                        const tunaiAmount = this.getTunaiAmount();
+                        const qrisAmount = AppState.paymentRows
+                            .filter(r => r.method === 'qris')
+                            .reduce((s, r) => s + (r.amount || 0), 0);
+                        const nonTunaiCover = qrisAmount;
+                        const remainingForTunai = Math.max(0, AppState.totalBelanja - nonTunaiCover);
+                        const kembalian = tunaiAmount - remainingForTunai;
+                        const kembalianText = Utils.formatRupiah(kembalian > 0 ? kembalian : 0);
+                        if (DOM.kembalian) DOM.kembalian.textContent = kembalianText;
+                        if (DOM.kembalianMobile) DOM.kembalianMobile.textContent = kembalianText;
+                    }
+
+                    const totalPaid = this.getTotalPaid();
+                    const canProcess = AppState.cart.length > 0 && totalPaid >= AppState.totalBelanja;
+                    if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
+                    if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
+                },
+
+                buildRowHTML(row, index, isMobile) {
+                    const prefix = isMobile ? 'M' : 'D';
+                    const canRemove = AppState.paymentRows.length > 1;
+                    const methodBtns = Object.entries(this.METHODS).map(([key, meta]) => {
+                        if (key === 'piutang' && AppState.paymentRows.length > 1)
+                            return ''; // piutang only solo
+                        const isActive = row.method === key;
+                        const activeClass = isActive ? `pay-method-btn ${meta.activeClass}` :
+                            'pay-method-btn';
+                        return `<button type="button" class="${activeClass}"
+                            onclick="PaymentManager.setMethod(${index}, '${key}')"
+                            title="${meta.label}">
+                            <i class="fas ${meta.icon} mb-1 block text-lg"></i>
+                            <span>${meta.label}</span>
+                        </button>`;
+                    }).join('');
+
+                    const showAmountInput = row.method !== 'piutang' && row.method !== 'qris';
+                    const showQrisNote = row.method === 'qris';
+
+                    return `<div class="payment-row" id="payRow_${prefix}_${index}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500">Pembayaran ${index + 1}</span>
+                            ${canRemove ? `<button type="button" onclick="PaymentManager.removeRow(${index})" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>` : ''}
+                        </div>
+                        <div class="payment-method-select">${methodBtns}</div>
+                        ${showAmountInput ? `
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
+                                    <input type="number" min="0" step="1000" placeholder="Masukkan nominal"
+                                        value="${row.amount || ''}"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-emerald-500 focus:outline-none"
+                                        onchange="PaymentManager.setAmount(${index}, this.value)"
+                                        oninput="PaymentManager.setAmount(${index}, this.value)">
+                                </div>` : ''}
+                        ${showQrisNote ? `
+                                <div class="bg-indigo-50 rounded-lg p-2 text-xs text-indigo-600 font-semibold text-center">
+                                    <i class="fas fa-qrcode mr-1"></i> Pembayaran QRIS — Scan QR Code
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Nominal QRIS</label>
+                                    <input type="number" min="0" step="1000" placeholder="Nominal QRIS"
+                                        value="${row.amount || ''}"
+                                        class="w-full px-3 py-2 bg-white border-2 border-indigo-200 rounded-lg text-sm focus:border-indigo-500 focus:outline-none"
+                                        onchange="PaymentManager.setAmount(${index}, this.value)"
+                                        oninput="PaymentManager.setAmount(${index}, this.value)">
+                                </div>` : ''}
+                    </div>`;
+                },
+
+                renderAll() {
+                    const isPiutang = this.isPiutangMode();
+                    const canAddMore = !isPiutang && AppState.paymentRows.length < 3;
+
+                    // Show/hide add button
+                    if (DOM.btnAddPaymentDesktop) DOM.btnAddPaymentDesktop.classList.toggle('hidden', !canAddMore);
+                    if (DOM.btnAddPaymentMobile) DOM.btnAddPaymentMobile.classList.toggle('hidden', !canAddMore);
+
+                    // Render desktop rows
+                    if (DOM.paymentRowsDesktop) {
+                        DOM.paymentRowsDesktop.innerHTML = AppState.paymentRows
+                            .map((row, i) => this.buildRowHTML(row, i, false)).join('');
+                    }
+                    // Render mobile rows
+                    if (DOM.paymentRowsMobile) {
+                        DOM.paymentRowsMobile.innerHTML = AppState.paymentRows
+                            .map((row, i) => this.buildRowHTML(row, i, true)).join('');
+                    }
                 }
             };
+
+            // Expose to global for inline onclick
+            window.PaymentManager = PaymentManager;
 
             const CategoryFilter = {
                 init() {
@@ -729,14 +948,13 @@
                         gambar: productItem.dataset.gambar
                     };
                     const gambarUrl = AppState.currentDetailProduct.gambar ?
-                        `/uploads/produk/${encodeURIComponent(AppState.currentDetailProduct.gambar)}` :
-                        null;
+                        `/uploads/produk/${encodeURIComponent(AppState.currentDetailProduct.gambar)}` : null;
                     const content = `
                         <div class="grid md:grid-cols-2 gap-6">
                             <div class="flex items-center justify-center">
                                 ${gambarUrl
                                     ? `<img src="${gambarUrl}" alt="${AppState.currentDetailProduct.nama}" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                   <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
+                                               <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                     : `<div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                 }
                             </div>
@@ -822,11 +1040,6 @@
                     });
                     DOM.btnShowCart?.addEventListener('click', () => DOM.cartModal.classList.remove('hidden'));
                     DOM.btnCloseCart?.addEventListener('click', () => DOM.cartModal.classList.add('hidden'));
-                    DOM.bayar?.addEventListener('input', () => this.calculateKembalian());
-                    DOM.bayarMobile?.addEventListener('input', (e) => {
-                        if (DOM.bayar) DOM.bayar.value = e.target.value;
-                        this.calculateKembalian();
-                    });
                 },
                 addToCart(productElement) {
                     const stok = parseInt(productElement.dataset.stok);
@@ -895,7 +1108,7 @@
                     DOM.cartBadge.textContent = AppState.cart.length;
                     DOM.totalAmount.textContent = Utils.formatRupiah(AppState.totalBelanja);
                     DOM.totalAmountMobile.textContent = Utils.formatRupiah(AppState.totalBelanja);
-                    this.calculateKembalian();
+                    PaymentManager.recalculate();
                 },
                 changeQty(id, delta) {
                     const item = AppState.cart.find(i => i.id === id);
@@ -921,22 +1134,6 @@
                         Utils.showToast('Item berhasil dihapus', 'success');
                     }
                 },
-                calculateKembalian() {
-                    if (AppState.paymentType === 'piutang') {
-                        const canProcess = AppState.cart.length > 0;
-                        if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
-                        if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
-                    } else {
-                        const bayar = parseFloat(DOM.bayar?.value || 0);
-                        const kembalian = bayar - AppState.totalBelanja;
-                        const kembalianText = Utils.formatRupiah(kembalian >= 0 ? kembalian : 0);
-                        if (DOM.kembalian) DOM.kembalian.textContent = kembalianText;
-                        if (DOM.kembalianMobile) DOM.kembalianMobile.textContent = kembalianText;
-                        const canProcess = AppState.cart.length > 0 && bayar >= AppState.totalBelanja;
-                        if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
-                        if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
-                    }
-                },
                 async reset() {
                     if (AppState.cart.length > 0) {
                         const result = await Utils.showConfirm('Konfirmasi Reset',
@@ -944,16 +1141,12 @@
                         if (result.isConfirmed) {
                             AppState.cart = [];
                             this.updateCart();
-                            if (DOM.bayar) DOM.bayar.value = '';
-                            if (DOM.bayarMobile) DOM.bayarMobile.value = '';
                             Utils.showToast('Keranjang telah dikosongkan', 'success');
                         }
                         return;
                     }
                     AppState.cart = [];
                     this.updateCart();
-                    if (DOM.bayar) DOM.bayar.value = '';
-                    if (DOM.bayarMobile) DOM.bayarMobile.value = '';
                 }
             };
 
@@ -964,36 +1157,33 @@
                     DOM.btnReset?.addEventListener('click', () => CartManager.reset());
                     DOM.btnResetMobile?.addEventListener('click', () => CartManager.reset());
                 },
+
+                buildPaymentSummaryHTML() {
+                    const methodLabels = {
+                        tunai: 'Tunai',
+                        qris: 'QRIS',
+                        piutang: 'Piutang'
+                    };
+                    return AppState.paymentRows.map(r =>
+                        `<div class="flex justify-between text-sm">
+                            <span>${methodLabels[r.method] || r.method}</span>
+                            <span class="font-bold">${r.method === 'piutang' ? Utils.formatRupiah(AppState.totalBelanja) : Utils.formatRupiah(r.amount)}</span>
+                        </div>`
+                    ).join('');
+                },
+
                 async processTransaction() {
                     if (AppState.cart.length === 0) {
                         Utils.showError('Keranjang Kosong!', 'Tambahkan produk terlebih dahulu');
                         return;
                     }
-                    let bayar = 0;
-                    let statusPembayaran = 'lunas';
-                    if (AppState.paymentType === 'tunai') {
-                        bayar = parseFloat(DOM.bayar?.value || 0);
-                        if (bayar < AppState.totalBelanja) {
-                            Utils.showError('Pembayaran Kurang!',
-                                `Kurang: ${Utils.formatRupiah(AppState.totalBelanja - bayar)}`);
-                            return;
-                        }
-                        const result = await Swal.fire({
-                            title: 'Proses Transaksi Tunai?',
-                            html: `<div class="text-left space-y-2 bg-gray-50 rounded-xl p-4">
-                                <div class="flex justify-between"><span>Total:</span><span class="font-bold">${Utils.formatRupiah(AppState.totalBelanja)}</span></div>
-                                <div class="flex justify-between"><span>Bayar:</span><span class="font-bold">${Utils.formatRupiah(bayar)}</span></div>
-                                <div class="flex justify-between border-t pt-2"><span>Kembalian:</span><span class="font-bold text-blue-600">${Utils.formatRupiah(bayar - AppState.totalBelanja)}</span></div>
-                            </div>`,
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Proses',
-                            cancelButtonText: 'Batal'
-                        });
-                        if (!result.isConfirmed) return;
-                    } else {
-                        bayar = 0;
-                        statusPembayaran = 'belum_bayar';
+
+                    const isPiutang = PaymentManager.isPiutangMode();
+                    let statusPembayaran = isPiutang ? 'belum_bayar' : 'lunas';
+                    let totalBayar = 0;
+                    let kembalian = 0;
+
+                    if (isPiutang) {
                         const result = await Swal.fire({
                             title: 'Proses Transaksi Piutang?',
                             html: `<div class="text-left space-y-2 bg-orange-50 rounded-xl p-4">
@@ -1009,18 +1199,52 @@
                             cancelButtonText: 'Batal'
                         });
                         if (!result.isConfirmed) return;
+                    } else {
+                        totalBayar = PaymentManager.getTotalPaid();
+                        if (totalBayar < AppState.totalBelanja) {
+                            Utils.showError('Pembayaran Kurang!',
+                                `Kurang: ${Utils.formatRupiah(AppState.totalBelanja - totalBayar)}`);
+                            return;
+                        }
+                        // Kembalian only from tunai
+                        const tunaiAmount = PaymentManager.getTunaiAmount();
+                        const qrisAmount = AppState.paymentRows.filter(r => r.method === 'qris').reduce((s,
+                            r) => s + r.amount, 0);
+                        kembalian = tunaiAmount - Math.max(0, AppState.totalBelanja - qrisAmount);
+
+                        const result = await Swal.fire({
+                            title: 'Proses Transaksi?',
+                            html: `<div class="text-left space-y-2 bg-gray-50 rounded-xl p-4">
+                                ${this.buildPaymentSummaryHTML()}
+                                <div class="border-t pt-2 flex justify-between font-bold"><span>Total:</span><span>${Utils.formatRupiah(AppState.totalBelanja)}</span></div>
+                                ${kembalian > 0 ? `<div class="flex justify-between text-blue-600 font-bold"><span>Kembalian Tunai:</span><span>${Utils.formatRupiah(kembalian)}</span></div>` : ''}
+                            </div>`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Proses',
+                            cancelButtonText: 'Batal'
+                        });
+                        if (!result.isConfirmed) return;
                     }
+
                     this.setLoadingState(true);
+
                     const dataTransaksi = {
                         items: AppState.cart.map(item => ({
                             id_produk: item.id,
                             qty: item.qty,
                             harga: item.harga
                         })),
-                        total_bayar: bayar,
+                        total_bayar: totalBayar,
                         total_pembayaran: AppState.totalBelanja,
-                        status_pembayaran: statusPembayaran
+                        kembalian_pembayaran: kembalian,
+                        status_pembayaran: statusPembayaran,
+                        payment_methods: AppState.paymentRows.map(r => ({
+                            method: r.method,
+                            amount: r.method === 'piutang' ? AppState.totalBelanja : r.amount
+                        }))
                     };
+
                     try {
                         const response = await fetch('{{ route('transaksi.store') }}', {
                             method: 'POST',
@@ -1035,20 +1259,18 @@
                         if (data.success) {
                             let printSuccess = false;
                             if (data.data.auto_print && data.data.printer_name) {
-                                if (typeof window.PrinterHelper === 'undefined') {
-                                    console.warn('⚠️ PrinterHelper not loaded.');
-                                } else if (!window.PrinterHelper.device) {
-                                    console.warn('⚠️ Printer not configured.');
-                                } else {
+                                if (typeof window.PrinterHelper !== 'undefined' && window.PrinterHelper
+                                    .device) {
                                     try {
                                         const receiptData = {
                                             no_transaksi: `#${String(data.data.id_penjualan).padStart(6, '0')}`,
                                             tanggal: new Date().toLocaleString('id-ID'),
                                             kasir: '{{ Auth::user()->nama_user ?? Auth::user()->name }}',
                                             total_pembayaran: AppState.totalBelanja,
-                                            total_bayar: bayar,
-                                            kembalian_pembayaran: bayar - AppState.totalBelanja,
+                                            total_bayar: totalBayar,
+                                            kembalian_pembayaran: kembalian,
                                             status_pembayaran: statusPembayaran,
+                                            payment_methods: dataTransaksi.payment_methods,
                                             items: AppState.cart.map(item => ({
                                                 nama_produk: item.nama,
                                                 qty_produk: item.qty,
@@ -1063,6 +1285,7 @@
                                     }
                                 }
                             }
+
                             if (statusPembayaran === 'lunas') {
                                 const swalResult = await Swal.fire({
                                     icon: 'success',
@@ -1072,7 +1295,6 @@
                                         <p class="text-2xl font-bold text-emerald-600">#${data.data.id_penjualan}</p>
                                         <p class="text-xs text-gray-500 mt-2">Status: Lunas</p>
                                         ${printSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
-                                        ${!printSuccess && data.data.auto_print ? '<p class="text-xs text-orange-600 mt-2">⚠ Auto print gagal.</p>' : ''}
                                     </div>`,
                                     showCancelButton: !printSuccess,
                                     confirmButtonText: 'OK',
@@ -1082,8 +1304,8 @@
                                     timer: printSuccess ? 3000 : undefined,
                                     timerProgressBar: printSuccess
                                 });
-                                if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
-                                    `/transaksi/struk/${data.data.id_penjualan}`, '_blank');
+                                if (swalResult.dismiss === Swal.DismissReason.cancel)
+                                    window.open(`/transaksi/struk/${data.data.id_penjualan}`, '_blank');
                             } else {
                                 const swalResult = await Swal.fire({
                                     icon: 'success',
@@ -1100,9 +1322,10 @@
                                     confirmButtonColor: '#10b981',
                                     cancelButtonColor: '#3b82f6'
                                 });
-                                if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
-                                    `/transaksi/struk/${data.data.id_penjualan}`, '_blank');
+                                if (swalResult.dismiss === Swal.DismissReason.cancel)
+                                    window.open(`/transaksi/struk/${data.data.id_penjualan}`, '_blank');
                             }
+
                             this.resetAfterTransaction();
                             setTimeout(() => location.reload(), 1500);
                         } else {
@@ -1114,6 +1337,7 @@
                         this.setLoadingState(false);
                     }
                 },
+
                 setLoadingState(isLoading) {
                     const text = isLoading ? '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...' :
                         '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
@@ -1126,22 +1350,22 @@
                         DOM.btnProsesMobile.innerHTML = text;
                     }
                 },
+
                 resetAfterTransaction() {
                     AppState.cart = [];
                     CartManager.updateCart();
-                    if (DOM.bayar) DOM.bayar.value = '';
-                    if (DOM.bayarMobile) DOM.bayarMobile.value = '';
-                    AppState.paymentType = 'tunai';
-                    DOM.paymentTypeCards.forEach(c => c.classList.remove('active'));
-                    document.querySelectorAll('.payment-type-card[data-type="tunai"]').forEach(c => c.classList.add(
-                        'active'));
-                    DOM.formTunai?.classList.remove('hidden');
-                    DOM.infoPiutang?.classList.add('hidden');
-                    DOM.formTunaiMobile?.classList.remove('hidden');
-                    DOM.infoPiutangMobile?.classList.add('hidden');
+                    AppState.paymentRows = [{
+                        method: 'tunai',
+                        amount: 0
+                    }];
+                    PaymentManager.renderAll();
+                    PaymentManager.recalculate();
                 }
             };
 
+            // ================================================================
+            // PIUTANG MANAGER
+            // ================================================================
             const PiutangManager = {
                 init() {
                     DOM.btnShowPiutang?.addEventListener('click', () => this.loadPiutang());
@@ -1151,6 +1375,7 @@
                         btn.addEventListener('click', (e) => this.filterPiutang(e.currentTarget));
                     });
                 },
+
                 async loadPiutang() {
                     DOM.piutangModal.classList.remove('hidden');
                     DOM.piutangList.innerHTML =
@@ -1169,43 +1394,76 @@
                             `<div class="text-center py-8"><i class="fas fa-exclamation-circle text-4xl text-red-300 mb-2"></i><p class="text-red-500">Gagal memuat data piutang</p></div>`;
                     }
                 },
+
                 filterPiutang(btn) {
                     DOM.piutangFilterBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     AppState.currentPiutangFilter = btn.dataset.status;
                     this.renderPiutangList();
                 },
+
                 renderPiutangList() {
-                    const filtered = AppState.currentPiutangFilter === 'all' ? AppState.piutangData : AppState
-                        .piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
+                    const filtered = AppState.currentPiutangFilter === 'all' ?
+                        AppState.piutangData :
+                        AppState.piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
+
                     if (filtered.length === 0) {
                         DOM.piutangList.innerHTML =
                             `<div class="text-center py-8"><i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">Tidak ada data piutang</p></div>`;
                         return;
                     }
-                    DOM.piutangList.innerHTML = filtered.map(p => `
-                        <div class="bg-gradient-to-r ${p.status_pembayaran === 'belum_bayar' ? 'from-orange-50 to-red-50 border-orange-200' : 'from-green-50 to-emerald-50 border-green-200'} border-2 rounded-xl p-4">
+
+                    const statusConfig = {
+                        belum_bayar: {
+                            gradient: 'from-orange-50 to-red-50 border-orange-200',
+                            badge: 'bg-red-600 text-white',
+                            label: 'Belum Bayar',
+                            amountColor: 'text-orange-600'
+                        },
+                        bayar_sebagian: {
+                            gradient: 'from-yellow-50 to-orange-50 border-yellow-200',
+                            badge: 'bg-yellow-600 text-white',
+                            label: 'Bayar Sebagian',
+                            amountColor: 'text-yellow-600'
+                        },
+                        lunas: {
+                            gradient: 'from-green-50 to-emerald-50 border-green-200',
+                            badge: 'bg-green-600 text-white',
+                            label: 'Lunas',
+                            amountColor: 'text-green-600'
+                        }
+                    };
+
+                    DOM.piutangList.innerHTML = filtered.map(p => {
+                        const cfg = statusConfig[p.status_pembayaran] || statusConfig.belum_bayar;
+                        const showBayarBtn = p.status_pembayaran === 'belum_bayar' || p
+                            .status_pembayaran === 'bayar_sebagian';
+                        const sisaTagihan = p.sisa_tagihan ?? p.total_pembayaran;
+                        return `
+                        <div class="bg-gradient-to-r ${cfg.gradient} border-2 rounded-xl p-4">
                             <div class="flex items-start justify-between mb-3">
                                 <div>
                                     <p class="text-xs text-gray-500 mb-1">${p.tanggal_penjualan}</p>
                                     <p class="font-bold text-lg text-gray-800">#${p.id_penjualan}</p>
                                 </div>
-                                <span class="px-3 py-1 rounded-full text-xs font-bold ${p.status_pembayaran === 'belum_bayar' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}">
-                                    ${p.status_pembayaran === 'belum_bayar' ? 'Belum Bayar' : 'Lunas'}
-                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold ${cfg.badge}">${cfg.label}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm text-gray-600">Total Tagihan</p>
-                                    <p class="text-xl font-bold ${p.status_pembayaran === 'belum_bayar' ? 'text-orange-600' : 'text-green-600'}">${Utils.formatRupiah(p.total_pembayaran)}</p>
+                                    <p class="text-xl font-bold ${cfg.amountColor}">${Utils.formatRupiah(p.total_pembayaran)}</p>
+                                    ${p.status_pembayaran === 'bayar_sebagian' ? `<p class="text-xs text-orange-500 font-semibold">Sisa: ${Utils.formatRupiah(sisaTagihan)}</p>` : ''}
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 flex-wrap">
                                     <button onclick="window.piutangShowDetail('${p.id_penjualan}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-eye mr-1"></i>Detail</button>
-                                    ${p.status_pembayaran === 'belum_bayar' ? `<button onclick="window.piutangBayar('${p.id_penjualan}', ${p.total_pembayaran})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-check mr-1"></i>Bayar</button>` : ''}
+                                    ${showBayarBtn ? `
+                                            <button onclick="window.piutangBayar('${p.id_penjualan}', ${p.total_pembayaran}, ${sisaTagihan})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-check mr-1"></i>Bayar</button>` : ''}
                                 </div>
                             </div>
-                        </div>`).join('');
+                        </div>`;
+                    }).join('');
                 },
+
                 async showDetailPiutang(idPenjualan) {
                     try {
                         const response = await fetch(`/transaksi/detail/${idPenjualan}`);
@@ -1219,14 +1477,28 @@
                                     <td class="px-4 py-2 border-b text-right">${Utils.formatRupiah(item.harga)}</td>
                                     <td class="px-4 py-2 border-b text-right font-bold">${Utils.formatRupiah(item.subtotal)}</td>
                                 </tr>`).join('');
+
+                            const statusConfig = {
+                                belum_bayar: 'bg-red-600',
+                                bayar_sebagian: 'bg-yellow-600',
+                                lunas: 'bg-green-600'
+                            };
+                            const statusLabel = {
+                                belum_bayar: 'Belum Bayar',
+                                bayar_sebagian: 'Bayar Sebagian',
+                                lunas: 'Lunas'
+                            };
+                            const sisaTagihan = data.sisa_tagihan ?? data.total_pembayaran;
+
                             DOM.detailPiutangContent.innerHTML = `
                                 <div class="space-y-4">
                                     <div class="bg-gray-50 rounded-xl p-4">
                                         <div class="grid grid-cols-2 gap-4">
                                             <div><p class="text-sm text-gray-600">ID Transaksi</p><p class="font-bold text-lg">#${data.id_penjualan}</p></div>
                                             <div><p class="text-sm text-gray-600">Tanggal</p><p class="font-bold">${data.tanggal_penjualan}</p></div>
-                                            <div><p class="text-sm text-gray-600">Status</p><span class="px-3 py-1 rounded-full text-xs font-bold ${data.status_pembayaran === 'belum_bayar' ? 'bg-red-600' : 'bg-green-600'} text-white">${data.status_pembayaran === 'belum_bayar' ? 'Belum Bayar' : 'Lunas'}</span></div>
+                                            <div><p class="text-sm text-gray-600">Status</p><span class="px-3 py-1 rounded-full text-xs font-bold ${statusConfig[data.status_pembayaran] || 'bg-red-600'} text-white">${statusLabel[data.status_pembayaran] || data.status_pembayaran}</span></div>
                                             <div><p class="text-sm text-gray-600">Total</p><p class="font-bold text-lg text-emerald-600">${Utils.formatRupiah(data.total_pembayaran)}</p></div>
+                                            ${data.status_pembayaran === 'bayar_sebagian' ? `<div class="col-span-2"><p class="text-sm text-gray-600">Sisa Tagihan</p><p class="font-bold text-lg text-orange-600">${Utils.formatRupiah(sisaTagihan)}</p></div>` : ''}
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
@@ -1247,19 +1519,138 @@
                         Utils.showError('Error', 'Gagal memuat detail piutang');
                     }
                 },
-                async bayarPiutang(idPenjualan, totalPembayaran) {
+
+                // Build payment rows HTML for piutang bayar modal
+                buildPiutangPaymentRowsHTML(sisaTagihan) {
+                    // We reuse the multi-payment concept inline inside the Swal popup
+                    return `
+                    <div class="space-y-2" id="piutangPayRows">
+                        <div class="payment-row" id="piutangRow_0">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-gray-500">Pembayaran 1</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(0,'tunai')"><i class="fas fa-money-bill-wave block text-lg mb-1"></i>Tunai</button>
+                                <button type="button" class="pay-method-btn" onclick="piutangSelectMethod(0,'qris')"><i class="fas fa-qrcode block text-lg mb-1"></i>QRIS</button>
+                            </div>
+                            <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
+                            <input type="number" id="piutangAmt_0" min="0" step="1000" value="${sisaTagihan}" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm" oninput="piutangRecalc(${sisaTagihan})">
+                        </div>
+                    </div>
+                    <button type="button" id="piutangAddRowBtn" onclick="piutangAddRow(${sisaTagihan})" class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
+                        <i class="fas fa-plus"></i> Tambah Metode Bayar
+                    </button>
+                    <div id="piutangKembalianDiv" class="hidden bg-blue-50 rounded-xl p-3 mt-2">
+                        <div class="flex justify-between"><span class="text-gray-700 font-semibold text-sm">Kembalian Tunai:</span><span id="piutangKembalianVal" class="font-bold text-blue-600 text-sm">Rp 0</span></div>
+                    </div>`;
+                },
+
+                async bayarPiutang(idPenjualan, totalPembayaran, sisaTagihan) {
+                    const self = this;
+                    // State for piutang payment rows
+                    window._piutangRows = [{
+                        method: 'tunai',
+                        amount: sisaTagihan
+                    }];
+
+                    // Helper functions (exposed globally for inline HTML)
+                    window.piutangSelectMethod = function(idx, method) {
+                        window._piutangRows[idx].method = method;
+                        const row = document.getElementById(`piutangRow_${idx}`);
+                        if (!row) return;
+                        // Update button styles
+                        row.querySelectorAll('.pay-method-btn').forEach(b => {
+                            b.className = 'pay-method-btn';
+                            if (b.textContent.trim().toLowerCase().includes(method === 'qris' ?
+                                    'qris' : method === 'tunai' ? 'tunai' : '')) {
+                                b.className = method === 'qris' ? 'pay-method-btn active-qris' :
+                                    'pay-method-btn active';
+                            }
+                        });
+                        // For QRIS: rename label
+                        const label = row.querySelector('label');
+                        if (label) label.textContent = method === 'qris' ? 'Nominal QRIS' : 'Jumlah Bayar';
+                        piutangRecalc(sisaTagihan);
+                    };
+
+                    window.piutangAddRow = function(sisa) {
+                        if (window._piutangRows.length >= 3) return;
+                        window._piutangRows.push({
+                            method: 'tunai',
+                            amount: 0
+                        });
+                        const container = document.getElementById('piutangPayRows');
+                        const idx = window._piutangRows.length - 1;
+                        const div = document.createElement('div');
+                        div.className = 'payment-row';
+                        div.id = `piutangRow_${idx}`;
+                        div.innerHTML =
+                            `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-gray-500">Pembayaran ${idx + 1}</span>
+                                <button type="button" onclick="piutangRemoveRow(${idx}, ${sisa})" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(${idx},'tunai')"><i class="fas fa-money-bill-wave block text-lg mb-1"></i>Tunai</button>
+                                <button type="button" class="pay-method-btn" onclick="piutangSelectMethod(${idx},'qris')"><i class="fas fa-qrcode block text-lg mb-1"></i>QRIS</button>
+                            </div>
+                            <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
+                            <input type="number" id="piutangAmt_${idx}" min="0" step="1000" value="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm" oninput="piutangRecalc(${sisa})">`;
+                        container.appendChild(div);
+                        if (window._piutangRows.length >= 3) {
+                            const addBtn = document.getElementById('piutangAddRowBtn');
+                            if (addBtn) addBtn.classList.add('hidden');
+                        }
+                        piutangRecalc(sisa);
+                    };
+
+                    window.piutangRemoveRow = function(idx, sisa) {
+                        window._piutangRows.splice(idx, 1);
+                        const row = document.getElementById(`piutangRow_${idx}`);
+                        if (row) row.remove();
+                        // Re-index not needed for JS state, just sync amounts
+                        piutangRecalc(sisa);
+                        const addBtn = document.getElementById('piutangAddRowBtn');
+                        if (addBtn) addBtn.classList.remove('hidden');
+                    };
+
+                    window.piutangRecalc = function(sisa) {
+                        // Sync amounts from inputs
+                        window._piutangRows.forEach((r, i) => {
+                            const inp = document.getElementById(`piutangAmt_${i}`);
+                            if (inp) r.amount = parseFloat(inp.value) || 0;
+                        });
+                        const tunaiAmt = window._piutangRows.filter(r => r.method === 'tunai').reduce((s,
+                            r) => s + r.amount, 0);
+                        const qrisAmt = window._piutangRows.filter(r => r.method === 'qris').reduce((s,
+                            r) => s + r.amount, 0);
+                        const totalPaid = tunaiAmt + qrisAmt;
+                        const kembalian = tunaiAmt - Math.max(0, sisa - qrisAmt);
+                        const kemDiv = document.getElementById('piutangKembalianDiv');
+                        const kemVal = document.getElementById('piutangKembalianVal');
+                        if (kembalian > 0) {
+                            if (kemDiv) kemDiv.classList.remove('hidden');
+                            if (kemVal) kemVal.textContent = `Rp ${kembalian.toLocaleString('id-ID')}`;
+                        } else {
+                            if (kemDiv) kemDiv.classList.add('hidden');
+                        }
+                    };
+
                     const result = await Swal.fire({
-                        title: 'Konfirmasi Pembayaran',
-                        html: `<div class="text-left space-y-3">
-                            <div class="bg-orange-50 rounded-xl p-4"><p class="text-sm text-gray-600 mb-1">ID Transaksi</p><p class="font-bold text-lg">#${idPenjualan}</p></div>
-                            <div class="bg-emerald-50 rounded-xl p-4"><p class="text-sm text-gray-600 mb-1">Total yang harus dibayar</p><p class="font-bold text-2xl text-emerald-600">${Utils.formatRupiah(totalPembayaran)}</p></div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Pembayaran</label>
-                                <input type="number" id="bayarPiutangInput" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none" value="${totalPembayaran}" min="${totalPembayaran}">
+                        title: `Bayar Piutang #${idPenjualan}`,
+                        html: `
+                        <div class="text-left space-y-3">
+                            <div class="bg-emerald-50 rounded-xl p-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Tagihan</span>
+                                    <span class="font-bold text-emerald-600">${Utils.formatRupiah(totalPembayaran)}</span>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-sm text-gray-600">Sisa Tagihan</span>
+                                    <span class="font-bold text-orange-600">${Utils.formatRupiah(sisaTagihan)}</span>
+                                </div>
                             </div>
-                            <div id="kembalianPiutang" class="bg-blue-50 rounded-xl p-4 hidden">
-                                <div class="flex justify-between"><span class="text-gray-700 font-semibold">Kembalian:</span><span id="kembalianPiutangValue" class="font-bold text-blue-600">Rp 0</span></div>
-                            </div>
+                            ${this.buildPiutangPaymentRowsHTML(sisaTagihan)}
                         </div>`,
                         icon: 'question',
                         showCancelButton: true,
@@ -1267,105 +1658,125 @@
                         confirmButtonColor: '#10b981',
                         cancelButtonText: 'Batal',
                         didOpen: () => {
-                            const input = document.getElementById('bayarPiutangInput');
-                            const kembalianDiv = document.getElementById('kembalianPiutang');
-                            const kembalianValue = document.getElementById('kembalianPiutangValue');
-                            input.addEventListener('input', function() {
-                                const bayar = parseFloat(this.value || 0);
-                                const kembalian = bayar - totalPembayaran;
-                                if (kembalian >= 0) {
-                                    kembalianDiv.classList.remove('hidden');
-                                    kembalianValue.textContent = Utils.formatRupiah(
-                                        kembalian);
-                                } else {
-                                    kembalianDiv.classList.add('hidden');
-                                }
-                            });
+                            // Init recalc
+                            window.piutangRecalc(sisaTagihan);
                         },
                         preConfirm: () => {
-                            const bayar = parseFloat(document.getElementById('bayarPiutangInput')
-                                .value);
-                            if (bayar < totalPembayaran) {
-                                Swal.showValidationMessage('Pembayaran kurang dari total tagihan');
+                            // Sync amounts
+                            window._piutangRows.forEach((r, i) => {
+                                const inp = document.getElementById(`piutangAmt_${i}`);
+                                if (inp) r.amount = parseFloat(inp.value) || 0;
+                            });
+                            const totalPaid = window._piutangRows.reduce((s, r) => s + r.amount, 0);
+                            if (totalPaid < sisaTagihan && totalPaid > 0) {
+                                // Bayar sebagian is allowed (partial)
+                                // We'll accept it but mark bayar_sebagian
+                            }
+                            if (totalPaid <= 0) {
+                                Swal.showValidationMessage('Masukkan jumlah pembayaran');
                                 return false;
                             }
-                            return bayar;
+                            return {
+                                paymentRows: [...window._piutangRows],
+                                totalPaid
+                            };
                         }
                     });
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await fetch(`/transaksi/bayar-piutang/${idPenjualan}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                        .content
-                                },
-                                body: JSON.stringify({
-                                    total_bayar: result.value
-                                })
-                            });
-                            const apiResult = await response.json();
-                            if (apiResult.success) {
-                                const kembalian = result.value - totalPembayaran;
-                                let piutangPrintSuccess = false;
-                                if (apiResult.data?.auto_print && apiResult.data?.printer_name) {
-                                    if (typeof window.PrinterHelper !== 'undefined' && window.PrinterHelper
-                                        .device) {
-                                        try {
-                                            const detailResponse = await fetch(
-                                                `/transaksi/detail/${idPenjualan}`);
-                                            const detailResult = await detailResponse.json();
-                                            if (detailResult.success) {
-                                                const receiptData = {
-                                                    no_transaksi: `#${String(idPenjualan).padStart(6, '0')}`,
-                                                    tanggal: new Date().toLocaleString('id-ID'),
-                                                    kasir: '{{ Auth::user()->nama_user ?? Auth::user()->name }}',
-                                                    total_pembayaran: totalPembayaran,
-                                                    total_bayar: result.value,
-                                                    kembalian_pembayaran: kembalian,
-                                                    status_pembayaran: 'lunas',
-                                                    items: detailResult.data.items.map(item => ({
-                                                        nama_produk: item.nama_produk,
-                                                        qty_produk: item.qty,
-                                                        harga_produk: item.harga,
-                                                        subtotal_harga: item.subtotal
-                                                    }))
-                                                };
-                                                await window.PrinterHelper.printReceipt(receiptData);
-                                                piutangPrintSuccess = true;
-                                            }
-                                        } catch (printError) {
-                                            console.error('❌ Auto print failed:', printError.message);
+
+                    if (!result.isConfirmed) return;
+
+                    const {
+                        paymentRows,
+                        totalPaid
+                    } = result.value;
+                    const tunaiAmt = paymentRows.filter(r => r.method === 'tunai').reduce((s, r) => s + r
+                        .amount, 0);
+                    const qrisAmt = paymentRows.filter(r => r.method === 'qris').reduce((s, r) => s + r.amount,
+                        0);
+                    const kembalian = tunaiAmt - Math.max(0, sisaTagihan - qrisAmt);
+                    const newStatus = totalPaid >= sisaTagihan ? 'lunas' : 'bayar_sebagian';
+
+                    try {
+                        const response = await fetch(`/transaksi/bayar-piutang/${idPenjualan}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .content
+                            },
+                            body: JSON.stringify({
+                                total_bayar: totalPaid,
+                                payment_methods: paymentRows,
+                                status_pembayaran: newStatus
+                            })
+                        });
+                        const apiResult = await response.json();
+                        if (apiResult.success) {
+                            let piutangPrintSuccess = false;
+                            // Auto print if configured...
+                            if (apiResult.data?.auto_print && apiResult.data?.printer_name) {
+                                if (typeof window.PrinterHelper !== 'undefined' && window.PrinterHelper
+                                    .device) {
+                                    try {
+                                        const detailResponse = await fetch(`/transaksi/detail/${idPenjualan}`);
+                                        const detailResult = await detailResponse.json();
+                                        if (detailResult.success) {
+                                            const receiptData = {
+                                                no_transaksi: `#${String(idPenjualan).padStart(6, '0')}`,
+                                                tanggal: new Date().toLocaleString('id-ID'),
+                                                kasir: '{{ Auth::user()->nama_user ?? Auth::user()->name }}',
+                                                total_pembayaran: totalPembayaran,
+                                                total_bayar: totalPaid,
+                                                kembalian_pembayaran: kembalian > 0 ? kembalian : 0,
+                                                status_pembayaran: newStatus,
+                                                payment_methods: paymentRows,
+                                                items: detailResult.data.items.map(item => ({
+                                                    nama_produk: item.nama_produk,
+                                                    qty_produk: item.qty,
+                                                    harga_produk: item.harga,
+                                                    subtotal_harga: item.subtotal
+                                                }))
+                                            };
+                                            await window.PrinterHelper.printReceipt(receiptData);
+                                            piutangPrintSuccess = true;
                                         }
+                                    } catch (printError) {
+                                        console.error('❌ Auto print failed:', printError.message);
                                     }
                                 }
-                                const swalResult = await Swal.fire({
-                                    icon: 'success',
-                                    title: 'Pembayaran Berhasil!',
-                                    html: `<div class="bg-green-50 rounded-xl p-4">
-                                        <p class="text-sm text-gray-600">Piutang #${idPenjualan} telah lunas</p>
-                                        <p class="text-lg font-bold text-green-600 mt-2">Kembalian: ${Utils.formatRupiah(kembalian)}</p>
-                                        ${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
-                                    </div>`,
-                                    showCancelButton: !piutangPrintSuccess,
-                                    confirmButtonText: 'OK',
-                                    cancelButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
-                                    confirmButtonColor: '#10b981',
-                                    cancelButtonColor: '#3b82f6'
-                                });
-                                if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
-                                    `/transaksi/struk/${idPenjualan}`, '_blank');
-                                this.loadPiutang();
-                                this.closeDetailPiutang();
-                            } else {
-                                throw new Error(apiResult.message || 'Gagal memproses pembayaran');
                             }
-                        } catch (error) {
-                            Utils.showError('Error', error.message);
+
+                            const swalResult = await Swal.fire({
+                                icon: 'success',
+                                title: newStatus === 'lunas' ? 'Pembayaran Lunas!' :
+                                    'Bayar Sebagian Berhasil!',
+                                html: `<div class="bg-green-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">Piutang #${idPenjualan}</p>
+                                    <p class="font-bold text-green-600 mt-1">Status: ${newStatus === 'lunas' ? 'LUNAS' : 'BAYAR SEBAGIAN'}</p>
+                                    <p class="text-sm text-gray-600 mt-2">Dibayar: ${Utils.formatRupiah(totalPaid)}</p>
+                                    ${kembalian > 0 ? `<p class="text-sm font-bold text-blue-600">Kembalian Tunai: ${Utils.formatRupiah(kembalian)}</p>` : ''}
+                                    ${newStatus === 'bayar_sebagian' ? `<p class="text-sm font-bold text-orange-600">Sisa: ${Utils.formatRupiah(sisaTagihan - totalPaid)}</p>` : ''}
+                                    ${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
+                                </div>`,
+                                showCancelButton: !piutangPrintSuccess,
+                                confirmButtonText: 'OK',
+                                cancelButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
+                                confirmButtonColor: '#10b981',
+                                cancelButtonColor: '#3b82f6'
+                            });
+                            if (swalResult.dismiss === Swal.DismissReason.cancel)
+                                window.open(`/transaksi/struk/${idPenjualan}`, '_blank');
+
+                            this.loadPiutang();
+                            this.closeDetailPiutang();
+                        } else {
+                            throw new Error(apiResult.message || 'Gagal memproses pembayaran');
                         }
+                    } catch (error) {
+                        Utils.showError('Error', error.message);
                     }
                 },
+
                 closePiutangModal() {
                     DOM.piutangModal.classList.add('hidden');
                 },
@@ -1377,7 +1788,7 @@
             window.cartChangeQty = (id, delta) => CartManager.changeQty(id, delta);
             window.cartRemoveItem = (id) => CartManager.removeItem(id);
             window.piutangShowDetail = (id) => PiutangManager.showDetailPiutang(id);
-            window.piutangBayar = (id, total) => PiutangManager.bayarPiutang(id, total);
+            window.piutangBayar = (id, total, sisa) => PiutangManager.bayarPiutang(id, total, sisa ?? total);
 
             function initApp() {
                 PaymentManager.init();
@@ -1395,7 +1806,6 @@
             } else {
                 initApp();
             }
-
         })();
     </script>
 @endpush

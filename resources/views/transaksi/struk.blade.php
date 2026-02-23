@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,6 +153,94 @@
             color: white;
         }
 
+        /* Payment methods section */
+        .payment-methods {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .payment-methods-title {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .payment-method-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+            padding: 4px 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .payment-method-label {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .payment-method-amount {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .payment-method-row.tunai .payment-method-label {
+            color: #059669;
+        }
+
+        .payment-method-row.qris .payment-method-label {
+            color: #4f46e5;
+        }
+
+        .payment-method-row.piutang .payment-method-label {
+            color: #ea580c;
+        }
+
+        .kembalian-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-top: 6px;
+            padding: 6px 8px;
+            background: #eff6ff;
+            border-radius: 6px;
+        }
+
+        .kembalian-label {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .kembalian-value {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .piutang-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-top: 6px;
+        }
+
+        .bayar-sebagian-badge {
+            display: inline-block;
+            background: #fef9c3;
+            color: #d97706;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-top: 6px;
+        }
+
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -168,9 +257,16 @@
 
         .footer-note {
             font-size: 11px;
-            line-height: 1.5;
+            line-height: 1.6;
             font-style: italic;
             color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .footer-made-by {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 8px;
         }
 
         .print-button {
@@ -238,9 +334,16 @@
             .thermal-button {
                 display: none;
             }
+
+            /* Ensure footer info prints */
+            .footer-note,
+            .footer-made-by {
+                display: block !important;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -261,25 +364,39 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Tanggal</span>
-                <span class="info-value">{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}</span>
+                <span
+                    class="info-value">{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Kasir</span>
                 <span class="info-value">{{ $penjualan->kasir }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-value">
+                    @if ($penjualan->status_pembayaran === 'lunas')
+                        <span style="color:#10b981">LUNAS</span>
+                    @elseif($penjualan->status_pembayaran === 'bayar_sebagian')
+                        <span style="color:#d97706">BAYAR SEBAGIAN</span>
+                    @else
+                        <span style="color:#dc2626">BELUM BAYAR</span>
+                    @endif
+                </span>
             </div>
         </div>
 
         <div class="separator">================================</div>
 
         <div class="items">
-            @foreach($detail as $item)
-            <div class="item">
-                <div class="item-name">{{ $item->nama_produk }}</div>
-                <div class="item-details">
-                    <span class="item-qty-price">{{ $item->qty_produk }} x Rp {{ number_format($item->harga_produk, 0, ',', '.') }}</span>
-                    <span class="item-subtotal">Rp {{ number_format($item->subtotal_harga, 0, ',', '.') }}</span>
+            @foreach ($detail as $item)
+                <div class="item">
+                    <div class="item-name">{{ $item->nama_produk }}</div>
+                    <div class="item-details">
+                        <span class="item-qty-price">{{ $item->qty_produk }} x Rp
+                            {{ number_format($item->harga_produk, 0, ',', '.') }}</span>
+                        <span class="item-subtotal">Rp {{ number_format($item->subtotal_harga, 0, ',', '.') }}</span>
+                    </div>
                 </div>
-            </div>
             @endforeach
         </div>
 
@@ -288,18 +405,76 @@
         <div class="totals">
             <div class="total-row grand-total">
                 <span class="total-label">TOTAL</span>
-                <span class="total-value">Rp {{ number_format($penjualan->total_bayar, 0, ',', '.') }}</span>
-            </div>
-
-            <div class="total-row">
-                <span class="total-label">Tunai</span>
                 <span class="total-value">Rp {{ number_format($penjualan->total_pembayaran, 0, ',', '.') }}</span>
             </div>
 
-            <div class="total-row">
-                <span class="total-label">Kembalian</span>
-                <span class="total-value">Rp {{ number_format($penjualan->kembalian_pembayaran, 0, ',', '.') }}</span>
-            </div>
+            {{-- Payment Methods Detail --}}
+            @php
+                $paymentMethods = json_decode($penjualan->payment_methods ?? '[]', true);
+                $methodLabels = ['tunai' => 'Tunai', 'qris' => 'QRIS', 'piutang' => 'Piutang'];
+            @endphp
+
+            @if (!empty($paymentMethods))
+                <div class="payment-methods">
+                    <div class="payment-methods-title">Rincian Pembayaran:</div>
+                    @foreach ($paymentMethods as $pm)
+                        <div class="payment-method-row {{ $pm['method'] ?? 'tunai' }}">
+                            <span class="payment-method-label">
+                                @if (($pm['method'] ?? '') === 'tunai')
+                                    💵
+                                @elseif(($pm['method'] ?? '') === 'qris')
+                                    📱
+                                @else
+                                    ⏰
+                                @endif
+                                {{ $methodLabels[$pm['method'] ?? 'tunai'] ?? ucfirst($pm['method'] ?? '-') }}
+                            </span>
+                            <span class="payment-method-amount">Rp
+                                {{ number_format($pm['amount'] ?? 0, 0, ',', '.') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                {{-- Fallback for old records without payment_methods --}}
+                @if ($penjualan->status_pembayaran === 'lunas')
+                    <div class="payment-methods">
+                        <div class="payment-methods-title">Rincian Pembayaran:</div>
+                        <div class="payment-method-row tunai">
+                            <span class="payment-method-label">💵 Tunai</span>
+                            <span class="payment-method-amount">Rp
+                                {{ number_format($penjualan->total_bayar ?? $penjualan->total_pembayaran, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                @endif
+            @endif
+
+            {{-- Kembalian (only for tunai transactions) --}}
+            @if (
+                $penjualan->status_pembayaran === 'lunas' &&
+                    isset($penjualan->kembalian_pembayaran) &&
+                    $penjualan->kembalian_pembayaran > 0)
+                <div class="kembalian-row">
+                    <span class="kembalian-label">↩ Kembalian Tunai</span>
+                    <span class="kembalian-value">Rp
+                        {{ number_format($penjualan->kembalian_pembayaran, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            {{-- Status badges --}}
+            @if ($penjualan->status_pembayaran === 'belum_bayar')
+                <div style="text-align:center; margin-top:10px;">
+                    <span class="piutang-badge">⚠ PIUTANG - BELUM DIBAYAR</span>
+                </div>
+            @elseif($penjualan->status_pembayaran === 'bayar_sebagian')
+                <div style="text-align:center; margin-top:10px;">
+                    <span class="bayar-sebagian-badge">⚠ BAYAR SEBAGIAN</span>
+                    @if (isset($penjualan->sisa_tagihan))
+                        <div style="font-size:12px; color:#d97706; margin-top:4px; font-weight:bold;">
+                            Sisa: Rp {{ number_format($penjualan->sisa_tagihan, 0, ',', '.') }}
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
 
         <div class="separator">================================</div>
@@ -313,6 +488,14 @@
                 Barang yang sudah dibeli<br>
                 tidak dapat ditukar/dikembalikan
             </div>
+            <div class="footer-note">
+                Simpan struk ini sebagai<br>
+                bukti pembelian yang sah
+            </div>
+            <div class="footer-made-by">
+                ─────────────────<br>
+                Made with ❤ by Toko Sahabat POS
+            </div>
         </div>
 
         <button onclick="window.print()" class="print-button">
@@ -320,7 +503,8 @@
         </button>
 
         <button onclick="printThermal()" class="thermal-button" id="thermalBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 6 2 18 2 18 9"></polyline>
                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                 <rect x="6" y="14" width="12" height="8"></rect>
@@ -331,7 +515,7 @@
 
     <!-- ✅ LOAD PRINTER HELPER -->
     <script src="{{ asset('js/printer-helper.js') }}"></script>
-    
+
     <script>
         // ============================================
         // PRINT THERMAL MENGGUNAKAN PRINTER HELPER
@@ -340,35 +524,38 @@
             const btn = document.getElementById('thermalBtn');
             const btnText = document.getElementById('thermalBtnText');
             const originalText = btnText.textContent;
-            
+
             btn.disabled = true;
             btnText.textContent = 'Connecting...';
 
             try {
                 console.log('🖨️ Starting thermal print...');
-                
-                // ✅ CEK APAKAH PRINTER HELPER SUDAH LOADED
+
                 if (!window.PrinterHelper) {
                     throw new Error('Printer Helper belum dimuat. Refresh halaman dan coba lagi.');
                 }
 
-                // ✅ SIAPKAN DATA RECEIPT
+                // Parse payment methods from PHP
+                const paymentMethods = @json(json_decode($penjualan->payment_methods ?? '[]', true) ?? []);
+
                 const receiptData = {
-                    no_transaksi: '#{{ str_pad($penjualan->id_penjualan, 6, "0", STR_PAD_LEFT) }}',
-                    tanggal: '{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format("d/m/Y H:i") }}',
+                    no_transaksi: '#{{ str_pad($penjualan->id_penjualan, 6, '0', STR_PAD_LEFT) }}',
+                    tanggal: '{{ \Carbon\Carbon::parse($penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}',
                     kasir: '{{ $penjualan->kasir }}',
-                    total_pembayaran: {{ $penjualan->total_bayar }},
-                    total_bayar: {{ $penjualan->total_pembayaran }},
-                    kembalian_pembayaran: {{ $penjualan->kembalian_pembayaran }},
-                    status_pembayaran: 'lunas',
+                    total_pembayaran: {{ $penjualan->total_pembayaran }},
+                    total_bayar: {{ $penjualan->total_bayar ?? $penjualan->total_pembayaran }},
+                    kembalian_pembayaran: {{ $penjualan->kembalian_pembayaran ?? 0 }},
+                    sisa_tagihan: {{ $penjualan->sisa_tagihan ?? 0 }},
+                    status_pembayaran: '{{ $penjualan->status_pembayaran }}',
+                    payment_methods: paymentMethods,
                     items: [
-                        @foreach($detail as $item)
-                        {
-                            nama_produk: '{{ $item->nama_produk }}',
-                            qty_produk: {{ $item->qty_produk }},
-                            harga_produk: {{ $item->harga_produk }},
-                            subtotal_harga: {{ $item->subtotal_harga }}
-                        },
+                        @foreach ($detail as $item)
+                            {
+                                nama_produk: '{{ addslashes($item->nama_produk) }}',
+                                qty_produk: {{ $item->qty_produk }},
+                                harga_produk: {{ $item->harga_produk }},
+                                subtotal_harga: {{ $item->subtotal_harga }}
+                            },
                         @endforeach
                     ]
                 };
@@ -377,12 +564,10 @@
 
                 btnText.textContent = 'Printing...';
 
-                // ✅ PANGGIL PRINTER HELPER UNTUK PRINT
                 const result = await window.PrinterHelper.printReceipt(receiptData);
 
                 console.log('✅ Print result:', result);
 
-                // Success feedback
                 btnText.textContent = '✅ Tercetak!';
                 setTimeout(() => {
                     btnText.textContent = originalText;
@@ -391,7 +576,7 @@
 
             } catch (error) {
                 console.error('❌ Print error:', error);
-                
+
                 btnText.textContent = originalText;
                 btn.disabled = false;
 
@@ -399,7 +584,8 @@
                 let suggestion = '';
 
                 if (error.message.includes('belum di-pair')) {
-                    suggestion = '\n\nSolusi:\n1. Buka menu Settings\n2. Klik "Scan" atau "Reconnect"\n3. Pilih printer RPP02N\n4. Coba print lagi';
+                    suggestion =
+                        '\n\nSolusi:\n1. Buka menu Settings\n2. Klik "Scan" atau "Reconnect"\n3. Pilih printer RPP02N\n4. Coba print lagi';
                 } else if (error.message.includes('GATT') || error.message.includes('disconnected')) {
                     suggestion = '\n\nSolusi:\n1. Buka menu Settings\n2. Klik "Reconnect"\n3. Coba print lagi';
                 } else if (error.message.includes('timeout')) {
@@ -410,28 +596,19 @@
             }
         }
 
-        // ============================================
-        // KEYBOARD SHORTCUT
-        // ============================================
         window.addEventListener('keydown', function(e) {
-            // Ctrl + P untuk print A4
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
                 window.print();
             }
-            
-            // Ctrl + T untuk thermal print
             if (e.ctrlKey && e.key === 't') {
                 e.preventDefault();
                 printThermal();
             }
         });
 
-        // ============================================
-        // LOG PAGE LOADED
-        // ============================================
         console.log('✅ Struk page loaded');
-        console.log('🖨️ Thermal printer ready');
     </script>
 </body>
+
 </html>

@@ -15,24 +15,21 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * Copy file ke public_html/storage (karena symlink tidak bekerja di beberapa hosting)
+     * Copy file ke public_html/storage
      */
     private function copyToPublicStorage($filename)
     {
         $sourcePath = storage_path('app/public/users/' . $filename);
         $destPath = '/home/irryvkri/public_html/storage/users/' . $filename;
-        
+
         Log::info("=== Copy To Public Storage ===");
-        Log::info("Filename: " . $filename);
         Log::info("Source: " . $sourcePath);
         Log::info("Dest: " . $destPath);
-        Log::info("Source exists: " . (File::exists($sourcePath) ? 'YES' : 'NO'));
-        
+
         if (!File::exists('/home/irryvkri/public_html/storage/users')) {
             File::makeDirectory('/home/irryvkri/public_html/storage/users', 0755, true);
-            Log::info("Created directory: /home/irryvkri/public_html/storage/users");
         }
-        
+
         if (File::exists($sourcePath)) {
             try {
                 File::copy($sourcePath, $destPath);
@@ -44,17 +41,16 @@ class UserController extends Controller
             Log::error("❌ Source file not found: " . $sourcePath);
         }
     }
-    
+
     /**
      * Hapus file dari kedua lokasi
      */
     private function deleteFromBothLocations($filename)
     {
-        Log::info("=== Delete From Both Locations ===");
-        Log::info("Deleting: " . $filename);
-        
+        Log::info("=== Delete From Both Locations: " . $filename . " ===");
+
         Storage::delete('public/users/' . $filename);
-        
+
         $publicPath = '/home/irryvkri/public_html/storage/users/' . $filename;
         if (File::exists($publicPath)) {
             File::delete($publicPath);
@@ -62,11 +58,33 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Upload file gambar ke storage
+     */
+    private function uploadFile($file)
+    {
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $destinationPath = storage_path('app/public/users');
+
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0755, true);
+        }
+
+        $file->move($destinationPath, $filename);
+        $this->copyToPublicStorage($filename);
+
+        Log::info("✅ File uploaded: " . $filename);
+        return $filename;
+    }
+
+    // =========================================================
+    // INDEX
+    // =========================================================
     public function index(Request $request)
     {
         $query = DB::table('user');
 
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_user', 'like', "%{$search}%")
@@ -74,7 +92,7 @@ class UserController extends Controller
             });
         }
 
-        if ($request->has('role') && $request->role != '') {
+        if ($request->filled('role')) {
             $query->where('role_user', $request->role);
         }
 
@@ -83,74 +101,48 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
+    // =========================================================
+    // CREATE
+    // =========================================================
     public function create()
     {
         return view('users.create');
     }
 
+    // =========================================================
+    // STORE
+    // =========================================================
     public function store(Request $request)
     {
-        Log::info("=== Store New User ===");
-        Log::info("Request has file: " . ($request->hasFile('gambar_user') ? 'YES' : 'NO'));
-        
         $validated = $request->validate([
-            'nama_user' => 'required|string|max:150',
+            'nama_user'     => 'required|string|max:150',
             'username_user' => 'required|string|max:50|unique:user,username_user',
             'password_user' => 'required|string|min:6|confirmed',
-            'role_user' => ['required', Rule::in(['owner', 'kasir'])],
-            'gambar_user' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'role_user'     => ['required', Rule::in(['owner', 'kasir'])],
+            'gambar_user'   => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ], [
-            'nama_user.required' => 'Nama harus diisi',
-            'username_user.required' => 'Username harus diisi',
-            'username_user.unique' => 'Username sudah digunakan',
-            'password_user.required' => 'Password harus diisi',
-            'password_user.min' => 'Password minimal 6 karakter',
+            'nama_user.required'      => 'Nama harus diisi',
+            'username_user.required'  => 'Username harus diisi',
+            'username_user.unique'    => 'Username sudah digunakan',
+            'password_user.required'  => 'Password harus diisi',
+            'password_user.min'       => 'Password minimal 6 karakter',
             'password_user.confirmed' => 'Konfirmasi password tidak cocok',
-            'role_user.required' => 'Role harus dipilih',
-            'gambar_user.image' => 'File harus berupa gambar',
-            'gambar_user.mimes' => 'Format gambar harus JPG, PNG, atau GIF',
-            'gambar_user.max' => 'Ukuran gambar maksimal 2MB',
+            'role_user.required'      => 'Role harus dipilih',
+            'gambar_user.image'       => 'File harus berupa gambar',
+            'gambar_user.mimes'       => 'Format gambar harus JPG, PNG, atau GIF',
+            'gambar_user.max'         => 'Ukuran gambar maksimal 2MB',
         ]);
 
         $data = [
-            'nama_user' => $validated['nama_user'],
+            'nama_user'     => $validated['nama_user'],
             'username_user' => $validated['username_user'],
             'password_user' => bcrypt($validated['password_user']),
-            'role_user' => $validated['role_user'],
-            'created_at' => now(),
+            'role_user'     => $validated['role_user'],
+            'created_at'    => now(),
         ];
 
         if ($request->hasFile('gambar_user')) {
-            $file = $request->file('gambar_user');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            Log::info("Uploading file: " . $filename);
-            
-            try {
-                $destinationPath = storage_path('app/public/users');
-                
-                if (!File::exists($destinationPath)) {
-                    File::makeDirectory($destinationPath, 0755, true);
-                    Log::info("Created directory: " . $destinationPath);
-                }
-                
-                $file->move($destinationPath, $filename);
-                Log::info("File moved to storage: " . $filename);
-                
-                $fullPath = $destinationPath . '/' . $filename;
-                if (File::exists($fullPath)) {
-                    Log::info("✅ File verified in storage: " . $filename);
-                } else {
-                    Log::error("❌ File NOT found after move: " . $fullPath);
-                }
-                
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to upload file: " . $e->getMessage());
-                throw $e;
-            }
-            
-            $this->copyToPublicStorage($filename);
-            $data['gambar_user'] = $filename;
+            $data['gambar_user'] = $this->uploadFile($request->file('gambar_user'));
         }
 
         DB::table('user')->insert($data);
@@ -159,6 +151,9 @@ class UserController extends Controller
             ->with('success', 'User berhasil ditambahkan');
     }
 
+    // =========================================================
+    // SHOW
+    // =========================================================
     public function show($id)
     {
         $user = DB::table('user')->where('id_user', $id)->first();
@@ -168,11 +163,8 @@ class UserController extends Controller
         }
 
         $stats = [
-            'total_kasir' => DB::table('kasir')->where('id_user', $id)->count(),
-            'kasir_aktif' => DB::table('kasir')
-                ->where('id_user', $id)
-                ->whereNull('waktu_close')
-                ->count(),
+            'total_kasir'     => DB::table('kasir')->where('id_user', $id)->count(),
+            'kasir_aktif'     => DB::table('kasir')->where('id_user', $id)->whereNull('waktu_close')->count(),
             'total_transaksi' => DB::table('penjualan')
                 ->join('kasir', 'penjualan.id_kasir', '=', 'kasir.id_kasir')
                 ->where('kasir.id_user', $id)
@@ -182,6 +174,9 @@ class UserController extends Controller
         return view('users.show', compact('user', 'stats'));
     }
 
+    // =========================================================
+    // EDIT
+    // =========================================================
     public function edit($id)
     {
         $user = DB::table('user')->where('id_user', $id)->first();
@@ -190,8 +185,7 @@ class UserController extends Controller
             abort(404, 'User tidak ditemukan');
         }
 
-        $currentUser = Auth::user();
-        if ($currentUser->id_user == $user->id_user) {
+        if (Auth::user()->id_user == $user->id_user) {
             return redirect()->route('users.index')
                 ->with('error', 'Gunakan menu profil untuk edit akun Anda sendiri');
         }
@@ -199,112 +193,77 @@ class UserController extends Controller
         return view('users.edit', compact('user'));
     }
 
+    // =========================================================
+    // UPDATE
+    // =========================================================
     public function update(Request $request, $id)
     {
-        Log::info("=== Update User ID: $id ===");
-        Log::info("Request has file: " . ($request->hasFile('gambar_user') ? 'YES' : 'NO'));
-        Log::info("Hapus gambar: " . ($request->input('hapus_gambar') == '1' ? 'YES' : 'NO'));
-        
         $user = DB::table('user')->where('id_user', $id)->first();
 
         if (!$user) {
             abort(404, 'User tidak ditemukan');
         }
 
-        $currentUser = Auth::user();
-        if ($currentUser->id_user == $user->id_user) {
+        if (Auth::user()->id_user == $user->id_user) {
             return redirect()->route('users.index')
                 ->with('error', 'Tidak dapat mengedit akun sendiri melalui halaman ini');
         }
 
         $validated = $request->validate([
-            'nama_user' => 'required|string|max:150',
+            'nama_user'     => 'required|string|max:150',
             'username_user' => [
                 'required',
                 'string',
                 'max:50',
                 Rule::unique('user', 'username_user')->ignore($id, 'id_user')
             ],
-            'role_user' => ['required', Rule::in(['owner', 'kasir'])],
+            'role_user'     => ['required', Rule::in(['owner', 'kasir'])],
             'password_user' => 'nullable|string|min:6|confirmed',
-            'gambar_user' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
-            'hapus_gambar' => 'nullable|boolean',
+            'gambar_user'   => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'hapus_gambar'  => 'nullable|boolean',
         ], [
-            'nama_user.required' => 'Nama harus diisi',
-            'username_user.required' => 'Username harus diisi',
-            'username_user.unique' => 'Username sudah digunakan',
-            'password_user.min' => 'Password minimal 6 karakter',
+            'nama_user.required'      => 'Nama harus diisi',
+            'username_user.required'  => 'Username harus diisi',
+            'username_user.unique'    => 'Username sudah digunakan',
+            'password_user.min'       => 'Password minimal 6 karakter',
             'password_user.confirmed' => 'Konfirmasi password tidak cocok',
-            'role_user.required' => 'Role harus dipilih',
-            'gambar_user.image' => 'File harus berupa gambar',
-            'gambar_user.mimes' => 'Format gambar harus JPG, PNG, atau GIF',
-            'gambar_user.max' => 'Ukuran gambar maksimal 2MB',
+            'role_user.required'      => 'Role harus dipilih',
+            'gambar_user.image'       => 'File harus berupa gambar',
+            'gambar_user.mimes'       => 'Format gambar harus JPG, PNG, atau GIF',
+            'gambar_user.max'         => 'Ukuran gambar maksimal 2MB',
         ]);
 
         $updateData = [
-            'nama_user' => $validated['nama_user'],
+            'nama_user'     => $validated['nama_user'],
             'username_user' => $validated['username_user'],
-            'role_user' => $validated['role_user'],
+            'role_user'     => $validated['role_user'],
         ];
 
         if ($request->filled('password_user')) {
             $updateData['password_user'] = bcrypt($validated['password_user']);
-            Log::info("Password will be updated");
         }
 
         if ($request->input('hapus_gambar') == '1') {
-            Log::info("Deleting old image: " . $user->gambar_user);
             if ($user->gambar_user) {
                 $this->deleteFromBothLocations($user->gambar_user);
             }
             $updateData['gambar_user'] = null;
-        }
-        elseif ($request->hasFile('gambar_user')) {
+        } elseif ($request->hasFile('gambar_user')) {
             if ($user->gambar_user) {
-                Log::info("Deleting old image before upload: " . $user->gambar_user);
                 $this->deleteFromBothLocations($user->gambar_user);
             }
-
-            $file = $request->file('gambar_user');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            Log::info("Uploading new file: " . $filename);
-            
-            try {
-                $destinationPath = storage_path('app/public/users');
-                
-                if (!File::exists($destinationPath)) {
-                    File::makeDirectory($destinationPath, 0755, true);
-                    Log::info("Created directory: " . $destinationPath);
-                }
-                
-                $file->move($destinationPath, $filename);
-                Log::info("File moved to storage: " . $filename);
-                
-                $fullPath = $destinationPath . '/' . $filename;
-                if (File::exists($fullPath)) {
-                    Log::info("✅ File verified in storage: " . $filename);
-                } else {
-                    Log::error("❌ File NOT found after move: " . $fullPath);
-                }
-                
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to upload file: " . $e->getMessage());
-                throw $e;
-            }
-            
-            $this->copyToPublicStorage($filename);
-            $updateData['gambar_user'] = $filename;
+            $updateData['gambar_user'] = $this->uploadFile($request->file('gambar_user'));
         }
 
         DB::table('user')->where('id_user', $id)->update($updateData);
-        
-        Log::info("✅ User updated successfully");
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil diperbarui');
     }
 
+    // =========================================================
+    // DESTROY
+    // =========================================================
     public function destroy($id)
     {
         $user = DB::table('user')->where('id_user', $id)->first();
@@ -313,8 +272,7 @@ class UserController extends Controller
             abort(404, 'User tidak ditemukan');
         }
 
-        $currentUser = Auth::user();
-        if ($currentUser->id_user == $user->id_user) {
+        if (Auth::user()->id_user == $user->id_user) {
             return redirect()->route('users.index')
                 ->with('error', 'Tidak dapat menghapus akun sendiri');
         }
@@ -329,13 +287,11 @@ class UserController extends Controller
                 ->with('error', 'Tidak dapat menghapus user yang memiliki kasir aktif');
         }
 
-        $hasTransactions = DB::table('kasir')
-            ->where('id_user', $id)
-            ->exists();
+        $hasTransactions = DB::table('kasir')->where('id_user', $id)->exists();
 
         if ($hasTransactions) {
             return redirect()->route('users.index')
-                ->with('error', 'Tidak dapat menghapus user yang memiliki riwayat transaksi. Nonaktifkan saja user ini.');
+                ->with('error', 'Tidak dapat menghapus user yang memiliki riwayat transaksi.');
         }
 
         if ($user->gambar_user) {
@@ -348,79 +304,110 @@ class UserController extends Controller
             ->with('success', 'User berhasil dihapus');
     }
 
+    // =========================================================
+    // RESET PASSWORD ✅ RETURN JSON — sinkron dengan AJAX di
+    // index.blade.php dan show.blade.php
+    // =========================================================
     public function resetPassword(Request $request, $id)
     {
         $user = DB::table('user')->where('id_user', $id)->first();
 
         if (!$user) {
-            abort(404, 'User tidak ditemukan');
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak ditemukan',
+            ], 404);
         }
 
-        $validated = $request->validate([
-            'new_password' => 'required|string|min:6|confirmed',
-        ], [
-            'new_password.required' => 'Password baru harus diisi',
-            'new_password.min' => 'Password minimal 6 karakter',
-            'new_password.confirmed' => 'Konfirmasi password tidak cocok',
-        ]);
+        try {
+            $request->validate([
+                'new_password' => 'required|string|min:6|confirmed',
+            ], [
+                'new_password.required'  => 'Password baru harus diisi',
+                'new_password.min'       => 'Password minimal 6 karakter',
+                'new_password.confirmed' => 'Konfirmasi password tidak cocok',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
 
-        DB::table('user')->where('id_user', $id)->update([
-            'password_user' => bcrypt($validated['new_password'])
-        ]);
+        try {
+            DB::table('user')->where('id_user', $id)->update([
+                'password_user' => bcrypt($request->new_password),
+            ]);
 
-        return redirect()->back()
-            ->with('success', 'Password user berhasil direset');
+            Log::info("✅ Password reset for user ID: " . $id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password user berhasil direset',
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error("❌ Reset password error: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mereset password. Silakan coba lagi.',
+            ], 500);
+        }
     }
 
+    // =========================================================
+    // PROFILE
+    // =========================================================
     public function profile()
     {
         $user = Auth::user();
         return view('users.profile', compact('user'));
     }
 
+    // =========================================================
+    // UPDATE PROFILE
+    // =========================================================
     public function updateProfile(Request $request)
     {
         try {
-            Log::info("=== Update Profile ===");
-            Log::info("Request has file: " . ($request->hasFile('gambar_user') ? 'YES' : 'NO'));
-            
             $currentUser = Auth::user();
 
             if (!$currentUser) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Sesi telah berakhir, silakan login kembali'
+                    'message' => 'Sesi telah berakhir, silakan login kembali',
                 ], 401);
             }
 
             $validated = $request->validate([
-                'nama_user' => 'required|string|max:150',
-                'username_user' => [
+                'nama_user'        => 'required|string|max:150',
+                'username_user'    => [
                     'required',
                     'string',
                     'max:50',
                     Rule::unique('user', 'username_user')->ignore($currentUser->id_user, 'id_user')
                 ],
                 'current_password' => 'required_with:new_password',
-                'new_password' => 'nullable|string|min:6|confirmed',
-                'gambar_user' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
-                'hapus_gambar' => 'nullable|boolean',
+                'new_password'     => 'nullable|string|min:6|confirmed',
+                'gambar_user'      => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+                'hapus_gambar'     => 'nullable|boolean',
             ], [
-                'nama_user.required' => 'Nama harus diisi',
-                'nama_user.max' => 'Nama maksimal 150 karakter',
-                'username_user.required' => 'Username harus diisi',
-                'username_user.unique' => 'Username sudah digunakan',
-                'username_user.max' => 'Username maksimal 50 karakter',
+                'nama_user.required'             => 'Nama harus diisi',
+                'nama_user.max'                  => 'Nama maksimal 150 karakter',
+                'username_user.required'         => 'Username harus diisi',
+                'username_user.unique'           => 'Username sudah digunakan',
+                'username_user.max'              => 'Username maksimal 50 karakter',
                 'current_password.required_with' => 'Password lama harus diisi untuk mengganti password',
-                'new_password.min' => 'Password baru minimal 6 karakter',
-                'new_password.confirmed' => 'Konfirmasi password tidak cocok',
-                'gambar_user.image' => 'File harus berupa gambar',
-                'gambar_user.mimes' => 'Format gambar harus JPG, PNG, atau GIF',
-                'gambar_user.max' => 'Ukuran gambar maksimal 2MB',
+                'new_password.min'               => 'Password baru minimal 6 karakter',
+                'new_password.confirmed'         => 'Konfirmasi password tidak cocok',
+                'gambar_user.image'              => 'File harus berupa gambar',
+                'gambar_user.mimes'              => 'Format gambar harus JPG, PNG, atau GIF',
+                'gambar_user.max'                => 'Ukuran gambar maksimal 2MB',
             ]);
 
             $updateData = [
-                'nama_user' => $validated['nama_user'],
+                'nama_user'     => $validated['nama_user'],
                 'username_user' => $validated['username_user'],
             ];
 
@@ -429,83 +416,44 @@ class UserController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => 'Password lama tidak sesuai',
-                        'errors' => [
-                            'current_password' => ['Password lama tidak sesuai']
-                        ]
+                        'errors'  => ['current_password' => ['Password lama tidak sesuai']],
                     ], 422);
                 }
                 $updateData['password_user'] = bcrypt($validated['new_password']);
             }
 
             if ($request->input('hapus_gambar') == '1') {
-                Log::info("Deleting profile image: " . $currentUser->gambar_user);
                 if ($currentUser->gambar_user) {
                     $this->deleteFromBothLocations($currentUser->gambar_user);
                 }
                 $updateData['gambar_user'] = null;
-            }
-            elseif ($request->hasFile('gambar_user')) {
+            } elseif ($request->hasFile('gambar_user')) {
                 if ($currentUser->gambar_user) {
-                    Log::info("Deleting old profile image: " . $currentUser->gambar_user);
                     $this->deleteFromBothLocations($currentUser->gambar_user);
                 }
-
-                $file = $request->file('gambar_user');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                
-                Log::info("Uploading new profile image: " . $filename);
-                
-                try {
-                    $destinationPath = storage_path('app/public/users');
-                    
-                    if (!File::exists($destinationPath)) {
-                        File::makeDirectory($destinationPath, 0755, true);
-                        Log::info("Created directory: " . $destinationPath);
-                    }
-                    
-                    $file->move($destinationPath, $filename);
-                    Log::info("File moved to storage: " . $filename);
-                    
-                    $fullPath = $destinationPath . '/' . $filename;
-                    if (File::exists($fullPath)) {
-                        Log::info("✅ File verified in storage: " . $filename);
-                    } else {
-                        Log::error("❌ File NOT found after move: " . $fullPath);
-                    }
-                    
-                } catch (\Exception $e) {
-                    Log::error("❌ Failed to upload file: " . $e->getMessage());
-                    throw $e;
-                }
-                
-                $this->copyToPublicStorage($filename);
-                $updateData['gambar_user'] = $filename;
+                $updateData['gambar_user'] = $this->uploadFile($request->file('gambar_user'));
             }
 
             DB::table('user')->where('id_user', $currentUser->id_user)->update($updateData);
-            
-            Log::info("✅ Profile updated successfully");
+
+            Log::info("✅ Profile updated for user ID: " . $currentUser->id_user);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Profil berhasil diperbarui'
+                'message' => 'Profil berhasil diperbarui',
             ], 200);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation Error: ' . json_encode($e->errors()));
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors'  => $e->errors(),
             ], 422);
-
         } catch (\Exception $e) {
             Log::error('Profile Update Error: ' . $e->getMessage());
-            Log::error('Stack Trace: ' . $e->getTraceAsString());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui profil: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
             ], 500);
         }
     }
