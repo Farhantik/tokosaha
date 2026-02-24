@@ -481,6 +481,38 @@
             visibility: visible;
             opacity: 1;
         }
+
+        /* Footer Styles */
+        .footer-area {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .footer-area .footer-brand {
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .footer-area .footer-sub {
+            color: #4b5563;
+        }
+
+        .footer-area .footer-copyright {
+            color: #374151;
+        }
+
+        .footer-area .footer-meta {
+            color: #374151;
+        }
+
+        .footer-area .footer-meta i {
+            color: #059669;
+        }
+
+        .footer-area .footer-divider {
+            color: #9ca3af;
+        }
     </style>
 
     @stack('styles')
@@ -539,14 +571,6 @@
                     <i class="fas fa-receipt"></i>
                     <span class="sidebar-text">Transaksi Kasir</span>
                 </a>
-
-                {{-- @if (Auth::user()->isOwner())
-                    <a href="{{ route('users.profile') }}"
-                        class="nav-link {{ request()->routeIs('users.profile') ? 'active' : '' }}" title="Profil Saya">
-                        <i class="fas fa-user-circle"></i>
-                        <span class="sidebar-text">Profil Saya</span>
-                    </a>
-                @endif --}}
 
                 <a href="{{ route('settings.index') }}"
                     class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" title="Pengaturan">
@@ -618,7 +642,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden backdrop-blur-sm"></div>
 
         <!-- Main Content Area -->
-        <div id="mainContent" class="main-content flex-1">
+        <div id="mainContent" class="main-content flex-1 flex flex-col">
             <!-- Top Navigation Bar -->
             <header class="glass-effect sticky top-0 z-20 shadow-lg">
                 <div class="px-4 md:px-6 py-3 md:py-4">
@@ -715,7 +739,7 @@
             </header>
 
             <!-- Content Area -->
-            <main class="p-4 md:p-6 content-area">
+            <main class="flex-1 p-4 md:p-6 content-area">
                 <!-- Alert Messages -->
                 @if (session('success'))
                     <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white p-4 mb-4 md:mb-6 rounded-xl alert-slide-in shadow-xl"
@@ -771,6 +795,61 @@
 
                 @yield('content')
             </main>
+
+            <!-- Footer -->
+            <footer class="footer-area px-4 md:px-6 py-4">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+
+                    <!-- Brand -->
+                    <div class="flex items-center gap-2.5">
+                        <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-1.5 rounded-lg shadow-md">
+                            <i class="fas fa-store text-white text-xs"></i>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="footer-brand text-sm">
+                                @if (isset($tokoSettings))
+                                    {{ $tokoSettings->nama_toko ?? 'WPOS' }}
+                                @else
+                                    WPOS
+                                @endif
+                            </span>
+                            <span class="footer-sub text-xs font-medium">— POS System</span>
+                        </div>
+                    </div>
+
+                    <!-- Copyright -->
+                    <div class="footer-copyright text-xs text-center font-medium">
+                        &copy; {{ date('Y') }}
+                        <span class="font-bold" style="color: #065f46;">
+                            @if (isset($tokoSettings))
+                                {{ $tokoSettings->nama_toko ?? 'WPOS' }}
+                            @else
+                                WPOS
+                            @endif
+                        </span>
+                        &mdash; All rights reserved.
+                    </div>
+
+                    <!-- Meta Info -->
+                    <div class="footer-meta flex items-center gap-3 text-xs font-medium">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fas fa-code" style="color: #059669;"></i>
+                            <span>v1.0.0</span>
+                        </div>
+                        <span class="footer-divider">|</span>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fas fa-shield-alt" style="color: #059669;"></i>
+                            <span>Secure</span>
+                        </div>
+                        <span class="footer-divider">|</span>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fas fa-clock" style="color: #059669;"></i>
+                            <span id="footerTime"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </footer>
         </div>
     </div>
 
@@ -874,6 +953,21 @@
             if (stock <= 20) return 'Perlu Restock';
             return 'Aman';
         }
+
+        // Footer live clock
+        function updateFooterTime() {
+            const el = document.getElementById('footerTime');
+            if (el) {
+                const now = new Date();
+                el.textContent = now.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+        }
+        updateFooterTime();
+        setInterval(updateFooterTime, 1000);
     </script>
 
     <script src="{{ asset('js/printer-helper.js') }}"></script>
