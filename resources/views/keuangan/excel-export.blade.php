@@ -1,215 +1,234 @@
-<table>
-    <thead>
-        <!-- Header Title -->
-        <tr>
-            <th colspan="6" style="text-align: center; font-size: 18px; font-weight: bold; background-color: #4CAF50; color: white; padding: 15px;">
-                LAPORAN KEUANGAN
-            </th>
-        </tr>
-        <tr>
-            <th colspan="6" style="text-align: center; background-color: #f0f0f0; padding: 10px;">
-                Periode: {{ \Carbon\Carbon::parse($tanggalMulai)->format('d F Y') }} - {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d F Y') }}
-            </th>
-        </tr>
-        <tr>
-            <th colspan="6" style="text-align: center; background-color: #f0f0f0; padding: 5px; font-size: 11px;">
-                Dicetak pada: {{ date('d F Y H:i:s') }} WIB
-            </th>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        
-        <!-- Ringkasan Keuangan -->
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #2196F3; color: white; padding: 10px; font-size: 14px;">
-                💰 RINGKASAN KEUANGAN
-            </th>
-        </tr>
-        <tr style="background-color: #e8f5e9;">
-            <th colspan="3" style="text-align: left; padding: 10px; font-weight: bold;">Total Pemasukan:</th>
-            <th colspan="3" style="text-align: right; padding: 10px; color: #4CAF50; font-weight: bold;">
-                Rp {{ number_format($totalPemasukan, 0, ',', '.') }}
-            </th>
-        </tr>
-        <tr style="background-color: #ffebee;">
-            <th colspan="3" style="text-align: left; padding: 10px; font-weight: bold;">Total Pengeluaran:</th>
-            <th colspan="3" style="text-align: right; padding: 10px; color: #f44336; font-weight: bold;">
-                Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}
-            </th>
-        </tr>
-        <tr style="background-color: #fff9c4;">
-            <th colspan="3" style="text-align: left; padding: 10px; font-weight: bold;">Saldo Bersih:</th>
-            <th colspan="3" style="text-align: right; padding: 10px; font-weight: bold; color: {{ $saldoBersih >= 0 ? '#4CAF50' : '#f44336' }};">
-                Rp {{ number_format($saldoBersih, 0, ',', '.') }}
-            </th>
-        </tr>
-        <tr style="background-color: #f5f5f5;">
-            <th colspan="3" style="text-align: left; padding: 10px; font-weight: bold;">Total Transaksi:</th>
-            <th colspan="3" style="text-align: right; padding: 10px; font-weight: bold;">
-                {{ number_format($totalTransaksi, 0, ',', '.') }} transaksi
-            </th>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        
-        <!-- Detail Pemasukan -->
-        @if($pemasukan->count() > 0)
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #4CAF50; color: white; padding: 10px; font-size: 14px;">
-                📈 DETAIL PEMASUKAN PER JENIS
-            </th>
-        </tr>
-        <tr style="background-color: #e8f5e9;">
-            <th style="text-align: center; padding: 8px; font-weight: bold;">No</th>
-            <th colspan="3" style="text-align: left; padding: 8px; font-weight: bold;">Jenis Pemasukan</th>
-            <th style="text-align: center; padding: 8px; font-weight: bold;">Jumlah Transaksi</th>
-            <th style="text-align: right; padding: 8px; font-weight: bold;">Total</th>
-        </tr>
-        @foreach($pemasukan as $index => $item)
-        <tr style="background-color: {{ $index % 2 == 0 ? '#ffffff' : '#f9f9f9' }};">
-            <td style="text-align: center; padding: 8px;">{{ $index + 1 }}</td>
-            <td colspan="3" style="padding: 8px;">{{ $item->jenis_keuangan }}</td>
-            <td style="text-align: center; padding: 8px;">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-            <td style="text-align: right; padding: 8px; color: #4CAF50; font-weight: bold;">
-                Rp {{ number_format($item->total, 0, ',', '.') }}
-            </td>
-        </tr>
-        @endforeach
-        <tr style="background-color: #c8e6c9; font-weight: bold;">
-            <td colspan="4" style="text-align: center; padding: 10px; font-weight: bold;">TOTAL PEMASUKAN</td>
-            <td style="text-align: center; padding: 10px; font-weight: bold;">
-                {{ number_format($pemasukan->sum('jumlah'), 0, ',', '.') }}
-            </td>
-            <td style="text-align: right; padding: 10px; color: #2e7d32; font-weight: bold;">
-                Rp {{ number_format($pemasukan->sum('total'), 0, ',', '.') }}
-            </td>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        @else
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #4CAF50; color: white; padding: 10px;">
-                📈 DETAIL PEMASUKAN PER JENIS
-            </th>
-        </tr>
-        <tr>
-            <td colspan="6" style="text-align: center; padding: 20px; font-style: italic; color: #999;">
-                Tidak ada data pemasukan pada periode ini
-            </td>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        @endif
-        
-        <!-- Detail Pengeluaran -->
-        @if($pengeluaran->count() > 0)
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #f44336; color: white; padding: 10px; font-size: 14px;">
-                📉 DETAIL PENGELUARAN PER JENIS
-            </th>
-        </tr>
-        <tr style="background-color: #ffebee;">
-            <th style="text-align: center; padding: 8px; font-weight: bold;">No</th>
-            <th colspan="3" style="text-align: left; padding: 8px; font-weight: bold;">Jenis Pengeluaran</th>
-            <th style="text-align: center; padding: 8px; font-weight: bold;">Jumlah Transaksi</th>
-            <th style="text-align: right; padding: 8px; font-weight: bold;">Total</th>
-        </tr>
-        @foreach($pengeluaran as $index => $item)
-        <tr style="background-color: {{ $index % 2 == 0 ? '#ffffff' : '#f9f9f9' }};">
-            <td style="text-align: center; padding: 8px;">{{ $index + 1 }}</td>
-            <td colspan="3" style="padding: 8px;">{{ $item->jenis_keuangan }}</td>
-            <td style="text-align: center; padding: 8px;">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-            <td style="text-align: right; padding: 8px; color: #f44336; font-weight: bold;">
-                Rp {{ number_format($item->total, 0, ',', '.') }}
-            </td>
-        </tr>
-        @endforeach
-        <tr style="background-color: #ffcdd2; font-weight: bold;">
-            <td colspan="4" style="text-align: center; padding: 10px; font-weight: bold;">TOTAL PENGELUARAN</td>
-            <td style="text-align: center; padding: 10px; font-weight: bold;">
-                {{ number_format($pengeluaran->sum('jumlah'), 0, ',', '.') }}
-            </td>
-            <td style="text-align: right; padding: 10px; color: #c62828; font-weight: bold;">
-                Rp {{ number_format($pengeluaran->sum('total'), 0, ',', '.') }}
-            </td>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        @else
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #f44336; color: white; padding: 10px;">
-                📉 DETAIL PENGELUARAN PER JENIS
-            </th>
-        </tr>
-        <tr>
-            <td colspan="6" style="text-align: center; padding: 20px; font-style: italic; color: #999;">
-                Tidak ada data pengeluaran pada periode ini
-            </td>
-        </tr>
-        <tr><th colspan="6"></th></tr>
-        @endif
-        
-        <!-- Riwayat Transaksi -->
-        <tr>
-            <th colspan="6" style="font-weight: bold; background-color: #FF9800; color: white; padding: 10px; font-size: 14px;">
-                📋 RIWAYAT TRANSAKSI DETAIL
-            </th>
-        </tr>
-        <tr style="background-color: #fff3e0; font-weight: bold;">
-            <th style="text-align: center; padding: 8px;">No</th>
-            <th style="text-align: center; padding: 8px;">Tanggal</th>
-            <th style="text-align: left; padding: 8px;">Jenis</th>
-            <th style="text-align: left; padding: 8px;">Keterangan</th>
-            <th style="text-align: right; padding: 8px;">Nominal</th>
-            <th style="text-align: center; padding: 8px;">Tipe</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if($transaksi->count() > 0)
-            @foreach($transaksi as $index => $t)
-            <tr style="background-color: {{ $index % 2 == 0 ? '#ffffff' : '#f9f9f9' }};">
-                <td style="text-align: center; padding: 8px;">{{ $index + 1 }}</td>
-                <td style="text-align: center; padding: 8px;">
-                    @if($t->penjualan)
-                        {{ \Carbon\Carbon::parse($t->penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}
-                    @elseif($t->penerimaan)
-                        {{ \Carbon\Carbon::parse($t->penerimaan->tanggal_penerimaan)->format('d/m/Y H:i') }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td style="padding: 8px;">{{ $t->jenis->jenis_keuangan ?? '-' }}</td>
-                <td style="padding: 8px;">
-                    @if($t->penjualan)
-                        Penjualan #{{ $t->penjualan->id_penjualan }}
-                    @elseif($t->penerimaan)
-                        Penerimaan #{{ $t->penerimaan->id_penerimaan }}
-                    @else
-                        {{ $t->keterangan ?? '-' }}
-                    @endif
-                </td>
-                <td style="text-align: right; padding: 8px; font-weight: bold; color: {{ $t->jenis && str_contains($t->jenis->jenis_keuangan, 'PEMASUKAN') ? '#4CAF50' : '#f44336' }};">
-                    Rp {{ number_format($t->total_keuangan, 0, ',', '.') }}
-                </td>
-                <td style="text-align: center; padding: 8px;">
-                    @if($t->jenis && str_contains($t->jenis->jenis_keuangan, 'PEMASUKAN'))
-                        <span style="background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;">MASUK</span>
-                    @else
-                        <span style="background-color: #f44336; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;">KELUAR</span>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        @else
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Laporan Keuangan - Excel Export</title>
+</head>
+
+<body>
+    <table border="1" cellpadding="0" cellspacing="0">
+        <thead>
+            <!-- ══════════════════════════════════════════════════════ -->
+            <!-- HEADER UTAMA -->
+            <!-- ══════════════════════════════════════════════════════ -->
             <tr>
-                <td colspan="6" style="text-align: center; padding: 30px; font-style: italic; color: #999; background-color: #f9f9f9;">
-                    Tidak ada data transaksi pada periode ini
-                </td>
+                <th colspan="6"
+                    style="text-align:center; font-size:22px; font-weight:900; background-color:#15803d; color:white; padding:18px; letter-spacing:1.5px;">
+                    LAPORAN KEUANGAN
+                </th>
             </tr>
-        @endif
-    </tbody>
-    <tfoot>
-        <tr><th colspan="6" style="border: none;"></th></tr>
-        <tr>
-            <th colspan="6" style="text-align: center; padding: 15px; background-color: #f5f5f5; border-top: 3px solid #4CAF50; font-size: 10px; font-style: italic;">
-                Laporan ini digenerate secara otomatis oleh sistem pada {{ date('d F Y H:i:s') }} WIB<br>
-                Dokumen ini sah tanpa tanda tangan
-            </th>
-        </tr>
-    </tfoot>
-</table>
+            <tr>
+                <th colspan="6"
+                    style="text-align:center; background-color:#166534; color:#d1fae5; padding:10px; font-size:13px; font-weight:600;">
+                    Periode: {{ \Carbon\Carbon::parse($tanggalMulai)->format('d F Y') }} s/d
+                    {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d F Y') }}
+                </th>
+            </tr>
+            <tr>
+                <th colspan="6"
+                    style="text-align:center; background-color:#14532d; color:#86efac; padding:6px; font-size:11px; font-weight:normal;">
+                    Dicetak pada: {{ date('d F Y H:i:s') }} WIB
+                </th>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+                <th colspan="6" style="background-color:#ffffff; padding:8px; border:none;"></th>
+            </tr>
+
+            <!-- ══════════════════════════════════════════════════════ -->
+            <!-- RINGKASAN KEUANGAN -->
+            <!-- ══════════════════════════════════════════════════════ -->
+            <tr>
+                <th colspan="6"
+                    style="font-weight:800; background-color:#15803d; color:white; padding:12px; font-size:14px; text-align:left;">
+                    RINGKASAN KEUANGAN
+                </th>
+            </tr>
+
+            <!-- Total Pemasukan -->
+            <tr style="background-color:#f0fdf4;">
+                <th colspan="3"
+                    style="text-align:left; padding:12px 16px; font-weight:700; color:#1e293b; font-size:13px;">
+                    Total Pemasukan
+                </th>
+                <th colspan="3"
+                    style="text-align:right; padding:12px 16px; color:#15803d; font-weight:800; font-size:14px;">
+                    Rp {{ number_format($totalPemasukan, 0, ',', '.') }}
+                </th>
+            </tr>
+
+            <!-- Total Pengeluaran -->
+            <tr style="background-color:#fff1f2;">
+                <th colspan="3"
+                    style="text-align:left; padding:12px 16px; font-weight:700; color:#1e293b; font-size:13px;">
+                    Total Pengeluaran
+                </th>
+                <th colspan="3"
+                    style="text-align:right; padding:12px 16px; color:#dc2626; font-weight:800; font-size:14px;">
+                    Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}
+                </th>
+            </tr>
+
+            <!-- Saldo Bersih -->
+            <tr style="background-color:{{ $saldoBersih >= 0 ? '#f0fdfa' : '#fef2f2' }};">
+                <th colspan="3"
+                    style="text-align:left; padding:12px 16px; font-weight:800; color:#1e293b; font-size:13px;">
+                    Saldo Bersih
+                </th>
+                <th colspan="3"
+                    style="text-align:right; padding:12px 16px; font-weight:900; font-size:15px; color:{{ $saldoBersih >= 0 ? '#0f766e' : '#dc2626' }};">
+                    Rp {{ number_format($saldoBersih, 0, ',', '.') }}
+                </th>
+            </tr>
+
+            <!-- Total Transaksi -->
+            <tr style="background-color:#eff6ff;">
+                <th colspan="3"
+                    style="text-align:left; padding:12px 16px; font-weight:700; color:#1e293b; font-size:13px;">
+                    Total Transaksi
+                </th>
+                <th colspan="3"
+                    style="text-align:right; padding:12px 16px; color:#1d4ed8; font-weight:800; font-size:13px;">
+                    {{ number_format($totalTransaksi, 0, ',', '.') }} transaksi
+                </th>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+                <th colspan="6" style="background-color:#ffffff; padding:10px; border:none;"></th>
+            </tr>
+
+            <!-- ══════════════════════════════════════════════════════ -->
+            <!-- DETAIL TRANSAKSI -->
+            <!-- ══════════════════════════════════════════════════════ -->
+            <tr>
+                <th colspan="6"
+                    style="font-weight:800; background-color:#15803d; color:white; padding:12px; font-size:14px; text-align:left;">
+                    DETAIL TRANSAKSI
+                </th>
+            </tr>
+
+            <!-- Header Tabel Detail -->
+            <tr style="background-color:#dcfce7;">
+                <th style="text-align:center; padding:10px; font-weight:700; color:#14532d; font-size:11px;">No</th>
+                <th style="text-align:center; padding:10px; font-weight:700; color:#14532d; font-size:11px;">Tanggal
+                </th>
+                <th style="text-align:left; padding:10px; font-weight:700; color:#14532d; font-size:11px;">Jenis</th>
+                <th style="text-align:left; padding:10px; font-weight:700; color:#14532d; font-size:11px;">Keterangan
+                </th>
+                <th style="text-align:right; padding:10px; font-weight:700; color:#14532d; font-size:11px;">Pemasukan
+                </th>
+                <th style="text-align:right; padding:10px; font-weight:700; color:#14532d; font-size:11px;">Pengeluaran
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if ($transaksi->count() > 0)
+                @foreach ($transaksi as $index => $t)
+                    @php
+                        $isPemasukan = str_contains(strtoupper($t->jenis->jenis_keuangan ?? ''), 'PEMASUKAN');
+                        $bgColor = $index % 2 == 0 ? '#ffffff' : '#f9fffe';
+                    @endphp
+                    <tr style="background-color:{{ $bgColor }};">
+                        <!-- No -->
+                        <td style="text-align:center; padding:10px; color:#6b7280; font-size:11px;">
+                            {{ $index + 1 }}
+                        </td>
+
+                        <!-- Tanggal -->
+                        <td style="text-align:center; padding:10px; color:#374151; font-size:11px;">
+                            @if ($t->penjualan)
+                                {{ \Carbon\Carbon::parse($t->penjualan->tanggal_penjualan)->format('d/m/Y H:i') }}
+                            @elseif($t->penerimaan)
+                                {{ \Carbon\Carbon::parse($t->penerimaan->tanggal_penerimaan)->format('d/m/Y H:i') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <!-- Jenis -->
+                        <td style="padding:10px; color:#374151; font-size:11px; font-weight:600;">
+                            {{ $t->jenis->jenis_keuangan ?? '-' }}
+                        </td>
+
+                        <!-- Keterangan -->
+                        <td style="padding:10px; color:#6b7280; font-size:11px;">
+                            @if ($t->penjualan)
+                                Penjualan #{{ $t->penjualan->id_penjualan }}
+                            @elseif($t->penerimaan)
+                                Penerimaan #{{ $t->penerimaan->id_penerimaan }}
+                            @else
+                                {{ $t->keterangan ?? '-' }}
+                            @endif
+                        </td>
+
+                        <!-- Pemasukan -->
+                        <td
+                            style="text-align:right; padding:10px; font-weight:700; font-size:12px; color:{{ $isPemasukan ? '#15803d' : '#e5e7eb' }};">
+                            @if ($isPemasukan)
+                                Rp {{ number_format($t->total_keuangan, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <!-- Pengeluaran -->
+                        <td
+                            style="text-align:right; padding:10px; font-weight:700; font-size:12px; color:{{ !$isPemasukan ? '#dc2626' : '#e5e7eb' }};">
+                            @if (!$isPemasukan)
+                                Rp {{ number_format($t->total_keuangan, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+
+                <!-- Total Row -->
+                <tr style="background-color:#dcfce7; border-top:2px solid #15803d;">
+                    <td colspan="4"
+                        style="text-align:right; padding:12px; font-weight:800; color:#14532d; font-size:12px;">
+                        TOTAL
+                    </td>
+                    <td style="text-align:right; padding:12px; font-weight:800; color:#15803d; font-size:13px;">
+                        Rp
+                        {{ number_format($transaksi->where(function ($t) {return str_contains(strtoupper($t->jenis->jenis_keuangan ?? ''), 'PEMASUKAN');})->sum('total_keuangan'),0,',','.') }}
+                    </td>
+                    <td style="text-align:right; padding:12px; font-weight:800; color:#dc2626; font-size:13px;">
+                        Rp
+                        {{ number_format($transaksi->where(function ($t) {return !str_contains(strtoupper($t->jenis->jenis_keuangan ?? ''), 'PEMASUKAN');})->sum('total_keuangan'),0,',','.') }}
+                    </td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6"
+                        style="text-align:center; padding:30px; font-style:italic; color:#9ca3af; background-color:#f9fffe; font-size:12px;">
+                        Tidak ada data transaksi pada periode ini
+                    </td>
+                </tr>
+            @endif
+        </tbody>
+
+        <tfoot>
+            <!-- Spacer -->
+            <tr>
+                <th colspan="6" style="background-color:#ffffff; padding:8px; border:none;"></th>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+                <th colspan="6"
+                    style="text-align:center; padding:14px; background-color:#f0fdf4; border-top:3px solid #15803d; font-size:10px; font-style:italic; color:#6b7280; font-weight:normal;">
+                    Laporan ini digenerate secara otomatis oleh sistem pada {{ date('d F Y H:i:s') }} WIB - Dokumen ini
+                    sah tanpa tanda tangan dan meterai
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+
+</html>

@@ -97,7 +97,6 @@
             border-color: #7c3aed !important;
         }
 
-        /* ✅ FIX: Kedua panel sejajar dengan tinggi penuh yang sama */
         .panel-produk,
         .panel-keranjang {
             display: flex;
@@ -111,7 +110,6 @@
             flex-direction: column;
         }
 
-        /* Tinggi panel disinkronkan via CSS variabel di level grid */
         .grid-transaksi {
             align-items: stretch;
         }
@@ -125,6 +123,39 @@
         .grid-transaksi>.col-produk>.panel-produk,
         .grid-transaksi>.col-keranjang>.panel-keranjang {
             flex: 1;
+        }
+
+        /* Pagination styles */
+        .piutang-page-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: white;
+            color: #4b5563;
+        }
+
+        .piutang-page-btn:hover:not(:disabled) {
+            border-color: #f97316;
+            color: #f97316;
+        }
+
+        .piutang-page-btn.active {
+            border-color: #f97316;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .piutang-page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
     </style>
 @endpush
@@ -194,7 +225,6 @@
             </div>
         </div>
 
-        {{-- ✅ FIX: grid-transaksi + items-stretch agar kedua panel sama tinggi --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-transaksi items-stretch">
 
             <!-- ── Daftar Produk ── -->
@@ -281,7 +311,6 @@
                         </div>
                     </div>
 
-                    {{-- ✅ FIX: flex-1 + overflow agar grid produk mengisi sisa tinggi panel --}}
                     <div id="produkList"
                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-1"
                         style="max-height: calc(100vh - 22rem); min-height: 300px;">
@@ -334,7 +363,6 @@
 
             <!-- ── Keranjang Desktop ── -->
             <div class="hidden lg:flex col-keranjang">
-                {{-- ✅ FIX: sticky + h-full + flex column agar keranjang sejajar dengan produk --}}
                 <div class="bg-white rounded-2xl shadow-lg p-6 panel-keranjang sticky top-6 w-full"
                     style="max-height: calc(100vh - 7rem); overflow-y: auto;">
 
@@ -371,10 +399,6 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
-                                <button type="button" id="btnBayarNantiDesktop" onclick="toggleBayarNantiGlobal()"
-                                    class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-purple-300 text-purple-600 hover:bg-purple-600 hover:text-white transition-all">
-                                    <i class="fas fa-clock mr-1"></i> Bayar Nanti
-                                </button>
                             </div>
                             <div id="paymentRowsDesktop" class="space-y-2"></div>
                         </div>
@@ -539,6 +563,7 @@
                     </div>
                 </div>
                 <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                    <!-- Filter Tabs -->
                     <div class="mb-4 flex gap-2">
                         <button
                             class="piutang-filter-btn active px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-semibold text-sm"
@@ -553,6 +578,22 @@
                             class="piutang-filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold text-sm"
                             data-status="lunas">Lunas</button>
                     </div>
+
+                    <!-- Per Page Selector -->
+                    <div class="mb-3 flex items-center gap-2">
+                        <span class="text-sm text-gray-500">Tampilkan:</span>
+                        <select id="piutangPerPageSelect"
+                            class="px-3 py-1.5 border-2 border-gray-200 rounded-lg text-sm font-semibold text-gray-700 focus:border-orange-400 focus:outline-none"
+                            onchange="window.piutangChangePerPage(this.value)">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span class="text-sm text-gray-500">data per halaman</span>
+                    </div>
+
+                    <!-- List Container -->
                     <div id="piutangList" class="space-y-3">
                         <div class="text-center py-8">
                             <i class="fas fa-spinner fa-spin text-4xl text-gray-300 mb-2"></i>
@@ -587,7 +628,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ====================================================================
-        // UTILITY: FORMAT ANGKA RIBUAN (titik sebagai pemisah)
+        // UTILITY: FORMAT ANGKA RIBUAN
         // ====================================================================
         function formatRibuanInput(input) {
             let cursorPos = input.selectionStart;
@@ -627,7 +668,7 @@
         }
 
         // ====================================================================
-        // CATEGORY DROPDOWN FUNCTIONS
+        // CATEGORY DROPDOWN
         // ====================================================================
         function toggleCategoryDropdown() {
             const dropdown = document.getElementById('categoryDropdown');
@@ -654,7 +695,7 @@
         });
 
         // ====================================================================
-        // TRANSAKSI KASIR - MAIN APP
+        // APP STATE
         // ====================================================================
         window.AppState = {
             cart: [],
@@ -662,7 +703,9 @@
             currentDetailProduct: null,
             paymentRows: [],
             piutangData: [],
-            currentPiutangFilter: 'all'
+            currentPiutangFilter: 'all',
+            piutangPage: 1,
+            piutangPerPage: 10,
         };
 
         (function() {
@@ -1209,18 +1252,14 @@
                         return;
                     }
                     const hasBayarNanti = PaymentManager.isPiutangMode();
-
-                    // ── Tentukan status pembayaran yang benar ──
                     let statusPembayaran;
                     if (hasBayarNanti) {
-                        const sudahBayarCek = AppState.paymentRows
-                            .filter(r => r.method !== 'bayar_nanti')
+                        const sudahBayarCek = AppState.paymentRows.filter(r => r.method !== 'bayar_nanti')
                             .reduce((s, r) => s + (r.amount || 0), 0);
                         statusPembayaran = sudahBayarCek > 0 ? 'bayar_sebagian' : 'belum_bayar';
                     } else {
                         statusPembayaran = 'lunas';
                     }
-
                     let totalBayar = 0,
                         kembalian = 0;
                     if (hasBayarNanti) {
@@ -1228,11 +1267,8 @@
                             s, r) => s + (r.amount || 0), 0);
                         totalBayar = sudahBayar;
                         const sisaPiutang = AppState.totalBelanja - sudahBayar;
-
-                        // Label & warna status di dialog konfirmasi
                         const statusLabel = sudahBayar > 0 ? 'Bayar Sebagian' : 'Belum Bayar';
                         const statusColor = sudahBayar > 0 ? 'text-yellow-600' : 'text-red-600';
-
                         const result = await Swal.fire({
                             title: 'Konfirmasi Bayar Nanti',
                             html: `<div class="text-left space-y-2 bg-purple-50 rounded-xl p-4">
@@ -1348,13 +1384,10 @@
                                 if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
                                     `/transaksi/struk/${data.data.id_penjualan}`, '_blank');
                             } else {
-                                // ── Status label & warna di dialog sukses piutang ──
                                 const isBayarSebagian = statusPembayaran === 'bayar_sebagian';
-                                const sudahBayarFinal = AppState.paymentRows
-                                    .filter(r => r.method !== 'bayar_nanti')
-                                    .reduce((s, r) => s + (r.amount || 0), 0);
+                                const sudahBayarFinal = AppState.paymentRows.filter(r => r.method !==
+                                    'bayar_nanti').reduce((s, r) => s + (r.amount || 0), 0);
                                 const sisaFinal = AppState.totalBelanja - sudahBayarFinal;
-
                                 const swalResult = await Swal.fire({
                                     icon: 'success',
                                     title: isBayarSebagian ? 'Bayar Sebagian Tercatat!' :
@@ -1362,15 +1395,10 @@
                                     html: `<div class="${isBayarSebagian ? 'bg-yellow-50' : 'bg-orange-50'} rounded-xl p-4">
                                         <p class="text-sm text-gray-600">ID Transaksi</p>
                                         <p class="text-2xl font-bold ${isBayarSebagian ? 'text-yellow-600' : 'text-orange-600'}">#${data.data.id_penjualan}</p>
-                                        <p class="text-xs font-semibold mt-2 ${isBayarSebagian ? 'text-yellow-600' : 'text-red-600'}">
-                                            Status: ${isBayarSebagian ? 'Bayar Sebagian' : 'Belum Bayar'}
-                                        </p>
+                                        <p class="text-xs font-semibold mt-2 ${isBayarSebagian ? 'text-yellow-600' : 'text-red-600'}">Status: ${isBayarSebagian ? 'Bayar Sebagian' : 'Belum Bayar'}</p>
                                         <div class="border-t mt-3 pt-3 space-y-1">
                                             <p class="text-xs text-gray-600">Total Tagihan: <span class="font-bold">${Utils.formatRupiah(AppState.totalBelanja)}</span></p>
-                                            ${isBayarSebagian ? `
-                                                    <p class="text-xs text-green-600">Dibayar: <span class="font-bold">${Utils.formatRupiah(sudahBayarFinal)}</span></p>
-                                                    <p class="text-xs text-orange-600 font-bold">Sisa Piutang: ${Utils.formatRupiah(sisaFinal)}</p>
-                                                ` : ''}
+                                            ${isBayarSebagian ? `<p class="text-xs text-green-600">Dibayar: <span class="font-bold">${Utils.formatRupiah(sudahBayarFinal)}</span></p><p class="text-xs text-orange-600 font-bold">Sisa Piutang: ${Utils.formatRupiah(sisaFinal)}</p>` : ''}
                                         </div>
                                     </div>`,
                                     showCancelButton: true,
@@ -1433,7 +1461,7 @@
             };
 
             // ================================================================
-            // PIUTANG MANAGER
+            // PIUTANG MANAGER — dengan pagination
             // ================================================================
             const PiutangManager = {
                 init() {
@@ -1453,6 +1481,7 @@
                         const result = await response.json();
                         if (result.success) {
                             AppState.piutangData = result.data;
+                            AppState.piutangPage = 1;
                             this.renderPiutangList();
                         } else {
                             throw new Error(result.message || 'Gagal memuat data');
@@ -1466,16 +1495,32 @@
                     DOM.piutangFilterBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     AppState.currentPiutangFilter = btn.dataset.status;
+                    AppState.piutangPage = 1; // reset ke halaman 1 saat filter berubah
                     this.renderPiutangList();
                 },
                 renderPiutangList() {
-                    const filtered = AppState.currentPiutangFilter === 'all' ? AppState.piutangData : AppState
-                        .piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
-                    if (filtered.length === 0) {
+                    // ── Filter data ──
+                    const filtered = AppState.currentPiutangFilter === 'all' ?
+                        AppState.piutangData :
+                        AppState.piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
+
+                    const totalItems = filtered.length;
+                    const totalPages = Math.max(1, Math.ceil(totalItems / AppState.piutangPerPage));
+
+                    // Pastikan page tidak melebihi total
+                    if (AppState.piutangPage > totalPages) AppState.piutangPage = totalPages;
+                    if (AppState.piutangPage < 1) AppState.piutangPage = 1;
+
+                    const start = (AppState.piutangPage - 1) * AppState.piutangPerPage;
+                    const end = Math.min(start + AppState.piutangPerPage, totalItems);
+                    const paginated = filtered.slice(start, end);
+
+                    if (totalItems === 0) {
                         DOM.piutangList.innerHTML =
                             `<div class="text-center py-8"><i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">Tidak ada data piutang</p></div>`;
                         return;
                     }
+
                     const statusConfig = {
                         belum_bayar: {
                             gradient: 'from-orange-50 to-red-50 border-orange-200',
@@ -1496,7 +1541,9 @@
                             amountColor: 'text-green-600'
                         }
                     };
-                    DOM.piutangList.innerHTML = filtered.map(p => {
+
+                    // ── Render cards ──
+                    const cardsHTML = paginated.map(p => {
                         const cfg = statusConfig[p.status_pembayaran] || statusConfig.belum_bayar;
                         const showBayarBtn = p.status_pembayaran === 'belum_bayar' || p
                             .status_pembayaran === 'bayar_sebagian';
@@ -1505,7 +1552,11 @@
                         const sudahDibayar = parseFloat(p.total_pembayaran) - sisaTagihan;
                         return `<div class="bg-gradient-to-r ${cfg.gradient} border-2 rounded-xl p-4">
                             <div class="flex items-start justify-between mb-3">
-                                <div><p class="text-xs text-gray-500 mb-1">${p.tanggal_penjualan}</p><p class="font-bold text-lg text-gray-800">#${p.id_penjualan}</p>${p.kasir ? `<p class="text-xs text-gray-500">Kasir: ${p.kasir}</p>` : ''}</div>
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">${p.tanggal_penjualan}</p>
+                                    <p class="font-bold text-lg text-gray-800">${p.id_penjualan}</p>
+                                    ${p.kasir ? `<p class="text-xs text-gray-500">Kasir: ${p.kasir}</p>` : ''}
+                                </div>
                                 <span class="px-3 py-1 rounded-full text-xs font-bold ${cfg.badge}">${cfg.label}</span>
                             </div>
                             <div class="flex items-center justify-between">
@@ -1522,6 +1573,73 @@
                             </div>
                         </div>`;
                     }).join('');
+
+                    // ── Render pagination ──
+                    let paginationHTML = '';
+                    if (totalPages > 1) {
+                        // Tentukan range halaman yang ditampilkan (max 5 tombol angka)
+                        const maxVisible = 5;
+                        let pageStart = Math.max(1, AppState.piutangPage - Math.floor(maxVisible / 2));
+                        let pageEnd = Math.min(totalPages, pageStart + maxVisible - 1);
+                        if (pageEnd - pageStart < maxVisible - 1) {
+                            pageStart = Math.max(1, pageEnd - maxVisible + 1);
+                        }
+
+                        const pageButtons = [];
+                        for (let i = pageStart; i <= pageEnd; i++) {
+                            const isActive = i === AppState.piutangPage;
+                            pageButtons.push(`<button onclick="window.piutangGoToPage(${i})"
+                                class="piutang-page-btn ${isActive ? 'active' : ''}">${i}</button>`);
+                        }
+
+                        paginationHTML = `
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t-2 border-gray-100">
+                            <p class="text-sm text-gray-500 order-2 sm:order-1">
+                                Menampilkan
+                                <span class="font-bold text-gray-700">${start + 1}–${end}</span>
+                                dari
+                                <span class="font-bold text-gray-700">${totalItems}</span>
+                                data
+                            </p>
+                            <div class="flex items-center gap-1 order-1 sm:order-2">
+                                <!-- Tombol First -->
+                                <button onclick="window.piutangGoToPage(1)"
+                                    class="piutang-page-btn"
+                                    ${AppState.piutangPage === 1 ? 'disabled' : ''}
+                                    title="Halaman pertama">
+                                    <i class="fas fa-angle-double-left text-xs"></i>
+                                </button>
+                                <!-- Tombol Prev -->
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage - 1})"
+                                    class="piutang-page-btn"
+                                    ${AppState.piutangPage === 1 ? 'disabled' : ''}
+                                    title="Halaman sebelumnya">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                </button>
+
+                                ${pageStart > 1 ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
+                                ${pageButtons.join('')}
+                                ${pageEnd < totalPages ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
+
+                                <!-- Tombol Next -->
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage + 1})"
+                                    class="piutang-page-btn"
+                                    ${AppState.piutangPage === totalPages ? 'disabled' : ''}
+                                    title="Halaman berikutnya">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                                <!-- Tombol Last -->
+                                <button onclick="window.piutangGoToPage(${totalPages})"
+                                    class="piutang-page-btn"
+                                    ${AppState.piutangPage === totalPages ? 'disabled' : ''}
+                                    title="Halaman terakhir">
+                                    <i class="fas fa-angle-double-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>`;
+                    }
+
+                    DOM.piutangList.innerHTML = `<div class="space-y-3">${cardsHTML}</div>${paginationHTML}`;
                 },
                 async showDetailPiutang(idPenjualan) {
                     try {
@@ -1531,7 +1649,7 @@
                             const data = result.data;
                             const items = data.items.map(item =>
                                 `<tr><td class="px-4 py-2 border-b">${item.nama_produk}</td><td class="px-4 py-2 border-b text-center">${item.qty}</td><td class="px-4 py-2 border-b text-right">${Utils.formatRupiah(item.harga)}</td><td class="px-4 py-2 border-b text-right font-bold">${Utils.formatRupiah(item.subtotal)}</td></tr>`
-                                ).join('');
+                            ).join('');
                             const statusConfig = {
                                 belum_bayar: 'bg-red-600',
                                 bayar_sebagian: 'bg-yellow-600',
@@ -1790,10 +1908,35 @@
                 }
             };
 
+            // ── Global bindings ──
             window.cartChangeQty = (id, delta) => CartManager.changeQty(id, delta);
             window.cartRemoveItem = (id) => CartManager.removeItem(id);
             window.piutangShowDetail = (id) => PiutangManager.showDetailPiutang(id);
             window.piutangBayar = (id, total, sisa) => PiutangManager.bayarPiutang(id, total, sisa ?? total);
+
+            // ── Pagination navigation ──
+            window.piutangGoToPage = function(page) {
+                const filtered = AppState.currentPiutangFilter === 'all' ?
+                    AppState.piutangData :
+                    AppState.piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
+                const totalPages = Math.max(1, Math.ceil(filtered.length / AppState.piutangPerPage));
+                if (page < 1 || page > totalPages) return;
+                AppState.piutangPage = page;
+                PiutangManager.renderPiutangList();
+                // Scroll ke atas list piutang
+                const listEl = document.getElementById('piutangList');
+                if (listEl) listEl.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            };
+
+            // ── Per page change ──
+            window.piutangChangePerPage = function(value) {
+                AppState.piutangPerPage = parseInt(value) || 10;
+                AppState.piutangPage = 1;
+                PiutangManager.renderPiutangList();
+            };
 
             function initApp() {
                 PaymentManager.init();
