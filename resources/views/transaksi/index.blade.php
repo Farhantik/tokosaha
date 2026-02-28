@@ -85,6 +85,47 @@
             border-color: #f97316;
             background: linear-gradient(135deg, #ffedd5, #fed7aa);
         }
+
+        .pay-method-btn.active-bayarnanti {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        }
+
+        .btn-bayar-nanti-active {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+            color: white !important;
+            border-color: #7c3aed !important;
+        }
+
+        /* ✅ FIX: Kedua panel sejajar dengan tinggi penuh yang sama */
+        .panel-produk,
+        .panel-keranjang {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-produk .panel-body,
+        .panel-keranjang .panel-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tinggi panel disinkronkan via CSS variabel di level grid */
+        .grid-transaksi {
+            align-items: stretch;
+        }
+
+        .grid-transaksi>.col-produk,
+        .grid-transaksi>.col-keranjang {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-transaksi>.col-produk>.panel-produk,
+        .grid-transaksi>.col-keranjang>.panel-keranjang {
+            flex: 1;
+        }
     </style>
 @endpush
 
@@ -153,10 +194,14 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Daftar Produk -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6">
+        {{-- ✅ FIX: grid-transaksi + items-stretch agar kedua panel sama tinggi --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-transaksi items-stretch">
+
+            <!-- ── Daftar Produk ── -->
+            <div class="lg:col-span-2 col-produk">
+                <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6 panel-produk h-full">
+
+                    <!-- Panel Header -->
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-gray-800 flex items-center">
                             <div
@@ -183,7 +228,6 @@
                             <!-- Dropdown Menu -->
                             <div id="categoryDropdown"
                                 class="hidden absolute left-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-30 min-w-[220px] overflow-hidden">
-
                                 <button
                                     class="category-btn active w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
                                     data-category="all" data-label="Semua Kategori" data-icon="fa-th-large"
@@ -191,9 +235,7 @@
                                     <i class="fas fa-th-large text-emerald-600 w-5"></i>
                                     <span>Semua</span>
                                 </button>
-
                                 <div class="border-t border-gray-100"></div>
-
                                 <button
                                     class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
                                     data-category="makanan" data-label="Makanan" data-icon="fa-utensils"
@@ -201,9 +243,7 @@
                                     <i class="fas fa-utensils text-orange-500 w-5"></i>
                                     <span>Makanan</span>
                                 </button>
-
                                 <div class="border-t border-gray-100"></div>
-
                                 <button
                                     class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
                                     data-category="minuman" data-label="Minuman" data-icon="fa-coffee"
@@ -211,9 +251,7 @@
                                     <i class="fas fa-coffee text-blue-500 w-5"></i>
                                     <span>Minuman</span>
                                 </button>
-
                                 <div class="border-t border-gray-100"></div>
-
                                 <button
                                     class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
                                     data-category="snack" data-label="Snack" data-icon="fa-cookie-bite"
@@ -221,9 +259,7 @@
                                     <i class="fas fa-cookie-bite text-yellow-500 w-5"></i>
                                     <span>Snack</span>
                                 </button>
-
                                 <div class="border-t border-gray-100"></div>
-
                                 <button
                                     class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
                                     data-category="kebutuhan rumah tangga" data-label="Kebutuhan RT" data-icon="fa-home"
@@ -231,7 +267,6 @@
                                     <i class="fas fa-home text-purple-500 w-5"></i>
                                     <span>Kebutuhan RT</span>
                                 </button>
-
                             </div>
                         </div>
                     </div>
@@ -246,11 +281,12 @@
                         </div>
                     </div>
 
-                    <!-- Product Grid -->
+                    {{-- ✅ FIX: flex-1 + overflow agar grid produk mengisi sisa tinggi panel --}}
                     <div id="produkList"
-                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[calc(100vh-24rem)] overflow-y-auto pr-2">
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-1"
+                        style="max-height: calc(100vh - 22rem); min-height: 300px;">
                         @foreach ($produk as $item)
-                            <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
+                            <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 cursor-pointer {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
                                 data-id="{{ $item->id_produk }}" data-nama="{{ $item->nama_produk }}"
                                 data-harga="{{ $item->harga_produk }}" data-stok="{{ $item->stock_produk }}"
                                 data-kategori="{{ strtolower($item->kategori_produk ?? 'lainnya') }}"
@@ -292,12 +328,16 @@
                             </div>
                         @endforeach
                     </div>
+
                 </div>
             </div>
 
-            <!-- Keranjang - Desktop -->
-            <div class="hidden lg:block">
-                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+            <!-- ── Keranjang Desktop ── -->
+            <div class="hidden lg:flex col-keranjang">
+                {{-- ✅ FIX: sticky + h-full + flex column agar keranjang sejajar dengan produk --}}
+                <div class="bg-white rounded-2xl shadow-lg p-6 panel-keranjang sticky top-6 w-full"
+                    style="max-height: calc(100vh - 7rem); overflow-y: auto;">
+
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-gray-800 flex items-center">
                             <div
@@ -311,14 +351,14 @@
                     </div>
 
                     <!-- Cart Items -->
-                    <div id="cartItems" class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                    <div id="cartItems" class="space-y-2 mb-4 overflow-y-auto" style="max-height: 280px;">
                         <div class="text-center py-8">
                             <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
                             <p class="text-gray-500 text-sm">Keranjang kosong</p>
                         </div>
                     </div>
 
-                    <!-- Total -->
+                    <!-- Total & Payment -->
                     <div class="border-t-2 border-gray-200 pt-4 space-y-3">
                         <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-3">
                             <div class="flex justify-between text-lg font-bold text-gray-800">
@@ -331,14 +371,12 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
+                                <button type="button" id="btnBayarNantiDesktop" onclick="toggleBayarNantiGlobal()"
+                                    class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-purple-300 text-purple-600 hover:bg-purple-600 hover:text-white transition-all">
+                                    <i class="fas fa-clock mr-1"></i> Bayar Nanti
+                                </button>
                             </div>
-                            <div id="paymentRowsDesktop" class="space-y-2">
-                                <!-- Rows injected by JS -->
-                            </div>
-                            <button id="btnAddPaymentDesktop"
-                                class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition hidden">
-                                <i class="fas fa-plus"></i> Tambah Metode Bayar
-                            </button>
+                            <div id="paymentRowsDesktop" class="space-y-2"></div>
                         </div>
 
                         <!-- Kembalian -->
@@ -352,11 +390,11 @@
 
                         <!-- Info Piutang -->
                         <div id="infoPiutang" class="hidden">
-                            <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4">
+                            <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-4">
                                 <div class="flex items-start">
-                                    <i class="fas fa-exclamation-circle text-orange-600 text-xl mr-3 mt-1"></i>
+                                    <i class="fas fa-clock text-purple-600 text-xl mr-3 mt-1"></i>
                                     <div>
-                                        <p class="font-bold text-gray-800 mb-1">Mode Piutang</p>
+                                        <p class="font-bold text-gray-800 mb-1">Mode Bayar Nanti</p>
                                         <p class="text-sm text-gray-600">Transaksi akan dicatat sebagai piutang dengan
                                             status <span class="font-bold text-orange-600">Belum Bayar</span></p>
                                     </div>
@@ -412,14 +450,12 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
+                            <button type="button" id="btnBayarNantiMobile" onclick="toggleBayarNantiGlobal()"
+                                class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-purple-300 text-purple-600 hover:bg-purple-600 hover:text-white transition-all">
+                                <i class="fas fa-clock mr-1"></i> Bayar Nanti
+                            </button>
                         </div>
-                        <div id="paymentRowsMobile" class="space-y-2">
-                            <!-- Rows injected by JS -->
-                        </div>
-                        <button id="btnAddPaymentMobile"
-                            class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition hidden">
-                            <i class="fas fa-plus"></i> Tambah Metode Bayar
-                        </button>
+                        <div id="paymentRowsMobile" class="space-y-2"></div>
                     </div>
 
                     <!-- Kembalian Mobile -->
@@ -432,11 +468,11 @@
 
                     <!-- Info Piutang Mobile -->
                     <div id="infoPiutangMobile" class="hidden">
-                        <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-3">
+                        <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-3">
                             <div class="flex items-start">
-                                <i class="fas fa-exclamation-circle text-orange-600 mr-2 mt-1"></i>
+                                <i class="fas fa-clock text-purple-600 mr-2 mt-1"></i>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm mb-1">Mode Piutang</p>
+                                    <p class="font-bold text-gray-800 text-sm mb-1">Mode Bayar Nanti</p>
                                     <p class="text-xs text-gray-600">Transaksi dicatat sebagai <span
                                             class="font-bold text-orange-600">Belum Bayar</span></p>
                                 </div>
@@ -551,6 +587,46 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ====================================================================
+        // UTILITY: FORMAT ANGKA RIBUAN (titik sebagai pemisah)
+        // ====================================================================
+        function formatRibuanInput(input) {
+            let cursorPos = input.selectionStart;
+            let rawValue = input.value;
+            let digits = rawValue.replace(/\D/g, '');
+            let formatted = digits === '' ? '' : parseInt(digits, 10).toLocaleString('id-ID');
+            let rawBefore = rawValue.substring(0, cursorPos).replace(/\D/g, '').length;
+            input.value = formatted;
+            let newPos = 0,
+                count = 0;
+            for (let i = 0; i < formatted.length; i++) {
+                if (/\d/.test(formatted[i])) count++;
+                if (count === rawBefore) {
+                    newPos = i + 1;
+                    break;
+                }
+            }
+            input.setSelectionRange(newPos, newPos);
+        }
+
+        function parseRibuan(value) {
+            if (typeof value === 'number') return value;
+            return parseFloat(String(value).replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        // ====================================================================
+        // GLOBAL FALLBACK
+        // ====================================================================
+        function toggleBayarNantiGlobal() {
+            if (window.PaymentManager && typeof window.PaymentManager.toggleBayarNanti === 'function') {
+                window.PaymentManager.toggleBayarNanti();
+            } else {
+                setTimeout(function() {
+                    if (window.PaymentManager) window.PaymentManager.toggleBayarNanti();
+                }, 150);
+            }
+        }
+
+        // ====================================================================
         // CATEGORY DROPDOWN FUNCTIONS
         // ====================================================================
         function toggleCategoryDropdown() {
@@ -580,18 +656,19 @@
         // ====================================================================
         // TRANSAKSI KASIR - MAIN APP
         // ====================================================================
+        window.AppState = {
+            cart: [],
+            totalBelanja: 0,
+            currentDetailProduct: null,
+            paymentRows: [],
+            piutangData: [],
+            currentPiutangFilter: 'all'
+        };
+
         (function() {
             'use strict';
 
-            // Payment rows state: array of { method: 'tunai'|'qris'|'piutang', amount: number }
-            const AppState = {
-                cart: [],
-                totalBelanja: 0,
-                currentDetailProduct: null,
-                paymentRows: [], // [{method, amount}]
-                piutangData: [],
-                currentPiutangFilter: 'all'
-            };
+            const AppState = window.AppState;
 
             const DOM = {
                 categoryBtns: document.querySelectorAll('.category-btn'),
@@ -631,8 +708,6 @@
                 detailPiutangContent: document.getElementById('detailPiutangContent'),
                 paymentRowsDesktop: document.getElementById('paymentRowsDesktop'),
                 paymentRowsMobile: document.getElementById('paymentRowsMobile'),
-                btnAddPaymentDesktop: document.getElementById('btnAddPaymentDesktop'),
-                btnAddPaymentMobile: document.getElementById('btnAddPaymentMobile'),
             };
 
             const Utils = {
@@ -668,46 +743,56 @@
             };
 
             // ================================================================
-            // PAYMENT MANAGER (multi-method rows)
+            // PAYMENT MANAGER
             // ================================================================
             const PaymentManager = {
                 METHODS: {
                     tunai: {
                         label: 'Tunai',
                         icon: 'fa-money-bill-wave',
-                        color: 'emerald',
                         activeClass: 'active'
                     },
                     qris: {
                         label: 'QRIS',
                         icon: 'fa-qrcode',
-                        color: 'indigo',
                         activeClass: 'active-qris'
                     },
-                    piutang: {
-                        label: 'Piutang',
+                    bayar_nanti: {
+                        label: 'Bayar Nanti',
                         icon: 'fa-clock',
-                        color: 'orange',
-                        activeClass: 'active-piutang'
-                    }
+                        activeClass: 'active-bayarnanti'
+                    },
                 },
-
                 init() {
-                    // Start with one payment row (tunai)
-                    AppState.paymentRows = [{
+                    AppState.paymentRows.splice(0, AppState.paymentRows.length, {
                         method: 'tunai',
                         amount: 0
-                    }];
+                    });
                     this.renderAll();
-
-                    DOM.btnAddPaymentDesktop?.addEventListener('click', () => this.addRow());
-                    DOM.btnAddPaymentMobile?.addEventListener('click', () => this.addRow());
                 },
-
+                toggleBayarNanti() {
+                    if (AppState.paymentRows.length < 3) {
+                        AppState.paymentRows.push({
+                            method: 'bayar_nanti',
+                            amount: 0
+                        });
+                    } else {
+                        AppState.paymentRows[AppState.paymentRows.length - 1].method = 'bayar_nanti';
+                    }
+                    this.renderAll();
+                    this.recalculate();
+                },
+                updateBayarNantiButtons() {
+                    ['btnBayarNantiDesktop', 'btnBayarNantiMobile'].forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (!btn) return;
+                        btn.className =
+                            'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-purple-300 text-purple-600 hover:bg-purple-600 hover:text-white transition-all';
+                        btn.innerHTML = '<i class="fas fa-clock mr-1"></i> Bayar Nanti';
+                    });
+                },
                 addRow() {
-                    // Max 3 rows
                     if (AppState.paymentRows.length >= 3) return;
-                    // Don't allow piutang as a second row
                     AppState.paymentRows.push({
                         method: 'tunai',
                         amount: 0
@@ -715,167 +800,115 @@
                     this.renderAll();
                     PaymentManager.recalculate();
                 },
-
                 removeRow(index) {
                     if (AppState.paymentRows.length <= 1) return;
                     AppState.paymentRows.splice(index, 1);
                     this.renderAll();
                     PaymentManager.recalculate();
                 },
-
                 setMethod(index, method) {
                     AppState.paymentRows[index].method = method;
-                    // If piutang is selected, it must be the ONLY row
-                    if (method === 'piutang') {
-                        AppState.paymentRows = [{
-                            method: 'piutang',
-                            amount: 0
-                        }];
-                    }
+                    if (method === 'bayar_nanti') AppState.paymentRows[index].amount = 0;
                     this.renderAll();
+                    this.recalculate();
+                },
+                setAmountFromInput(index, inputEl) {
+                    AppState.paymentRows[index].amount = parseRibuan(inputEl.value);
                     PaymentManager.recalculate();
                 },
-
-                setAmount(index, value) {
-                    AppState.paymentRows[index].amount = parseFloat(value) || 0;
-                    PaymentManager.recalculate();
-                },
-
                 isPiutangMode() {
-                    return AppState.paymentRows.length === 1 && AppState.paymentRows[0].method === 'piutang';
+                    return AppState.paymentRows.some(r => r.method === 'bayar_nanti');
                 },
-
-                getTotalPaid() {
-                    // QRIS rows are counted as exact (no change from QRIS)
-                    // Tunai rows contribute to paid amount
-                    if (this.isPiutangMode()) return 0;
-                    return AppState.paymentRows.reduce((s, r) => s + (r.amount || 0), 0);
-                },
-
                 getTunaiAmount() {
-                    return AppState.paymentRows
-                        .filter(r => r.method === 'tunai')
-                        .reduce((s, r) => s + (r.amount || 0), 0);
+                    return AppState.paymentRows.filter(r => r.method === 'tunai').reduce((s, r) => s + (r.amount ||
+                        0), 0);
                 },
-
+                getTotalPaid() {
+                    if (this.isPiutangMode()) return 0;
+                    return AppState.paymentRows.filter(r => r.method !== 'bayar_nanti').reduce((s, r) => s + (r
+                        .amount || 0), 0);
+                },
                 recalculate() {
-                    if (this.isPiutangMode()) {
-                        // Hide kembalian, show piutang info
-                        DOM.kembalianSectionDesktop?.classList.add('hidden');
-                        DOM.kembalianSectionMobile?.classList.add('hidden');
+                    const hasBayarNanti = AppState.paymentRows.some(r => r.method === 'bayar_nanti');
+                    const hasOnlyBayarNanti = AppState.paymentRows.every(r => r.method === 'bayar_nanti');
+                    if (hasBayarNanti) {
                         DOM.infoPiutang?.classList.remove('hidden');
                         DOM.infoPiutangMobile?.classList.remove('hidden');
-                        const canProcess = AppState.cart.length > 0;
-                        if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
-                        if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
-                        return;
+                    } else {
+                        DOM.infoPiutang?.classList.add('hidden');
+                        DOM.infoPiutangMobile?.classList.add('hidden');
                     }
-
-                    DOM.infoPiutang?.classList.add('hidden');
-                    DOM.infoPiutangMobile?.classList.add('hidden');
-
-                    // Check if any tunai method exists
                     const hasTunai = AppState.paymentRows.some(r => r.method === 'tunai');
-                    const hasQrisOnly = AppState.paymentRows.every(r => r.method === 'qris');
-
-                    if (hasQrisOnly) {
-                        // QRIS only: hide kembalian
+                    if (!hasTunai || hasOnlyBayarNanti) {
                         DOM.kembalianSectionDesktop?.classList.add('hidden');
                         DOM.kembalianSectionMobile?.classList.add('hidden');
                     } else {
-                        // Show kembalian based on tunai amount
                         DOM.kembalianSectionDesktop?.classList.remove('hidden');
                         DOM.kembalianSectionMobile?.classList.remove('hidden');
                         const tunaiAmount = this.getTunaiAmount();
-                        const qrisAmount = AppState.paymentRows
-                            .filter(r => r.method === 'qris')
-                            .reduce((s, r) => s + (r.amount || 0), 0);
-                        const nonTunaiCover = qrisAmount;
-                        const remainingForTunai = Math.max(0, AppState.totalBelanja - nonTunaiCover);
+                        const qrisAmount = AppState.paymentRows.filter(r => r.method === 'qris').reduce((s, r) =>
+                            s + (r.amount || 0), 0);
+                        const remainingForTunai = Math.max(0, AppState.totalBelanja - qrisAmount);
                         const kembalian = tunaiAmount - remainingForTunai;
                         const kembalianText = Utils.formatRupiah(kembalian > 0 ? kembalian : 0);
                         if (DOM.kembalian) DOM.kembalian.textContent = kembalianText;
                         if (DOM.kembalianMobile) DOM.kembalianMobile.textContent = kembalianText;
                     }
-
-                    const totalPaid = this.getTotalPaid();
-                    const canProcess = AppState.cart.length > 0 && totalPaid >= AppState.totalBelanja;
+                    let canProcess = AppState.cart.length > 0;
+                    if (!hasBayarNanti) {
+                        canProcess = canProcess && this.getTotalPaid() >= AppState.totalBelanja;
+                    }
                     if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
                     if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
                 },
-
                 buildRowHTML(row, index, isMobile) {
-                    const prefix = isMobile ? 'M' : 'D';
                     const canRemove = AppState.paymentRows.length > 1;
+                    const displayValue = row.amount > 0 ? row.amount.toLocaleString('id-ID') : '';
                     const methodBtns = Object.entries(this.METHODS).map(([key, meta]) => {
-                        if (key === 'piutang' && AppState.paymentRows.length > 1)
-                            return ''; // piutang only solo
                         const isActive = row.method === key;
                         const activeClass = isActive ? `pay-method-btn ${meta.activeClass}` :
                             'pay-method-btn';
-                        return `<button type="button" class="${activeClass}"
-                            onclick="PaymentManager.setMethod(${index}, '${key}')"
-                            title="${meta.label}">
-                            <i class="fas ${meta.icon} mb-1 block text-lg"></i>
-                            <span>${meta.label}</span>
+                        return `<button type="button" class="${activeClass}" onclick="PaymentManager.setMethod(${index}, '${key}')" title="${meta.label}">
+                            <i class="fas ${meta.icon} mb-1 block text-lg"></i><span>${meta.label}</span>
                         </button>`;
                     }).join('');
-
-                    const showAmountInput = row.method !== 'piutang' && row.method !== 'qris';
+                    const showAmountInput = row.method === 'tunai';
                     const showQrisNote = row.method === 'qris';
-
-                    return `<div class="payment-row" id="payRow_${prefix}_${index}">
+                    const showBayarNanti = row.method === 'bayar_nanti';
+                    const inputHtml = (id, label, borderClass = 'border-gray-200', placeholder =
+                        'Masukkan nominal') =>
+                        `<div><label class="block text-xs text-gray-500 mb-1">${label}</label>
+                        <input type="text" inputmode="numeric" id="${id}" placeholder="${placeholder}" value="${displayValue}"
+                            class="w-full px-3 py-2 bg-white border-2 ${borderClass} rounded-lg text-sm focus:border-emerald-500 focus:outline-none"
+                            oninput="formatRibuanInput(this); PaymentManager.setAmountFromInput(${index}, this)"></div>`;
+                    return `<div class="payment-row">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-bold text-gray-500">Pembayaran ${index + 1}</span>
                             ${canRemove ? `<button type="button" onclick="PaymentManager.removeRow(${index})" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>` : ''}
                         </div>
                         <div class="payment-method-select">${methodBtns}</div>
-                        ${showAmountInput ? `
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
-                                    <input type="number" min="0" step="1000" placeholder="Masukkan nominal"
-                                        value="${row.amount || ''}"
-                                        class="w-full px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-emerald-500 focus:outline-none"
-                                        onchange="PaymentManager.setAmount(${index}, this.value)"
-                                        oninput="PaymentManager.setAmount(${index}, this.value)">
-                                </div>` : ''}
-                        ${showQrisNote ? `
-                                <div class="bg-indigo-50 rounded-lg p-2 text-xs text-indigo-600 font-semibold text-center">
-                                    <i class="fas fa-qrcode mr-1"></i> Pembayaran QRIS — Scan QR Code
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">Nominal QRIS</label>
-                                    <input type="number" min="0" step="1000" placeholder="Nominal QRIS"
-                                        value="${row.amount || ''}"
-                                        class="w-full px-3 py-2 bg-white border-2 border-indigo-200 rounded-lg text-sm focus:border-indigo-500 focus:outline-none"
-                                        onchange="PaymentManager.setAmount(${index}, this.value)"
-                                        oninput="PaymentManager.setAmount(${index}, this.value)">
-                                </div>` : ''}
+                        ${showAmountInput ? inputHtml(`payAmt_${isMobile ? 'M' : 'D'}_${index}`, 'Jumlah Bayar') : ''}
+                        ${showQrisNote ? `<div class="bg-indigo-50 rounded-lg p-2 text-xs text-indigo-600 font-semibold text-center mb-2"><i class="fas fa-qrcode mr-1"></i> Pembayaran QRIS — Scan QR Code</div>${inputHtml(`payAmt_${isMobile ? 'M' : 'D'}_${index}`, 'Nominal QRIS', 'border-indigo-200', 'Nominal QRIS')}` : ''}
+                        ${showBayarNanti ? `<div class="bg-purple-50 border border-purple-200 rounded-lg p-3 text-sm text-purple-700 font-semibold text-center"><i class="fas fa-clock mr-1"></i> Transaksi akan dicatat sebagai <span class="text-orange-600 font-bold">Piutang</span></div>` : ''}
                     </div>`;
                 },
-
                 renderAll() {
                     const isPiutang = this.isPiutangMode();
-                    const canAddMore = !isPiutang && AppState.paymentRows.length < 3;
-
-                    // Show/hide add button
-                    if (DOM.btnAddPaymentDesktop) DOM.btnAddPaymentDesktop.classList.toggle('hidden', !canAddMore);
-                    if (DOM.btnAddPaymentMobile) DOM.btnAddPaymentMobile.classList.toggle('hidden', !canAddMore);
-
-                    // Render desktop rows
-                    if (DOM.paymentRowsDesktop) {
-                        DOM.paymentRowsDesktop.innerHTML = AppState.paymentRows
-                            .map((row, i) => this.buildRowHTML(row, i, false)).join('');
-                    }
-                    // Render mobile rows
-                    if (DOM.paymentRowsMobile) {
-                        DOM.paymentRowsMobile.innerHTML = AppState.paymentRows
-                            .map((row, i) => this.buildRowHTML(row, i, true)).join('');
-                    }
+                    const canAddMore = !isPiutang && AppState.paymentRows.length < 3 && AppState.cart.length > 0;
+                    const addBtnHTML = canAddMore ?
+                        `<button type="button" onclick="PaymentManager.addRow()"
+                            class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
+                            <i class="fas fa-plus"></i> Tambah Metode Bayar</button>` : '';
+                    const rowsHTML = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, false)).join(
+                    '');
+                    const rowsHTMLMobile = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, true))
+                        .join('');
+                    if (DOM.paymentRowsDesktop) DOM.paymentRowsDesktop.innerHTML = rowsHTML + addBtnHTML;
+                    if (DOM.paymentRowsMobile) DOM.paymentRowsMobile.innerHTML = rowsHTMLMobile + addBtnHTML;
+                    this.updateBayarNantiButtons();
                 }
             };
 
-            // Expose to global for inline onclick
             window.PaymentManager = PaymentManager;
 
             const CategoryFilter = {
@@ -954,7 +987,7 @@
                             <div class="flex items-center justify-center">
                                 ${gambarUrl
                                     ? `<img src="${gambarUrl}" alt="${AppState.currentDetailProduct.nama}" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                               <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
+                                           <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                     : `<div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                 }
                             </div>
@@ -971,18 +1004,9 @@
                                     <p class="text-3xl font-bold text-emerald-600">${Utils.formatRupiah(AppState.currentDetailProduct.harga)}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <div class="flex items-center justify-between py-2 border-b">
-                                        <span class="text-gray-600 font-medium">Kode Produk</span>
-                                        <span class="font-bold text-gray-800">${AppState.currentDetailProduct.kode}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between py-2 border-b">
-                                        <span class="text-gray-600 font-medium">Kategori</span>
-                                        <span class="font-bold text-gray-800 capitalize">${AppState.currentDetailProduct.kategori}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between py-2">
-                                        <span class="text-gray-600 font-medium">Status</span>
-                                        <span class="font-bold ${AppState.currentDetailProduct.stok > 0 ? 'text-green-600' : 'text-red-600'}">${AppState.currentDetailProduct.stok > 0 ? 'Tersedia' : 'Stok Habis'}</span>
-                                    </div>
+                                    <div class="flex items-center justify-between py-2 border-b"><span class="text-gray-600 font-medium">Kode Produk</span><span class="font-bold text-gray-800">${AppState.currentDetailProduct.kode}</span></div>
+                                    <div class="flex items-center justify-between py-2 border-b"><span class="text-gray-600 font-medium">Kategori</span><span class="font-bold text-gray-800 capitalize">${AppState.currentDetailProduct.kategori}</span></div>
+                                    <div class="flex items-center justify-between py-2"><span class="text-gray-600 font-medium">Status</span><span class="font-bold ${AppState.currentDetailProduct.stok > 0 ? 'text-green-600' : 'text-red-600'}">${AppState.currentDetailProduct.stok > 0 ? 'Tersedia' : 'Stok Habis'}</span></div>
                                 </div>
                                 <div class="bg-gray-50 rounded-xl p-4">
                                     <p class="text-sm font-semibold text-gray-700 mb-2">Deskripsi</p>
@@ -1048,9 +1072,6 @@
                         return;
                     }
                     const id = productElement.dataset.id;
-                    const nama = productElement.dataset.nama;
-                    const harga = parseFloat(productElement.dataset.harga);
-                    const gambar = productElement.dataset.gambar;
                     const existingItem = AppState.cart.find(i => i.id === id);
                     if (existingItem) {
                         if (existingItem.qty < stok) {
@@ -1063,11 +1084,11 @@
                     } else {
                         AppState.cart.push({
                             id,
-                            nama,
-                            harga,
+                            nama: productElement.dataset.nama,
+                            harga: parseFloat(productElement.dataset.harga),
                             qty: 1,
                             stok,
-                            gambar
+                            gambar: productElement.dataset.gambar
                         });
                         this.updateCart();
                         Utils.showToast('Ditambahkan ke keranjang');
@@ -1108,6 +1129,13 @@
                     DOM.cartBadge.textContent = AppState.cart.length;
                     DOM.totalAmount.textContent = Utils.formatRupiah(AppState.totalBelanja);
                     DOM.totalAmountMobile.textContent = Utils.formatRupiah(AppState.totalBelanja);
+                    if (AppState.cart.length === 0 && AppState.paymentRows.length > 1) {
+                        AppState.paymentRows.splice(0, AppState.paymentRows.length, {
+                            method: 'tunai',
+                            amount: 0
+                        });
+                    }
+                    PaymentManager.renderAll();
                     PaymentManager.recalculate();
                 },
                 changeQty(id, delta) {
@@ -1140,12 +1168,20 @@
                             'Yakin ingin menghapus semua item?', 'Ya, Reset');
                         if (result.isConfirmed) {
                             AppState.cart = [];
+                            AppState.paymentRows.splice(0, AppState.paymentRows.length, {
+                                method: 'tunai',
+                                amount: 0
+                            });
                             this.updateCart();
                             Utils.showToast('Keranjang telah dikosongkan', 'success');
                         }
                         return;
                     }
                     AppState.cart = [];
+                    AppState.paymentRows.splice(0, AppState.paymentRows.length, {
+                        method: 'tunai',
+                        amount: 0
+                    });
                     this.updateCart();
                 }
             };
@@ -1157,45 +1193,60 @@
                     DOM.btnReset?.addEventListener('click', () => CartManager.reset());
                     DOM.btnResetMobile?.addEventListener('click', () => CartManager.reset());
                 },
-
                 buildPaymentSummaryHTML() {
                     const methodLabels = {
                         tunai: 'Tunai',
                         qris: 'QRIS',
-                        piutang: 'Piutang'
+                        bayar_nanti: 'Bayar Nanti'
                     };
                     return AppState.paymentRows.map(r =>
-                        `<div class="flex justify-between text-sm">
-                            <span>${methodLabels[r.method] || r.method}</span>
-                            <span class="font-bold">${r.method === 'piutang' ? Utils.formatRupiah(AppState.totalBelanja) : Utils.formatRupiah(r.amount)}</span>
-                        </div>`
+                        `<div class="flex justify-between text-sm"><span>${methodLabels[r.method] || r.method}</span><span class="font-bold">${r.method === 'bayar_nanti' ? Utils.formatRupiah(AppState.totalBelanja) : Utils.formatRupiah(r.amount)}</span></div>`
                     ).join('');
                 },
-
                 async processTransaction() {
                     if (AppState.cart.length === 0) {
                         Utils.showError('Keranjang Kosong!', 'Tambahkan produk terlebih dahulu');
                         return;
                     }
+                    const hasBayarNanti = PaymentManager.isPiutangMode();
 
-                    const isPiutang = PaymentManager.isPiutangMode();
-                    let statusPembayaran = isPiutang ? 'belum_bayar' : 'lunas';
-                    let totalBayar = 0;
-                    let kembalian = 0;
+                    // ── Tentukan status pembayaran yang benar ──
+                    let statusPembayaran;
+                    if (hasBayarNanti) {
+                        const sudahBayarCek = AppState.paymentRows
+                            .filter(r => r.method !== 'bayar_nanti')
+                            .reduce((s, r) => s + (r.amount || 0), 0);
+                        statusPembayaran = sudahBayarCek > 0 ? 'bayar_sebagian' : 'belum_bayar';
+                    } else {
+                        statusPembayaran = 'lunas';
+                    }
 
-                    if (isPiutang) {
+                    let totalBayar = 0,
+                        kembalian = 0;
+                    if (hasBayarNanti) {
+                        const sudahBayar = AppState.paymentRows.filter(r => r.method !== 'bayar_nanti').reduce((
+                            s, r) => s + (r.amount || 0), 0);
+                        totalBayar = sudahBayar;
+                        const sisaPiutang = AppState.totalBelanja - sudahBayar;
+
+                        // Label & warna status di dialog konfirmasi
+                        const statusLabel = sudahBayar > 0 ? 'Bayar Sebagian' : 'Belum Bayar';
+                        const statusColor = sudahBayar > 0 ? 'text-yellow-600' : 'text-red-600';
+
                         const result = await Swal.fire({
-                            title: 'Proses Transaksi Piutang?',
-                            html: `<div class="text-left space-y-2 bg-orange-50 rounded-xl p-4">
-                                <div class="flex items-center mb-3"><i class="fas fa-exclamation-circle text-orange-600 text-2xl mr-2"></i><span class="font-bold text-gray-800">Mode Piutang</span></div>
-                                <div class="flex justify-between"><span>Total Tagihan:</span><span class="font-bold text-orange-600">${Utils.formatRupiah(AppState.totalBelanja)}</span></div>
-                                <div class="flex justify-between"><span>Status:</span><span class="font-bold text-red-600">Belum Bayar</span></div>
-                                <p class="text-xs text-gray-600 mt-3 italic">Transaksi akan tersimpan dengan status belum bayar</p>
+                            title: 'Konfirmasi Bayar Nanti',
+                            html: `<div class="text-left space-y-2 bg-purple-50 rounded-xl p-4">
+                                <div class="flex items-center mb-3"><i class="fas fa-clock text-purple-600 text-2xl mr-2"></i><span class="font-bold text-gray-800">Mode Bayar Nanti</span></div>
+                                <div class="flex justify-between"><span>Total Tagihan:</span><span class="font-bold text-gray-800">${Utils.formatRupiah(AppState.totalBelanja)}</span></div>
+                                ${sudahBayar > 0 ? `<div class="flex justify-between"><span>Dibayar Sekarang:</span><span class="font-bold text-green-600">${Utils.formatRupiah(sudahBayar)}</span></div>` : ''}
+                                <div class="flex justify-between"><span>Sisa Piutang:</span><span class="font-bold text-orange-600">${Utils.formatRupiah(sisaPiutang > 0 ? sisaPiutang : AppState.totalBelanja)}</span></div>
+                                <div class="flex justify-between border-t pt-2 mt-2"><span>Status:</span><span class="font-bold ${statusColor}">${statusLabel}</span></div>
+                                <p class="text-xs text-gray-600 mt-2 italic">Sisa tagihan akan dicatat sebagai piutang</p>
                             </div>`,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonText: 'Proses Piutang',
-                            confirmButtonColor: '#f97316',
+                            confirmButtonText: 'Proses',
+                            confirmButtonColor: '#8b5cf6',
                             cancelButtonText: 'Batal'
                         });
                         if (!result.isConfirmed) return;
@@ -1206,12 +1257,10 @@
                                 `Kurang: ${Utils.formatRupiah(AppState.totalBelanja - totalBayar)}`);
                             return;
                         }
-                        // Kembalian only from tunai
                         const tunaiAmount = PaymentManager.getTunaiAmount();
                         const qrisAmount = AppState.paymentRows.filter(r => r.method === 'qris').reduce((s,
                             r) => s + r.amount, 0);
                         kembalian = tunaiAmount - Math.max(0, AppState.totalBelanja - qrisAmount);
-
                         const result = await Swal.fire({
                             title: 'Proses Transaksi?',
                             html: `<div class="text-left space-y-2 bg-gray-50 rounded-xl p-4">
@@ -1226,9 +1275,7 @@
                         });
                         if (!result.isConfirmed) return;
                     }
-
                     this.setLoadingState(true);
-
                     const dataTransaksi = {
                         items: AppState.cart.map(item => ({
                             id_produk: item.id,
@@ -1241,10 +1288,10 @@
                         status_pembayaran: statusPembayaran,
                         payment_methods: AppState.paymentRows.map(r => ({
                             method: r.method,
-                            amount: r.method === 'piutang' ? AppState.totalBelanja : r.amount
+                            amount: r.method === 'bayar_nanti' ? AppState.totalBelanja : r
+                                .amount
                         }))
                     };
-
                     try {
                         const response = await fetch('{{ route('transaksi.store') }}', {
                             method: 'POST',
@@ -1281,21 +1328,15 @@
                                         await window.PrinterHelper.printReceipt(receiptData);
                                         printSuccess = true;
                                     } catch (printError) {
-                                        console.error('❌ Auto print failed:', printError.message);
+                                        console.error('Auto print failed:', printError.message);
                                     }
                                 }
                             }
-
                             if (statusPembayaran === 'lunas') {
                                 const swalResult = await Swal.fire({
                                     icon: 'success',
                                     title: 'Transaksi Berhasil!',
-                                    html: `<div class="bg-emerald-50 rounded-xl p-4">
-                                        <p class="text-sm text-gray-600">ID Transaksi</p>
-                                        <p class="text-2xl font-bold text-emerald-600">#${data.data.id_penjualan}</p>
-                                        <p class="text-xs text-gray-500 mt-2">Status: Lunas</p>
-                                        ${printSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
-                                    </div>`,
+                                    html: `<div class="bg-emerald-50 rounded-xl p-4"><p class="text-sm text-gray-600">ID Transaksi</p><p class="text-2xl font-bold text-emerald-600">#${data.data.id_penjualan}</p><p class="text-xs text-gray-500 mt-2">Status: Lunas</p>${printSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}</div>`,
                                     showCancelButton: !printSuccess,
                                     confirmButtonText: 'OK',
                                     cancelButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
@@ -1304,17 +1345,33 @@
                                     timer: printSuccess ? 3000 : undefined,
                                     timerProgressBar: printSuccess
                                 });
-                                if (swalResult.dismiss === Swal.DismissReason.cancel)
-                                    window.open(`/transaksi/struk/${data.data.id_penjualan}`, '_blank');
+                                if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
+                                    `/transaksi/struk/${data.data.id_penjualan}`, '_blank');
                             } else {
+                                // ── Status label & warna di dialog sukses piutang ──
+                                const isBayarSebagian = statusPembayaran === 'bayar_sebagian';
+                                const sudahBayarFinal = AppState.paymentRows
+                                    .filter(r => r.method !== 'bayar_nanti')
+                                    .reduce((s, r) => s + (r.amount || 0), 0);
+                                const sisaFinal = AppState.totalBelanja - sudahBayarFinal;
+
                                 const swalResult = await Swal.fire({
                                     icon: 'success',
-                                    title: 'Piutang Tercatat!',
-                                    html: `<div class="bg-orange-50 rounded-xl p-4">
+                                    title: isBayarSebagian ? 'Bayar Sebagian Tercatat!' :
+                                        'Piutang Tercatat!',
+                                    html: `<div class="${isBayarSebagian ? 'bg-yellow-50' : 'bg-orange-50'} rounded-xl p-4">
                                         <p class="text-sm text-gray-600">ID Transaksi</p>
-                                        <p class="text-2xl font-bold text-orange-600">#${data.data.id_penjualan}</p>
-                                        <p class="text-xs text-red-600 mt-2 font-semibold">Status: Belum Bayar</p>
-                                        <p class="text-xs text-gray-600 mt-2">Total Tagihan: ${Utils.formatRupiah(AppState.totalBelanja)}</p>
+                                        <p class="text-2xl font-bold ${isBayarSebagian ? 'text-yellow-600' : 'text-orange-600'}">#${data.data.id_penjualan}</p>
+                                        <p class="text-xs font-semibold mt-2 ${isBayarSebagian ? 'text-yellow-600' : 'text-red-600'}">
+                                            Status: ${isBayarSebagian ? 'Bayar Sebagian' : 'Belum Bayar'}
+                                        </p>
+                                        <div class="border-t mt-3 pt-3 space-y-1">
+                                            <p class="text-xs text-gray-600">Total Tagihan: <span class="font-bold">${Utils.formatRupiah(AppState.totalBelanja)}</span></p>
+                                            ${isBayarSebagian ? `
+                                                    <p class="text-xs text-green-600">Dibayar: <span class="font-bold">${Utils.formatRupiah(sudahBayarFinal)}</span></p>
+                                                    <p class="text-xs text-orange-600 font-bold">Sisa Piutang: ${Utils.formatRupiah(sisaFinal)}</p>
+                                                ` : ''}
+                                        </div>
                                     </div>`,
                                     showCancelButton: true,
                                     confirmButtonText: 'OK',
@@ -1322,10 +1379,9 @@
                                     confirmButtonColor: '#10b981',
                                     cancelButtonColor: '#3b82f6'
                                 });
-                                if (swalResult.dismiss === Swal.DismissReason.cancel)
-                                    window.open(`/transaksi/struk/${data.data.id_penjualan}`, '_blank');
+                                if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
+                                    `/transaksi/struk/${data.data.id_penjualan}`, '_blank');
                             }
-
                             this.resetAfterTransaction();
                             setTimeout(() => location.reload(), 1500);
                         } else {
@@ -1333,11 +1389,25 @@
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        Utils.showError('Gagal!', 'Terjadi kesalahan: ' + error.message);
+                        const msg = error.message || '';
+                        const isKasirError = msg.toLowerCase().includes('kasir belum dibuka') || msg
+                            .toLowerCase().includes('kasir') && msg.toLowerCase().includes('buka');
+                        if (isKasirError) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Kasir Belum Dibuka!',
+                                html: `<div class="text-center space-y-3"><p class="text-gray-600">Anda harus membuka sesi kasir terlebih dahulu sebelum melakukan transaksi.</p><a href="{{ route('kasir.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all"><i class="fas fa-cash-register"></i> Buka Kasir Sekarang</a></div>`,
+                                showConfirmButton: false,
+                                showCancelButton: true,
+                                cancelButtonText: 'Tutup',
+                                cancelButtonColor: '#6b7280'
+                            });
+                        } else {
+                            Utils.showError('Gagal!', 'Terjadi kesalahan: ' + msg);
+                        }
                         this.setLoadingState(false);
                     }
                 },
-
                 setLoadingState(isLoading) {
                     const text = isLoading ? '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...' :
                         '<i class="fas fa-check-circle mr-2"></i>Proses Transaksi';
@@ -1350,14 +1420,13 @@
                         DOM.btnProsesMobile.innerHTML = text;
                     }
                 },
-
                 resetAfterTransaction() {
                     AppState.cart = [];
                     CartManager.updateCart();
-                    AppState.paymentRows = [{
+                    AppState.paymentRows.splice(0, AppState.paymentRows.length, {
                         method: 'tunai',
                         amount: 0
-                    }];
+                    });
                     PaymentManager.renderAll();
                     PaymentManager.recalculate();
                 }
@@ -1375,7 +1444,6 @@
                         btn.addEventListener('click', (e) => this.filterPiutang(e.currentTarget));
                     });
                 },
-
                 async loadPiutang() {
                     DOM.piutangModal.classList.remove('hidden');
                     DOM.piutangList.innerHTML =
@@ -1394,25 +1462,20 @@
                             `<div class="text-center py-8"><i class="fas fa-exclamation-circle text-4xl text-red-300 mb-2"></i><p class="text-red-500">Gagal memuat data piutang</p></div>`;
                     }
                 },
-
                 filterPiutang(btn) {
                     DOM.piutangFilterBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     AppState.currentPiutangFilter = btn.dataset.status;
                     this.renderPiutangList();
                 },
-
                 renderPiutangList() {
-                    const filtered = AppState.currentPiutangFilter === 'all' ?
-                        AppState.piutangData :
-                        AppState.piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
-
+                    const filtered = AppState.currentPiutangFilter === 'all' ? AppState.piutangData : AppState
+                        .piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
                     if (filtered.length === 0) {
                         DOM.piutangList.innerHTML =
                             `<div class="text-center py-8"><i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">Tidak ada data piutang</p></div>`;
                         return;
                     }
-
                     const statusConfig = {
                         belum_bayar: {
                             gradient: 'from-orange-50 to-red-50 border-orange-200',
@@ -1433,51 +1496,42 @@
                             amountColor: 'text-green-600'
                         }
                     };
-
                     DOM.piutangList.innerHTML = filtered.map(p => {
                         const cfg = statusConfig[p.status_pembayaran] || statusConfig.belum_bayar;
                         const showBayarBtn = p.status_pembayaran === 'belum_bayar' || p
                             .status_pembayaran === 'bayar_sebagian';
-                        const sisaTagihan = p.sisa_tagihan ?? p.total_pembayaran;
-                        return `
-                        <div class="bg-gradient-to-r ${cfg.gradient} border-2 rounded-xl p-4">
+                        const sisaTagihan = (p.sisa_tagihan !== undefined && p.sisa_tagihan !== null) ?
+                            parseFloat(p.sisa_tagihan) : parseFloat(p.total_pembayaran);
+                        const sudahDibayar = parseFloat(p.total_pembayaran) - sisaTagihan;
+                        return `<div class="bg-gradient-to-r ${cfg.gradient} border-2 rounded-xl p-4">
                             <div class="flex items-start justify-between mb-3">
-                                <div>
-                                    <p class="text-xs text-gray-500 mb-1">${p.tanggal_penjualan}</p>
-                                    <p class="font-bold text-lg text-gray-800">#${p.id_penjualan}</p>
-                                </div>
+                                <div><p class="text-xs text-gray-500 mb-1">${p.tanggal_penjualan}</p><p class="font-bold text-lg text-gray-800">#${p.id_penjualan}</p>${p.kasir ? `<p class="text-xs text-gray-500">Kasir: ${p.kasir}</p>` : ''}</div>
                                 <span class="px-3 py-1 rounded-full text-xs font-bold ${cfg.badge}">${cfg.label}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Total Tagihan</p>
+                                <div class="space-y-0.5">
+                                    <p class="text-xs text-gray-500">Total Tagihan</p>
                                     <p class="text-xl font-bold ${cfg.amountColor}">${Utils.formatRupiah(p.total_pembayaran)}</p>
-                                    ${p.status_pembayaran === 'bayar_sebagian' ? `<p class="text-xs text-orange-500 font-semibold">Sisa: ${Utils.formatRupiah(sisaTagihan)}</p>` : ''}
+                                    ${p.status_pembayaran === 'bayar_sebagian' ? `<p class="text-xs text-green-600 font-semibold">✓ Sudah dibayar: ${Utils.formatRupiah(sudahDibayar)}</p><p class="text-xs text-orange-600 font-bold">Sisa tagihan: ${Utils.formatRupiah(sisaTagihan)}</p>` : ''}
+                                    ${p.status_pembayaran === 'belum_bayar' ? `<p class="text-xs text-red-500 font-semibold">Belum ada pembayaran</p>` : ''}
                                 </div>
-                                <div class="flex gap-2 flex-wrap">
+                                <div class="flex gap-2 flex-wrap justify-end">
                                     <button onclick="window.piutangShowDetail('${p.id_penjualan}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-eye mr-1"></i>Detail</button>
-                                    ${showBayarBtn ? `
-                                            <button onclick="window.piutangBayar('${p.id_penjualan}', ${p.total_pembayaran}, ${sisaTagihan})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-check mr-1"></i>Bayar</button>` : ''}
+                                    ${showBayarBtn ? `<button onclick="window.piutangBayar('${p.id_penjualan}', ${p.total_pembayaran}, ${sisaTagihan})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-check mr-1"></i>Bayar</button>` : ''}
                                 </div>
                             </div>
                         </div>`;
                     }).join('');
                 },
-
                 async showDetailPiutang(idPenjualan) {
                     try {
                         const response = await fetch(`/transaksi/detail/${idPenjualan}`);
                         const result = await response.json();
                         if (result.success) {
                             const data = result.data;
-                            const items = data.items.map(item => `
-                                <tr>
-                                    <td class="px-4 py-2 border-b">${item.nama_produk}</td>
-                                    <td class="px-4 py-2 border-b text-center">${item.qty}</td>
-                                    <td class="px-4 py-2 border-b text-right">${Utils.formatRupiah(item.harga)}</td>
-                                    <td class="px-4 py-2 border-b text-right font-bold">${Utils.formatRupiah(item.subtotal)}</td>
-                                </tr>`).join('');
-
+                            const items = data.items.map(item =>
+                                `<tr><td class="px-4 py-2 border-b">${item.nama_produk}</td><td class="px-4 py-2 border-b text-center">${item.qty}</td><td class="px-4 py-2 border-b text-right">${Utils.formatRupiah(item.harga)}</td><td class="px-4 py-2 border-b text-right font-bold">${Utils.formatRupiah(item.subtotal)}</td></tr>`
+                                ).join('');
                             const statusConfig = {
                                 belum_bayar: 'bg-red-600',
                                 bayar_sebagian: 'bg-yellow-600',
@@ -1488,8 +1542,9 @@
                                 bayar_sebagian: 'Bayar Sebagian',
                                 lunas: 'Lunas'
                             };
-                            const sisaTagihan = data.sisa_tagihan ?? data.total_pembayaran;
-
+                            const sisaTagihan = (data.sisa_tagihan !== undefined && data.sisa_tagihan !==
+                                null) ? parseFloat(data.sisa_tagihan) : parseFloat(data.total_pembayaran);
+                            const sudahDibayar = parseFloat(data.total_pembayaran) - sisaTagihan;
                             DOM.detailPiutangContent.innerHTML = `
                                 <div class="space-y-4">
                                     <div class="bg-gray-50 rounded-xl p-4">
@@ -1497,18 +1552,14 @@
                                             <div><p class="text-sm text-gray-600">ID Transaksi</p><p class="font-bold text-lg">#${data.id_penjualan}</p></div>
                                             <div><p class="text-sm text-gray-600">Tanggal</p><p class="font-bold">${data.tanggal_penjualan}</p></div>
                                             <div><p class="text-sm text-gray-600">Status</p><span class="px-3 py-1 rounded-full text-xs font-bold ${statusConfig[data.status_pembayaran] || 'bg-red-600'} text-white">${statusLabel[data.status_pembayaran] || data.status_pembayaran}</span></div>
-                                            <div><p class="text-sm text-gray-600">Total</p><p class="font-bold text-lg text-emerald-600">${Utils.formatRupiah(data.total_pembayaran)}</p></div>
-                                            ${data.status_pembayaran === 'bayar_sebagian' ? `<div class="col-span-2"><p class="text-sm text-gray-600">Sisa Tagihan</p><p class="font-bold text-lg text-orange-600">${Utils.formatRupiah(sisaTagihan)}</p></div>` : ''}
+                                            <div><p class="text-sm text-gray-600">Total Tagihan</p><p class="font-bold text-lg text-emerald-600">${Utils.formatRupiah(data.total_pembayaran)}</p></div>
+                                            ${data.status_pembayaran === 'bayar_sebagian' ? `<div><p class="text-sm text-gray-600">Sudah Dibayar</p><p class="font-bold text-green-600">${Utils.formatRupiah(sudahDibayar)}</p></div><div><p class="text-sm text-gray-600">Sisa Tagihan</p><p class="font-bold text-lg text-orange-600">${Utils.formatRupiah(sisaTagihan)}</p></div>` : ''}
+                                            ${data.status_pembayaran === 'lunas' ? `<div class="col-span-2"><p class="text-sm text-gray-600">Kembalian</p><p class="font-bold text-blue-600">${Utils.formatRupiah(data.kembalian_pembayaran)}</p></div>` : ''}
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="w-full">
-                                            <thead class="bg-gray-100"><tr>
-                                                <th class="px-4 py-2 text-left">Produk</th>
-                                                <th class="px-4 py-2 text-center">Qty</th>
-                                                <th class="px-4 py-2 text-right">Harga</th>
-                                                <th class="px-4 py-2 text-right">Subtotal</th>
-                                            </tr></thead>
+                                            <thead class="bg-gray-100"><tr><th class="px-4 py-2 text-left">Produk</th><th class="px-4 py-2 text-center">Qty</th><th class="px-4 py-2 text-right">Harga</th><th class="px-4 py-2 text-right">Subtotal</th></tr></thead>
                                             <tbody>${items}</tbody>
                                         </table>
                                     </div>
@@ -1519,60 +1570,56 @@
                         Utils.showError('Error', 'Gagal memuat detail piutang');
                     }
                 },
-
-                // Build payment rows HTML for piutang bayar modal
                 buildPiutangPaymentRowsHTML(sisaTagihan) {
-                    // We reuse the multi-payment concept inline inside the Swal popup
+                    const displayVal = sisaTagihan.toLocaleString('id-ID');
                     return `
                     <div class="space-y-2" id="piutangPayRows">
                         <div class="payment-row" id="piutangRow_0">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-gray-500">Pembayaran 1</span>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Pembayaran 1</span>
                             </div>
-                            <div class="grid grid-cols-3 gap-2 mb-2">
-                                <button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(0,'tunai')"><i class="fas fa-money-bill-wave block text-lg mb-1"></i>Tunai</button>
-                                <button type="button" class="pay-method-btn" onclick="piutangSelectMethod(0,'qris')"><i class="fas fa-qrcode block text-lg mb-1"></i>QRIS</button>
+                            <div class="grid grid-cols-2 gap-3 mb-3 px-4">
+                                <button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(0,'tunai')"><i class="fas fa-money-bill-wave block text-xl mb-1"></i><span class="text-xs font-semibold">Tunai</span></button>
+                                <button type="button" class="pay-method-btn" onclick="piutangSelectMethod(0,'qris')"><i class="fas fa-qrcode block text-xl mb-1"></i><span class="text-xs font-semibold">QRIS</span></button>
                             </div>
-                            <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
-                            <input type="number" id="piutangAmt_0" min="0" step="1000" value="${sisaTagihan}" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm" oninput="piutangRecalc(${sisaTagihan})">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Jumlah Bayar</label>
+                            <input type="text" inputmode="numeric" id="piutangAmt_0" placeholder="Masukkan nominal"
+                                value="${displayVal}"
+                                class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:border-emerald-400 focus:outline-none"
+                                oninput="formatRibuanInput(this); piutangRecalc(${sisaTagihan})">
                         </div>
                     </div>
-                    <button type="button" id="piutangAddRowBtn" onclick="piutangAddRow(${sisaTagihan})" class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
+                    <button type="button" id="piutangAddRowBtn" onclick="piutangAddRow(${sisaTagihan})"
+                        class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
                         <i class="fas fa-plus"></i> Tambah Metode Bayar
                     </button>
                     <div id="piutangKembalianDiv" class="hidden bg-blue-50 rounded-xl p-3 mt-2">
                         <div class="flex justify-between"><span class="text-gray-700 font-semibold text-sm">Kembalian Tunai:</span><span id="piutangKembalianVal" class="font-bold text-blue-600 text-sm">Rp 0</span></div>
                     </div>`;
                 },
-
                 async bayarPiutang(idPenjualan, totalPembayaran, sisaTagihan) {
                     const self = this;
-                    // State for piutang payment rows
                     window._piutangRows = [{
                         method: 'tunai',
                         amount: sisaTagihan
                     }];
-
-                    // Helper functions (exposed globally for inline HTML)
                     window.piutangSelectMethod = function(idx, method) {
                         window._piutangRows[idx].method = method;
                         const row = document.getElementById(`piutangRow_${idx}`);
                         if (!row) return;
-                        // Update button styles
                         row.querySelectorAll('.pay-method-btn').forEach(b => {
+                            const label = b.textContent.trim().toLowerCase();
                             b.className = 'pay-method-btn';
-                            if (b.textContent.trim().toLowerCase().includes(method === 'qris' ?
-                                    'qris' : method === 'tunai' ? 'tunai' : '')) {
+                            if ((method === 'qris' && label.includes('qris')) || (method ===
+                                    'tunai' && label.includes('tunai'))) {
                                 b.className = method === 'qris' ? 'pay-method-btn active-qris' :
                                     'pay-method-btn active';
                             }
                         });
-                        // For QRIS: rename label
                         const label = row.querySelector('label');
                         if (label) label.textContent = method === 'qris' ? 'Nominal QRIS' : 'Jumlah Bayar';
                         piutangRecalc(sisaTagihan);
                     };
-
                     window.piutangAddRow = function(sisa) {
                         if (window._piutangRows.length >= 3) return;
                         window._piutangRows.push({
@@ -1585,17 +1632,10 @@
                         div.className = 'payment-row';
                         div.id = `piutangRow_${idx}`;
                         div.innerHTML =
-                            `
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-gray-500">Pembayaran ${idx + 1}</span>
-                                <button type="button" onclick="piutangRemoveRow(${idx}, ${sisa})" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 mb-2">
-                                <button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(${idx},'tunai')"><i class="fas fa-money-bill-wave block text-lg mb-1"></i>Tunai</button>
-                                <button type="button" class="pay-method-btn" onclick="piutangSelectMethod(${idx},'qris')"><i class="fas fa-qrcode block text-lg mb-1"></i>QRIS</button>
-                            </div>
-                            <label class="block text-xs text-gray-500 mb-1">Jumlah Bayar</label>
-                            <input type="number" id="piutangAmt_${idx}" min="0" step="1000" value="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm" oninput="piutangRecalc(${sisa})">`;
+                            `<div class="flex items-center justify-between mb-3"><span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Pembayaran ${idx + 1}</span><button type="button" onclick="piutangRemoveRow(${idx}, ${sisa})" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-times"></i></button></div>
+                            <div class="grid grid-cols-2 gap-3 mb-3 px-4"><button type="button" class="pay-method-btn active" onclick="piutangSelectMethod(${idx},'tunai')"><i class="fas fa-money-bill-wave block text-xl mb-1"></i><span class="text-xs font-semibold">Tunai</span></button><button type="button" class="pay-method-btn" onclick="piutangSelectMethod(${idx},'qris')"><i class="fas fa-qrcode block text-xl mb-1"></i><span class="text-xs font-semibold">QRIS</span></button></div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Jumlah Bayar</label>
+                            <input type="text" inputmode="numeric" id="piutangAmt_${idx}" placeholder="Masukkan nominal" value="" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:border-emerald-400 focus:outline-none" oninput="formatRibuanInput(this); piutangRecalc(${sisa})">`;
                         container.appendChild(div);
                         if (window._piutangRows.length >= 3) {
                             const addBtn = document.getElementById('piutangAddRowBtn');
@@ -1603,28 +1643,23 @@
                         }
                         piutangRecalc(sisa);
                     };
-
                     window.piutangRemoveRow = function(idx, sisa) {
                         window._piutangRows.splice(idx, 1);
                         const row = document.getElementById(`piutangRow_${idx}`);
                         if (row) row.remove();
-                        // Re-index not needed for JS state, just sync amounts
                         piutangRecalc(sisa);
                         const addBtn = document.getElementById('piutangAddRowBtn');
                         if (addBtn) addBtn.classList.remove('hidden');
                     };
-
                     window.piutangRecalc = function(sisa) {
-                        // Sync amounts from inputs
                         window._piutangRows.forEach((r, i) => {
                             const inp = document.getElementById(`piutangAmt_${i}`);
-                            if (inp) r.amount = parseFloat(inp.value) || 0;
+                            if (inp) r.amount = parseRibuan(inp.value);
                         });
                         const tunaiAmt = window._piutangRows.filter(r => r.method === 'tunai').reduce((s,
                             r) => s + r.amount, 0);
                         const qrisAmt = window._piutangRows.filter(r => r.method === 'qris').reduce((s,
                             r) => s + r.amount, 0);
-                        const totalPaid = tunaiAmt + qrisAmt;
                         const kembalian = tunaiAmt - Math.max(0, sisa - qrisAmt);
                         const kemDiv = document.getElementById('piutangKembalianDiv');
                         const kemVal = document.getElementById('piutangKembalianVal');
@@ -1635,43 +1670,28 @@
                             if (kemDiv) kemDiv.classList.add('hidden');
                         }
                     };
-
                     const result = await Swal.fire({
                         title: `Bayar Piutang #${idPenjualan}`,
-                        html: `
-                        <div class="text-left space-y-3">
+                        html: `<div class="text-left space-y-3">
                             <div class="bg-emerald-50 rounded-xl p-3">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Total Tagihan</span>
-                                    <span class="font-bold text-emerald-600">${Utils.formatRupiah(totalPembayaran)}</span>
-                                </div>
-                                <div class="flex justify-between mt-1">
-                                    <span class="text-sm text-gray-600">Sisa Tagihan</span>
-                                    <span class="font-bold text-orange-600">${Utils.formatRupiah(sisaTagihan)}</span>
-                                </div>
+                                <div class="flex justify-between"><span class="text-sm text-gray-600">Total Tagihan</span><span class="font-bold text-emerald-600">${Utils.formatRupiah(totalPembayaran)}</span></div>
+                                <div class="flex justify-between mt-1"><span class="text-sm text-gray-600">Sisa Tagihan</span><span class="font-bold text-orange-600">${Utils.formatRupiah(sisaTagihan)}</span></div>
                             </div>
-                            ${this.buildPiutangPaymentRowsHTML(sisaTagihan)}
-                        </div>`,
+                            ${this.buildPiutangPaymentRowsHTML(sisaTagihan)}</div>`,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: 'Bayar Sekarang',
                         confirmButtonColor: '#10b981',
                         cancelButtonText: 'Batal',
                         didOpen: () => {
-                            // Init recalc
                             window.piutangRecalc(sisaTagihan);
                         },
                         preConfirm: () => {
-                            // Sync amounts
                             window._piutangRows.forEach((r, i) => {
                                 const inp = document.getElementById(`piutangAmt_${i}`);
-                                if (inp) r.amount = parseFloat(inp.value) || 0;
+                                if (inp) r.amount = parseRibuan(inp.value);
                             });
                             const totalPaid = window._piutangRows.reduce((s, r) => s + r.amount, 0);
-                            if (totalPaid < sisaTagihan && totalPaid > 0) {
-                                // Bayar sebagian is allowed (partial)
-                                // We'll accept it but mark bayar_sebagian
-                            }
                             if (totalPaid <= 0) {
                                 Swal.showValidationMessage('Masukkan jumlah pembayaran');
                                 return false;
@@ -1682,9 +1702,7 @@
                             };
                         }
                     });
-
                     if (!result.isConfirmed) return;
-
                     const {
                         paymentRows,
                         totalPaid
@@ -1695,7 +1713,6 @@
                         0);
                     const kembalian = tunaiAmt - Math.max(0, sisaTagihan - qrisAmt);
                     const newStatus = totalPaid >= sisaTagihan ? 'lunas' : 'bayar_sebagian';
-
                     try {
                         const response = await fetch(`/transaksi/bayar-piutang/${idPenjualan}`, {
                             method: 'POST',
@@ -1713,7 +1730,6 @@
                         const apiResult = await response.json();
                         if (apiResult.success) {
                             let piutangPrintSuccess = false;
-                            // Auto print if configured...
                             if (apiResult.data?.auto_print && apiResult.data?.printer_name) {
                                 if (typeof window.PrinterHelper !== 'undefined' && window.PrinterHelper
                                     .device) {
@@ -1721,7 +1737,7 @@
                                         const detailResponse = await fetch(`/transaksi/detail/${idPenjualan}`);
                                         const detailResult = await detailResponse.json();
                                         if (detailResult.success) {
-                                            const receiptData = {
+                                            await window.PrinterHelper.printReceipt({
                                                 no_transaksi: `#${String(idPenjualan).padStart(6, '0')}`,
                                                 tanggal: new Date().toLocaleString('id-ID'),
                                                 kasir: '{{ Auth::user()->nama_user ?? Auth::user()->name }}',
@@ -1736,37 +1752,27 @@
                                                     harga_produk: item.harga,
                                                     subtotal_harga: item.subtotal
                                                 }))
-                                            };
-                                            await window.PrinterHelper.printReceipt(receiptData);
+                                            });
                                             piutangPrintSuccess = true;
                                         }
                                     } catch (printError) {
-                                        console.error('❌ Auto print failed:', printError.message);
+                                        console.error('Auto print failed:', printError.message);
                                     }
                                 }
                             }
-
                             const swalResult = await Swal.fire({
                                 icon: 'success',
                                 title: newStatus === 'lunas' ? 'Pembayaran Lunas!' :
                                     'Bayar Sebagian Berhasil!',
-                                html: `<div class="bg-green-50 rounded-xl p-4">
-                                    <p class="text-sm text-gray-600">Piutang #${idPenjualan}</p>
-                                    <p class="font-bold text-green-600 mt-1">Status: ${newStatus === 'lunas' ? 'LUNAS' : 'BAYAR SEBAGIAN'}</p>
-                                    <p class="text-sm text-gray-600 mt-2">Dibayar: ${Utils.formatRupiah(totalPaid)}</p>
-                                    ${kembalian > 0 ? `<p class="text-sm font-bold text-blue-600">Kembalian Tunai: ${Utils.formatRupiah(kembalian)}</p>` : ''}
-                                    ${newStatus === 'bayar_sebagian' ? `<p class="text-sm font-bold text-orange-600">Sisa: ${Utils.formatRupiah(sisaTagihan - totalPaid)}</p>` : ''}
-                                    ${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
-                                </div>`,
+                                html: `<div class="bg-green-50 rounded-xl p-4"><p class="text-sm text-gray-600">Piutang #${idPenjualan}</p><p class="font-bold text-green-600 mt-1">Status: ${newStatus === 'lunas' ? 'LUNAS' : 'BAYAR SEBAGIAN'}</p><p class="text-sm text-gray-600 mt-2">Dibayar: ${Utils.formatRupiah(totalPaid)}</p>${kembalian > 0 ? `<p class="text-sm font-bold text-blue-600">Kembalian Tunai: ${Utils.formatRupiah(kembalian)}</p>` : ''}${newStatus === 'bayar_sebagian' ? `<p class="text-sm font-bold text-orange-600">Sisa: ${Utils.formatRupiah(sisaTagihan - totalPaid)}</p>` : ''}${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}</div>`,
                                 showCancelButton: !piutangPrintSuccess,
                                 confirmButtonText: 'OK',
                                 cancelButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
                                 confirmButtonColor: '#10b981',
                                 cancelButtonColor: '#3b82f6'
                             });
-                            if (swalResult.dismiss === Swal.DismissReason.cancel)
-                                window.open(`/transaksi/struk/${idPenjualan}`, '_blank');
-
+                            if (swalResult.dismiss === Swal.DismissReason.cancel) window.open(
+                                `/transaksi/struk/${idPenjualan}`, '_blank');
                             this.loadPiutang();
                             this.closeDetailPiutang();
                         } else {
@@ -1776,7 +1782,6 @@
                         Utils.showError('Error', error.message);
                     }
                 },
-
                 closePiutangModal() {
                     DOM.piutangModal.classList.add('hidden');
                 },
@@ -1798,7 +1803,7 @@
                 CartManager.init();
                 TransactionManager.init();
                 PiutangManager.init();
-                console.log('✅ Transaksi Kasir App Initialized');
+                console.log('Transaksi Kasir App Initialized');
             }
 
             if (document.readyState === 'loading') {

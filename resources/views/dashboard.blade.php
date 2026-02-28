@@ -76,12 +76,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <!-- Grafik Penjualan -->
-            <div class="bg-white rounded-lg shadow p-4 md:p-6">
-                <h2 class="text-base md:text-xl font-bold mb-4">
+
+            <div class="bg-white rounded-lg shadow p-4 md:p-6 flex flex-col">
+                <h2 class="text-base md:text-xl font-bold mb-4 flex-shrink-0">
                     <i class="fas fa-chart-line mr-2"></i>Grafik Penjualan (7 Hari)
                 </h2>
-                <div style="position: relative; height: 220px;">
-                    <canvas id="salesChart"></canvas>
+                <div class="flex-1 relative" style="min-height: 220px;">
+                    <canvas id="salesChart" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                 </div>
             </div>
 
@@ -188,31 +189,31 @@
                         produk)</span>
                 </h2>
 
-                <!-- Filter Kategori -->
+
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-xs md:text-sm font-semibold text-gray-700">
-                        <i class="fas fa-filter mr-1 text-blue-500"></i>Filter:
+                        <i class="fas fa-filter mr-1 text-blue-500"></i>Filter Kategori:
                     </span>
-                    <button onclick="filterKategori('all')"
-                        class="filter-btn active px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700"
-                        data-kategori="all">
-                        <i class="fas fa-th mr-1"></i>Semua
-                        <span
-                            class="ml-1 bg-white text-blue-600 px-1.5 py-0.5 rounded-full text-xs">{{ $produkStokMenupis->count() }}</span>
-                    </button>
+                    <div class="relative inline-block">
+                        <select id="filterKategoriSelect" onchange="filterKategori(this.value)"
+                            class="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-xs md:text-sm font-semibold text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer hover:border-blue-400 transition-colors duration-150">
+                            <option value="all">
+                                <i class="fas fa-th"></i> Semua ({{ $produkStokMenupis->count() }})
+                            </option>
+                            @foreach ($kategoris as $kategori)
+                                @php $count = $kategoriCounts[$kategori->id_produk_kategori] ?? 0; @endphp
+                                @if ($count > 0)
+                                    <option value="{{ $kategori->id_produk_kategori }}">
+                                        {{ $kategori->nama_kategori }} ({{ $count }})
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
 
-                    @foreach ($kategoris as $kategori)
-                        @php $count = $kategoriCounts[$kategori->id_produk_kategori] ?? 0; @endphp
-                        @if ($count > 0)
-                            <button onclick="filterKategori({{ $kategori->id_produk_kategori }})"
-                                class="filter-btn px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                data-kategori="{{ $kategori->id_produk_kategori }}">
-                                {{ $kategori->nama_kategori }}
-                                <span
-                                    class="ml-1 bg-gray-300 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">{{ $count }}</span>
-                            </button>
-                        @endif
-                    @endforeach
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -231,8 +232,10 @@
                         <span class="w-3 h-3 rounded-full bg-orange-400 border border-orange-500"></span>
                         <span class="text-gray-600">Menipis (6–10)</span>
                     </div>
+
                     <div class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-amber-400 border border-amber-500"></span>
+                        <span class="w-3 h-3 rounded-full border"
+                            style="background-color:#fde047; border-color:#facc15;"></span>
                         <span class="text-gray-600">Perhatian (11–20)</span>
                     </div>
                 </div>
@@ -294,10 +297,10 @@
                                         $statusText = 'MENIPIS';
                                         $statusIcon = 'fa-exclamation-circle';
                                     } else {
-                                        $rowClass = 'border-l-4 border-amber-400';
-                                        $rowStyle = 'background: linear-gradient(90deg, #fef3c7 0%, #fffbeb 100%);';
-                                        $badgeClass = 'bg-amber-400 text-amber-900';
-                                        $stockNumClass = 'bg-amber-400 text-amber-900';
+                                        $rowClass = 'border-l-4 border-yellow-400';
+                                        $rowStyle = 'background: linear-gradient(90deg, #fef08a 0%, #fefce8 100%);';
+                                        $badgeClass = 'bg-yellow-300 text-yellow-900';
+                                        $stockNumClass = 'bg-yellow-300 text-yellow-900';
                                         $statusText = 'PERHATIAN';
                                         $statusIcon = 'fa-info-circle';
                                     }
@@ -316,7 +319,6 @@
                                     <td
                                         class="px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-gray-900 max-w-[130px] md:max-w-none">
                                         <span class="block truncate">{{ $produk->nama_produk }}</span>
-                                        {{-- Di mobile: tampilkan kategori di bawah nama produk --}}
                                         <span
                                             class="md:hidden block text-xs font-normal text-gray-500 mt-0.5">{{ $produk->nama_kategori ?? '-' }}</span>
                                     </td>
@@ -338,7 +340,6 @@
                                         Rp {{ number_format($produk->harga_produk, 0, ',', '.') }}
                                     </td>
                                     <td class="px-3 md:px-4 py-2 md:py-3 whitespace-nowrap text-center">
-                                        {{-- Di mobile hanya icon, di desktop tampilkan teks --}}
                                         <span
                                             class="inline-flex items-center gap-1 px-1.5 md:px-2 py-1 rounded-full text-xs font-bold shadow-sm {{ $badgeClass }}">
                                             <i class="fas {{ $statusIcon }}"></i>
@@ -525,20 +526,10 @@
                 }
             });
 
+
             function filterKategori(kategoriId) {
                 const rows = document.querySelectorAll('.produk-row');
-                const filterBtns = document.querySelectorAll('.filter-btn');
                 let visibleCount = 0;
-
-                filterBtns.forEach(btn => {
-                    if (btn.dataset.kategori == kategoriId) {
-                        btn.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
-                        btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'active');
-                    } else {
-                        btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'active');
-                        btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
-                    }
-                });
 
                 rows.forEach(row => {
                     const rowKategori = row.dataset.kategori;
@@ -626,10 +617,10 @@
                         desc: 'Stok mulai berkurang. Rencanakan restok segera.'
                     },
                     'PERHATIAN': {
-                        box: 'bg-amber-50 border-amber-400',
-                        icon: 'fas fa-info-circle text-amber-500',
-                        textCls: 'font-semibold mb-1 text-amber-800',
-                        descCls: 'text-xs text-amber-700',
+                        box: 'bg-yellow-50 border-yellow-400',
+                        icon: 'fas fa-info-circle text-yellow-500',
+                        textCls: 'font-semibold mb-1 text-yellow-800',
+                        descCls: 'text-xs text-yellow-700',
                         title: '💡 Perlu Perhatian',
                         desc: 'Pantau stok produk ini secara berkala.'
                     },

@@ -49,7 +49,6 @@
                     class="produk-card bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border border-gray-200">
                     <div class="p-4">
                         <div class="flex gap-3">
-                            <!-- Image -->
                             <div class="flex-shrink-0">
                                 @if ($item->gambar_produk)
                                     <img src="{{ asset('uploads/produk/' . $item->gambar_produk) }}"
@@ -62,8 +61,6 @@
                                     </div>
                                 @endif
                             </div>
-
-                            <!-- Content -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-start justify-between mb-2">
                                     <div class="flex-1 min-w-0 mr-2">
@@ -73,11 +70,11 @@
                                             <p class="text-xs text-gray-500 mt-0.5">{{ $item->code_produk }}</p>
                                         @endif
                                     </div>
-                                    <!-- Stock Badge -->
                                     @if ($item->stock_produk < 10)
                                         <span
                                             class="inline-flex items-center px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200 whitespace-nowrap flex-shrink-0">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ $item->stock_produk }}
+                                            <i
+                                                class="fas fa-exclamation-triangle mr-1"></i>{{ max(0, $item->stock_produk) }}
                                         </span>
                                     @else
                                         <span
@@ -86,8 +83,6 @@
                                         </span>
                                     @endif
                                 </div>
-
-                                <!-- Category -->
                                 <div class="mb-2">
                                     <span
                                         class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
@@ -95,23 +90,19 @@
                                             class="fas fa-tag mr-1 text-xs"></i>{{ $item->kategori->nama_kategori ?? 'Tanpa Kategori' }}
                                     </span>
                                 </div>
-
-                                <!-- Price -->
                                 <div class="mb-3">
                                     <p class="text-base sm:text-lg font-bold text-emerald-600">
                                         Rp {{ number_format($item->harga_produk, 0, ',', '.') }}
                                     </p>
                                 </div>
-
-                                <!-- Action Buttons - UPDATED dengan 3 tombol -->
                                 <div class="grid grid-cols-3 gap-1.5">
                                     <a href="{{ route('produk.logs', $item->id_produk) }}"
-                                        class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-center flex items-center justify-center"
+                                        class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md text-center flex items-center justify-center"
                                         title="Lihat Log Aktivitas">
                                         <i class="fas fa-history"></i>
                                     </a>
                                     <button onclick='editProduk(@json($item))'
-                                        class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+                                        class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md"
                                         title="Edit Produk">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -120,7 +111,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" onclick="return confirm('Yakin hapus produk ini?')"
-                                            class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+                                            class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-2 py-2 rounded-lg text-xs font-semibold transition-all shadow-md"
                                             title="Hapus Produk">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -195,7 +186,8 @@
                                     @if ($item->stock_produk < 10)
                                         <span
                                             class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ $item->stock_produk }}
+                                            <i
+                                                class="fas fa-exclamation-triangle mr-1"></i>{{ max(0, $item->stock_produk) }}
                                         </span>
                                     @else
                                         <span
@@ -205,7 +197,6 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <!-- Action Buttons - UPDATED dengan tombol Log -->
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('produk.logs', $item->id_produk) }}"
                                             class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg"
@@ -262,7 +253,9 @@
         </div>
     </div>
 
-    <!-- Modal Produk -->
+    <!-- ============================================================ -->
+    <!-- MODAL PRODUK                                                  -->
+    <!-- ============================================================ -->
     <div id="modalProduk"
         class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-md my-8 shadow-2xl">
@@ -280,11 +273,12 @@
                     <input type="hidden" id="methodField" name="_method" value="POST">
                     <input type="hidden" id="existingImage" name="existing_image" value="">
                     <input type="hidden" id="hapusGambar" name="hapus_gambar" value="0">
+                    {{-- ✅ Hidden: nilai angka murni yang dikirim ke server --}}
+                    <input type="hidden" id="harga_produk" name="harga_produk" value="">
 
+                    <!-- Gambar -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Gambar Produk</label>
-
-                        <!-- Preview Gambar -->
                         <div id="imagePreview" class="mb-3 hidden">
                             <div class="relative inline-block">
                                 <img id="preview" src="" alt="Preview"
@@ -296,18 +290,15 @@
                             </div>
                             <p class="text-xs text-gray-500 mt-2">Klik ✕ untuk menghapus gambar</p>
                         </div>
-
-                        <!-- Input File -->
-                        <div class="relative">
-                            <input type="file" name="gambar_produk" id="gambar_produk" accept="image/*"
-                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                onchange="previewImage(event)">
-                        </div>
+                        <input type="file" name="gambar_produk" id="gambar_produk" accept="image/*"
+                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            onchange="previewImage(event)">
                         <p class="text-xs text-gray-500 mt-2">
                             <i class="fas fa-info-circle text-blue-500 mr-1"></i>Format: JPG, JPEG, PNG, GIF (Max: 2MB)
                         </p>
                     </div>
 
+                    <!-- Nama -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">
                             Nama Produk <span class="text-red-500">*</span>
@@ -317,6 +308,7 @@
                             placeholder="Contoh: Indomie Goreng">
                     </div>
 
+                    <!-- Kode -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Kode Produk</label>
                         <input type="text" name="code_produk" id="code_produk"
@@ -324,6 +316,7 @@
                             placeholder="Contoh: PRD001">
                     </div>
 
+                    <!-- Kategori -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Kategori</label>
                         <select name="id_produk_kategori" id="id_produk_kategori"
@@ -335,6 +328,7 @@
                         </select>
                     </div>
 
+                    <!-- ✅ Harga dengan format ribuan otomatis -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">
                             Harga <span class="text-red-500">*</span>
@@ -342,13 +336,20 @@
                         <div class="relative">
                             <span
                                 class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">Rp</span>
-                            <input type="number" name="harga_produk" id="harga_produk" min="0" step="0.01"
-                                required
+                            {{-- Input display: user ketik di sini, tampil dengan titik ribuan --}}
+                            <input type="text" id="harga_produk_display" inputmode="numeric" autocomplete="off"
                                 class="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                                placeholder="50000">
+                                placeholder="50.000">
                         </div>
+                        <p class="text-xs text-gray-400 mt-1">
+                            <i class="fas fa-info-circle mr-1 text-blue-400"></i>Titik pemisah ribuan muncul otomatis
+                        </p>
+                        <p id="harga_error" class="text-xs text-red-500 mt-1 hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Harga tidak boleh kosong atau negatif!
+                        </p>
                     </div>
 
+                    <!-- Stok -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">
                             Stok <span class="text-red-500">*</span>
@@ -356,10 +357,14 @@
                         <input type="number" name="stock_produk" id="stock_produk" min="0" required
                             class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                             placeholder="100">
+                        <p id="stok_error" class="text-xs text-red-500 mt-1 hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Stok tidak boleh kosong atau negatif!
+                        </p>
                     </div>
 
+                    <!-- Tombol -->
                     <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button type="submit"
+                        <button type="submit" id="btnSubmit"
                             class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
                             <i class="fas fa-save mr-2"></i>Simpan
                         </button>
@@ -375,7 +380,92 @@
 
     @push('scripts')
         <script>
-            // Remove/delete image
+            // ============================================================
+            // FORMAT HARGA — Titik ribuan otomatis (format Indonesia)
+            // ============================================================
+
+            const hargaDisplay = document.getElementById('harga_produk_display');
+            const hargaHidden = document.getElementById('harga_produk');
+
+            /**
+             * Format angka ke string ribuan Indonesia
+             * Contoh: 50000 → "50.000"
+             */
+            function formatRibuan(angka) {
+                if (angka === null || angka === undefined || angka === '') return '';
+                const num = parseInt(String(angka).replace(/[^\d]/g, ''));
+                if (isNaN(num)) return '';
+                return num.toLocaleString('id-ID');
+            }
+
+            // Event: saat user mengetik di input harga
+            hargaDisplay.addEventListener('input', function() {
+                const cursorPos = this.selectionStart;
+                const oldLen = this.value.length;
+
+                // Ambil hanya digit
+                const angkaStr = this.value.replace(/[^\d]/g, '');
+
+                if (angkaStr === '') {
+                    this.value = '';
+                    hargaHidden.value = '';
+                    resetHargaError();
+                    return;
+                }
+
+                const angkaInt = parseInt(angkaStr);
+                const formatted = angkaInt.toLocaleString('id-ID'); // "50.000"
+
+                this.value = formatted;
+                hargaHidden.value = angkaInt;
+
+                // Kembalikan posisi kursor
+                const newLen = this.value.length;
+                const newPos = Math.max(0, cursorPos + (newLen - oldLen));
+                try {
+                    this.setSelectionRange(newPos, newPos);
+                } catch (e) {}
+
+                resetHargaError();
+            });
+
+            // Blokir karakter non-angka
+            hargaDisplay.addEventListener('keydown', function(e) {
+                const allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                    'Home', 'End'
+                ];
+                if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+                if (!/^\d$/.test(e.key)) e.preventDefault();
+            });
+
+            // Sinkronisasi nilai saat blur
+            hargaDisplay.addEventListener('blur', function() {
+                const angka = this.value.replace(/[^\d]/g, '');
+                hargaHidden.value = angka ? parseInt(angka) : '';
+            });
+
+            function resetHargaError() {
+                document.getElementById('harga_error').classList.add('hidden');
+                hargaDisplay.classList.remove('border-red-500');
+            }
+
+            // ============================================================
+            // STOK — Paksa tidak negatif, blokir karakter invalid
+            // ============================================================
+            const stokInput = document.getElementById('stock_produk');
+
+            stokInput.addEventListener('keydown', function(e) {
+                if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+            });
+
+            stokInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d]/g, '');
+                if (this.value !== '' && parseInt(this.value) < 0) this.value = 0;
+            });
+
+            // ============================================================
+            // GAMBAR — Preview & Remove
+            // ============================================================
             function removeImage() {
                 document.getElementById('preview').src = '';
                 document.getElementById('imagePreview').classList.add('hidden');
@@ -383,26 +473,67 @@
                 document.getElementById('hapusGambar').value = '1';
             }
 
-            // Preview image before upload
             function previewImage(event) {
-                const preview = document.getElementById('preview');
-                const previewContainer = document.getElementById('imagePreview');
                 const file = event.target.files[0];
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        previewContainer.classList.remove('hidden');
-                        document.getElementById('hapusGambar').value = '0';
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    previewContainer.classList.add('hidden');
+                if (!file) {
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    return;
                 }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    document.getElementById('hapusGambar').value = '0';
+                };
+                reader.readAsDataURL(file);
             }
 
-            // Search functionality - Update untuk dual view
+            // ============================================================
+            // VALIDASI FORM SEBELUM SUBMIT
+            // ============================================================
+            document.getElementById('formProduk').addEventListener('submit', function(e) {
+                let valid = true;
+
+                const namaInput = document.getElementById('nama_produk');
+                const hargaError = document.getElementById('harga_error');
+                const stokError = document.getElementById('stok_error');
+
+                // Reset semua error
+                hargaError.classList.add('hidden');
+                stokError.classList.add('hidden');
+                hargaDisplay.classList.remove('border-red-500');
+                stokInput.classList.remove('border-red-500');
+
+                // Validasi nama
+                if (!namaInput.value.trim()) {
+                    namaInput.focus();
+                    valid = false;
+                }
+
+                // Validasi harga — baca dari hidden (angka murni)
+                const hargaVal = hargaHidden.value.trim();
+                if (hargaVal === '' || isNaN(parseInt(hargaVal)) || parseInt(hargaVal) < 0) {
+                    hargaError.classList.remove('hidden');
+                    hargaDisplay.classList.add('border-red-500');
+                    if (valid) hargaDisplay.focus();
+                    valid = false;
+                }
+
+                // Validasi stok
+                const stokVal = stokInput.value.trim();
+                if (stokVal === '' || isNaN(parseInt(stokVal)) || parseInt(stokVal) < 0) {
+                    stokError.classList.remove('hidden');
+                    stokInput.classList.add('border-red-500');
+                    if (valid) stokInput.focus();
+                    valid = false;
+                }
+
+                if (!valid) e.preventDefault();
+            });
+
+            // ============================================================
+            // SEARCH & FILTER TABEL
+            // ============================================================
             document.getElementById('searchTable').addEventListener('input', filterProducts);
             document.getElementById('filterKategori').addEventListener('change', filterProducts);
 
@@ -410,38 +541,43 @@
                 const search = document.getElementById('searchTable').value.toLowerCase();
                 const kategori = document.getElementById('filterKategori').value;
 
-                // Filter untuk table (desktop)
                 document.querySelectorAll('.produk-row').forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    const rowKategori = row.dataset.kategori;
-
-                    const matchSearch = text.includes(search);
-                    const matchKategori = !kategori || rowKategori === kategori;
-
+                    const matchSearch = row.textContent.toLowerCase().includes(search);
+                    const matchKategori = !kategori || row.dataset.kategori === kategori;
                     row.style.display = (matchSearch && matchKategori) ? '' : 'none';
                 });
 
-                // Filter untuk card (mobile)
                 document.querySelectorAll('.produk-card').forEach(card => {
-                    const text = card.textContent.toLowerCase();
-                    const cardKategori = card.dataset.kategori;
-
-                    const matchSearch = text.includes(search);
-                    const matchKategori = !kategori || cardKategori === kategori;
-
+                    const matchSearch = card.textContent.toLowerCase().includes(search);
+                    const matchKategori = !kategori || card.dataset.kategori === kategori;
                     card.style.display = (matchSearch && matchKategori) ? '' : 'none';
                 });
             }
 
-            // Modal functions
+            // ============================================================
+            // MODAL — Open / Close / Edit
+            // ============================================================
             function openModal() {
                 document.getElementById('modalTitle').textContent = 'Tambah Produk';
                 document.getElementById('formProduk').action = '{{ route('produk.store') }}';
                 document.getElementById('methodField').value = 'POST';
                 document.getElementById('formProduk').reset();
+
+                // Reset harga
+                hargaDisplay.value = '';
+                hargaHidden.value = '';
+                hargaDisplay.classList.remove('border-red-500');
+
+                // Reset gambar
                 document.getElementById('imagePreview').classList.add('hidden');
                 document.getElementById('hapusGambar').value = '0';
                 document.getElementById('existingImage').value = '';
+
+                // Reset error
+                document.getElementById('harga_error').classList.add('hidden');
+                document.getElementById('stok_error').classList.add('hidden');
+                stokInput.classList.remove('border-red-500');
+
                 document.getElementById('modalProduk').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
@@ -451,19 +587,29 @@
                 document.getElementById('formProduk').action = `/produk/${produk.id_produk}`;
                 document.getElementById('methodField').value = 'PUT';
 
-                // Reset form terlebih dahulu
+                // Reset form & error
                 document.getElementById('formProduk').reset();
                 document.getElementById('gambar_produk').value = '';
                 document.getElementById('hapusGambar').value = '0';
+                document.getElementById('harga_error').classList.add('hidden');
+                document.getElementById('stok_error').classList.add('hidden');
+                hargaDisplay.classList.remove('border-red-500');
+                stokInput.classList.remove('border-red-500');
 
-                // Fill form data
+                // Isi data produk
                 document.getElementById('nama_produk').value = produk.nama_produk;
                 document.getElementById('code_produk').value = produk.code_produk || '';
                 document.getElementById('id_produk_kategori').value = produk.id_produk_kategori || '';
-                document.getElementById('harga_produk').value = produk.harga_produk;
-                document.getElementById('stock_produk').value = produk.stock_produk;
 
-                // Show existing image if available
+                // ✅ Harga: tampilan berformat + hidden angka murni
+                const hargaAsli = parseInt(produk.harga_produk) || 0;
+                hargaDisplay.value = formatRibuan(hargaAsli); // "50.000"
+                hargaHidden.value = hargaAsli; // 50000
+
+                // ✅ Stok: tampilkan 0 jika negatif
+                stokInput.value = Math.max(0, parseInt(produk.stock_produk) || 0);
+
+                // Gambar existing
                 if (produk.gambar_produk) {
                     document.getElementById('preview').src = `/uploads/produk/${produk.gambar_produk}`;
                     document.getElementById('imagePreview').classList.remove('hidden');
@@ -482,13 +628,13 @@
                 document.body.style.overflow = 'auto';
             }
 
-            // Close modal on ESC
-            document.addEventListener('keydown', (e) => {
+            // Tutup modal dengan ESC
+            document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') closeModal();
             });
 
-            // Close modal on outside click
-            document.getElementById('modalProduk').addEventListener('click', (e) => {
+            // Tutup modal klik di luar
+            document.getElementById('modalProduk').addEventListener('click', e => {
                 if (e.target.id === 'modalProduk') closeModal();
             });
         </script>

@@ -33,7 +33,6 @@
                 <div
                     class="px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 shadow-sm">
                     <i class="fas fa-calendar-day text-emerald-600 mr-2 text-sm"></i>
-                    {{-- Gunakan Carbon dengan timezone Asia/Jakarta --}}
                     <span class="text-xs sm:text-sm font-semibold text-gray-700">
                         {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}
                     </span>
@@ -61,8 +60,6 @@
                             ->whereNull('deleted_at')
                             ->sum('total_pembayaran');
                         $saldoEstimasi = $kasirAktif->modal_awal + $totalPenjualanAktif;
-
-                        // Pastikan waktu_open pakai timezone Asia/Jakarta
                         $waktuOpenJkt = $kasirAktif->waktu_open->setTimezone('Asia/Jakarta');
                     @endphp
 
@@ -96,7 +93,6 @@
                                         <i class="fas fa-clock text-blue-600 mr-2 text-sm"></i>
                                         <span class="text-sm text-gray-600 font-medium">Waktu Buka</span>
                                     </div>
-                                    {{-- Jam buka statis (WIB) + jam sekarang realtime --}}
                                     <div class="text-right">
                                         <span class="font-semibold text-gray-800 text-sm">{{ $waktuOpenJkt->format('H:i') }}
                                             WIB</span>
@@ -109,10 +105,8 @@
                                         <i class="fas fa-hourglass-half text-orange-600 mr-2 text-sm"></i>
                                         <span class="text-sm text-gray-600 font-medium">Durasi</span>
                                     </div>
-                                    {{-- Durasi realtime diupdate JS setiap detik --}}
-                                    <span id="durasiKasir" class="font-semibold text-orange-600 text-sm">
-                                        Menghitung...
-                                    </span>
+                                    <span id="durasiKasir"
+                                        class="font-semibold text-orange-600 text-sm">Menghitung...</span>
                                 </div>
                             </div>
                         </div>
@@ -155,6 +149,9 @@
                     <!-- Form Buka Kasir -->
                     <form id="formBukaKasir">
                         @csrf
+                        {{-- Hidden input: nilai angka murni yang dikirim ke server --}}
+                        <input type="hidden" id="modal_awal" name="modal_awal" value="">
+
                         <div class="mb-4 sm:mb-5">
                             <label class="flex items-center text-gray-700 font-semibold mb-2 text-sm">
                                 <div
@@ -163,14 +160,21 @@
                                 </div>
                                 Modal Awal <span class="text-red-500 ml-1">*</span>
                             </label>
-                            <input type="number" name="modal_awal" id="modal_awal" required min="1" step="any"
-                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all text-gray-800 placeholder-gray-400 text-sm"
-                                placeholder="Contoh: 500000">
+
+                            {{-- ✅ Input display: user ketik di sini, tampil format ribuan --}}
+                            <div class="relative">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">Rp</span>
+                                <input type="text" id="modal_awal_display" inputmode="numeric" autocomplete="off"
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none transition-all text-gray-800 placeholder-gray-400 text-sm"
+                                    placeholder="500.000">
+                            </div>
                             <p class="text-gray-500 text-xs mt-2 flex items-start gap-1">
                                 <i class="fas fa-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i>
-                                Masukkan jumlah uang di laci kasir saat ini
+                                Masukkan jumlah uang di laci kasir saat ini — titik muncul otomatis
                             </p>
                         </div>
+
                         <button type="submit"
                             class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
                             <i class="fas fa-unlock-alt mr-2"></i>Buka Kasir Sekarang
@@ -207,7 +211,8 @@
                                 </div>
                                 <div>
                                     <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Transaksi</p>
-                                    <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $transaksiHariIni }}</p>
+                                    <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $transaksiHariIni }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -285,7 +290,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
                     {{-- Kiri: Form Setting --}}
                     <div>
                         <form id="formAutoClose">
@@ -304,7 +308,6 @@
                                         <p class="text-xs text-gray-500">Tutup kasir otomatis setiap hari</p>
                                     </div>
                                 </div>
-                                {{-- Toggle Switch --}}
                                 <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-3">
                                     <input type="checkbox" id="auto_close_kasir" name="auto_close_kasir" value="1"
                                         class="sr-only peer" {{ $autoCloseAktif ? 'checked' : '' }}>
@@ -337,7 +340,6 @@
                                 </p>
                             </div>
 
-                            {{-- Tombol Simpan --}}
                             <button type="submit"
                                 class="mt-4 w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm">
                                 <i class="fas fa-save mr-2"></i>Simpan Pengaturan
@@ -347,7 +349,6 @@
 
                     {{-- Kanan: Info Status --}}
                     <div class="space-y-3">
-                        {{-- Status saat ini --}}
                         <div
                             class="{{ $autoCloseAktif ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200' : 'bg-gray-50 border-gray-200' }} border rounded-xl p-4">
                             <div class="flex items-center gap-3 mb-3">
@@ -376,7 +377,6 @@
                             @endif
                         </div>
 
-                        {{-- Riwayat terakhir auto-close --}}
                         @php
                             $logAutoClose = DB::table('kasir')
                                 ->where('is_auto_closed', true)
@@ -415,16 +415,7 @@
                             @endif
                         </div>
 
-                        {{-- Info cara kerja --}}
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                            <p class="text-xs text-amber-700 flex items-start gap-1.5">
-                                <i class="fas fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
-                                <span>Agar auto-close berjalan, pastikan <strong>Laravel Scheduler</strong> sudah aktif di
-                                    server dengan perintah:<br>
-                                    <code class="bg-amber-100 px-1 rounded text-xs font-mono mt-1 inline-block">* * * * *
-                                        php artisan schedule:run</code></span>
-                            </p>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -456,8 +447,8 @@
                                     {{ ($riwayatKasir->currentPage() - 1) * $riwayatKasir->perPage() + $index + 1 }}
                                 </span>
                                 <div>
-                                    <p class="text-sm font-semibold text-gray-800">
-                                        {{ $waktuOpenCard->format('d/m/Y') }}</p>
+                                    <p class="text-sm font-semibold text-gray-800">{{ $waktuOpenCard->format('d/m/Y') }}
+                                    </p>
                                     <p class="text-xs text-gray-500">
                                         {{ $waktuOpenCard->format('H:i') }} -
                                         {{ $waktuCloseCard ? $waktuCloseCard->format('H:i') : 'Aktif' }}
@@ -627,7 +618,60 @@
             cancelButton: 'px-6 py-3 rounded-xl font-semibold'
         };
 
-        // ─── Tutup kasir request ─────────────────────────────────────
+        // ================================================================
+        // FORMAT MODAL AWAL — Titik ribuan otomatis
+        // ================================================================
+        const modalDisplay = document.getElementById('modal_awal_display');
+        const modalHidden = document.getElementById('modal_awal');
+
+        if (modalDisplay && modalHidden) {
+            // Saat user mengetik
+            modalDisplay.addEventListener('input', function() {
+                const cursorPos = this.selectionStart;
+                const oldLen = this.value.length;
+
+                // Ambil hanya digit
+                const angkaStr = this.value.replace(/[^\d]/g, '');
+
+                if (angkaStr === '') {
+                    this.value = '';
+                    modalHidden.value = '';
+                    return;
+                }
+
+                const angkaInt = parseInt(angkaStr);
+                const formatted = angkaInt.toLocaleString('id-ID'); // "500.000"
+
+                this.value = formatted;
+                modalHidden.value = angkaInt; // angka murni ke hidden
+
+                // Kembalikan posisi kursor
+                const newLen = this.value.length;
+                const newPos = Math.max(0, cursorPos + (newLen - oldLen));
+                try {
+                    this.setSelectionRange(newPos, newPos);
+                } catch (e) {}
+            });
+
+            // Blokir karakter non-angka
+            modalDisplay.addEventListener('keydown', function(e) {
+                const allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                    'Home', 'End'
+                ];
+                if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+                if (!/^\d$/.test(e.key)) e.preventDefault();
+            });
+
+            // Sinkronisasi saat blur
+            modalDisplay.addEventListener('blur', function() {
+                const angka = this.value.replace(/[^\d]/g, '');
+                modalHidden.value = angka ? parseInt(angka) : '';
+            });
+        }
+
+        // ================================================================
+        // FUNGSI HELPER
+        // ================================================================
         async function tutupKasirRequest(kasirId, isAuto = false) {
             const response = await fetch(`/kasir/${kasirId}/close`, {
                 method: 'POST',
@@ -645,7 +689,6 @@
             return data;
         }
 
-        // ─── Ringkasan konfirmasi tutup ──────────────────────────────
         function ringkasanHTML(modalAwal, totalJual, saldoEstimasi) {
             return `
                 <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-left text-sm">
@@ -668,7 +711,6 @@
                 </div>`;
         }
 
-        // ─── Tampil hasil tutup ──────────────────────────────────────
         async function tampilHasilTutup(data) {
             await Swal.fire({
                 icon: 'success',
@@ -695,15 +737,18 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         // FORM BUKA KASIR
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         const formBukaKasir = document.getElementById('formBukaKasir');
         if (formBukaKasir) {
             formBukaKasir.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const modalAwal = document.getElementById('modal_awal').value;
-                if (!modalAwal || modalAwal <= 0) {
+
+                // Baca dari hidden (angka murni)
+                const modalAwal = modalHidden ? modalHidden.value : '';
+
+                if (!modalAwal || parseInt(modalAwal) <= 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Perhatian!',
@@ -712,8 +757,10 @@
                         customClass: swalClass,
                         buttonsStyling: false
                     });
+                    if (modalDisplay) modalDisplay.focus();
                     return;
                 }
+
                 const confirm = await Swal.fire({
                     title: 'Buka Kasir?',
                     html: `<div class="bg-gray-50 rounded-xl p-4 mb-4 text-left text-sm">
@@ -732,7 +779,9 @@
                     customClass: swalClass,
                     buttonsStyling: false
                 });
+
                 if (!confirm.isConfirmed) return;
+
                 try {
                     const res = await fetch('{{ route('kasir.open') }}', {
                         method: 'POST',
@@ -770,9 +819,9 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         // TOMBOL TUTUP KASIR MANUAL
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         const btnTutupKasir = document.getElementById('btnTutupKasir');
         if (btnTutupKasir) {
             btnTutupKasir.addEventListener('click', async function() {
@@ -780,6 +829,7 @@
                 const modalAwal = parseFloat(this.dataset.modalAwal);
                 const totalJual = parseFloat(this.dataset.totalPenjualan);
                 const saldoEstimasi = parseFloat(this.dataset.saldoEstimasi);
+
                 const confirm = await Swal.fire({
                     title: 'Tutup Kasir?',
                     html: ringkasanHTML(modalAwal, totalJual, saldoEstimasi),
@@ -793,6 +843,7 @@
                     buttonsStyling: false
                 });
                 if (!confirm.isConfirmed) return;
+
                 try {
                     const data = await tutupKasirRequest(kasirId, false);
                     await tampilHasilTutup(data);
@@ -810,9 +861,9 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         // TOMBOL AUTO-CLOSE ALL (Owner)
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         const btnAutoCloseAll = document.getElementById('btnAutoCloseAll');
         if (btnAutoCloseAll) {
             btnAutoCloseAll.addEventListener('click', async function() {
@@ -835,6 +886,7 @@
                     buttonsStyling: false
                 });
                 if (!confirm.isConfirmed) return;
+
                 try {
                     const res = await fetch('{{ route('kasir.auto-close-all') }}', {
                         method: 'POST',
@@ -869,9 +921,9 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         // FORM PENGATURAN AUTO-CLOSE (Owner)
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
         const toggleAutoClose = document.getElementById('auto_close_kasir');
         const wrapperWaktu = document.getElementById('wrapperWaktu');
         const inputWaktu = document.getElementById('auto_close_time');
@@ -910,12 +962,12 @@
                             icon: 'success',
                             title: 'Tersimpan!',
                             html: `<p class="text-gray-600 text-sm">${data.message}</p>
-                                    ${payload.auto_close_kasir
-                                        ? `<div class="mt-3 bg-indigo-50 rounded-xl p-3 text-sm font-semibold text-indigo-700">
-                                                        <i class="fas fa-clock mr-1"></i>Jadwal: Setiap hari pukul ${payload.auto_close_time} WIB
-                                                       </div>`
-                                        : '<p class="text-xs text-gray-400 mt-2">Auto-close kasir dinonaktifkan.</p>'
-                                    }`,
+                                   ${payload.auto_close_kasir
+                                       ? `<div class="mt-3 bg-indigo-50 rounded-xl p-3 text-sm font-semibold text-indigo-700">
+                                                          <i class="fas fa-clock mr-1"></i>Jadwal: Setiap hari pukul ${payload.auto_close_time} WIB
+                                                      </div>`
+                                       : '<p class="text-xs text-gray-400 mt-2">Auto-close kasir dinonaktifkan.</p>'
+                                   }`,
                             confirmButtonColor: '#6366f1',
                             customClass: swalClass,
                             buttonsStyling: false
@@ -935,20 +987,13 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // JAM SEKARANG & DURASI KASIR — Realtime WIB (Asia/Jakarta)
-        // ═══════════════════════════════════════════════════════════════
+        // ================================================================
+        // JAM SEKARANG & DURASI KASIR — Realtime WIB
+        // ================================================================
         @if ($kasirAktif)
             (function() {
-                /**
-                 * PERBAIKAN UTAMA:
-                 * Gunakan Unix timestamp (detik) dari server → kalikan 1000 → milidetik.
-                 * Cara ini bebas dari masalah parsing timezone string antar browser.
-                 * Server HARUS dikonfigurasi timezone = Asia/Jakarta di config/app.php.
-                 */
                 const waktuBuka = new Date({{ $kasirAktif->waktu_open->setTimezone('Asia/Jakarta')->timestamp }} *
                     1000);
-
                 const elJam = document.getElementById('jamSekarang');
                 const elDurasi = document.getElementById('durasiKasir');
 
@@ -960,21 +1005,13 @@
                     const jam = Math.floor(totalDetik / 3600);
                     const menit = Math.floor((totalDetik % 3600) / 60);
                     const detik = totalDetik % 60;
-
-                    if (jam > 0) {
-                        return `${jam} jam ${pad(menit)} menit`;
-                    } else if (menit > 0) {
-                        return `${menit} menit ${pad(detik)} detik`;
-                    } else {
-                        return `${detik} detik`;
-                    }
+                    if (jam > 0) return `${jam} jam ${pad(menit)} menit`;
+                    if (menit > 0) return `${menit} menit ${pad(detik)} detik`;
+                    return `${detik} detik`;
                 }
 
                 function tick() {
-                    // Ambil waktu sekarang di WIB menggunakan Intl API
                     const sekarang = new Date();
-
-                    // Format jam WIB menggunakan toLocaleTimeString — akurat di semua browser
                     const jamWIB = sekarang.toLocaleTimeString('id-ID', {
                         timeZone: 'Asia/Jakarta',
                         hour: '2-digit',
@@ -982,19 +1019,11 @@
                         second: '2-digit',
                         hour12: false
                     });
-
-                    if (elJam) {
-                        elJam.textContent = jamWIB + ' WIB';
-                    }
-
-                    // Hitung durasi sejak kasir dibuka
-                    const selisihDetik = Math.floor((sekarang - waktuBuka) / 1000);
-                    if (elDurasi && selisihDetik >= 0) {
-                        elDurasi.textContent = formatDurasi(selisihDetik);
-                    }
+                    if (elJam) elJam.textContent = jamWIB + ' WIB';
+                    const selisih = Math.floor((sekarang - waktuBuka) / 1000);
+                    if (elDurasi && selisih >= 0) elDurasi.textContent = formatDurasi(selisih);
                 }
 
-                // Jalankan langsung lalu setiap detik
                 tick();
                 setInterval(tick, 1000);
             })();
