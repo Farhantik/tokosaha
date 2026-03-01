@@ -184,6 +184,12 @@
                 transform: translateY(0);
             }
         }
+
+        /* Hide password toggle button from browser (Chrome) */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none;
+        }
     </style>
 </head>
 
@@ -322,8 +328,13 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('login.post') }}" method="POST" class="space-y-4">
+                    {{-- autocomplete="off" pada form mencegah browser autofill --}}
+                    <form action="{{ route('login.post') }}" method="POST" class="space-y-4" autocomplete="off">
                         @csrf
+
+                        <!-- Honeypot fields untuk trick browser agar tidak autofill field asli -->
+                        <input type="text" name="username_fake" style="display:none;" tabindex="-1" autocomplete="username">
+                        <input type="password" name="password_fake" style="display:none;" tabindex="-1" autocomplete="current-password">
 
                         <!-- Username Field -->
                         <div>
@@ -335,6 +346,7 @@
                                 <span>Username</span>
                             </label>
                             <input type="text" name="username" value="{{ old('username') }}"
+                                autocomplete="off"
                                 class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none input-focus text-gray-800 placeholder-gray-400 text-sm"
                                 placeholder="Masukkan username" required>
                         </div>
@@ -348,9 +360,17 @@
                                 </div>
                                 <span>Password</span>
                             </label>
-                            <input type="password" name="password"
-                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none input-focus text-gray-800 placeholder-gray-400 text-sm"
-                                placeholder="Masukkan password" required>
+                            <div class="relative">
+                                <input type="password" name="password" id="passwordInput"
+                                    autocomplete="new-password"
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none input-focus text-gray-800 placeholder-gray-400 text-sm pr-12"
+                                    placeholder="Masukkan password" required>
+                                <!-- Toggle Show/Hide Password -->
+                                <button type="button" id="togglePassword"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-500 transition-colors duration-200 focus:outline-none">
+                                    <i class="fas fa-eye text-sm" id="eyeIcon"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Login Button -->
@@ -362,16 +382,43 @@
                     </form>
                 </div>
 
-
-
                 <!-- Footer -->
-                <p class="text-center text-xs text-gray-500 mt-4">
+                <p class="text-center text-xs text-gray-500 mt-4 pb-5">
                     © 2026 Point of Sale. All rights reserved.
                 </p>
             </div>
         </div>
     </div>
-    </div>
+
+    <script>
+        // Toggle show/hide password
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', function () {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.classList.toggle('fa-eye', !isPassword);
+            eyeIcon.classList.toggle('fa-eye-slash', isPassword);
+        });
+
+        // Extra: clear autofilled values on page load jika tidak ada interaksi user
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                const pwd = document.getElementById('passwordInput');
+                // Hanya kosongkan jika browser autofill (bukan nilai dari old() Laravel)
+                if (pwd && pwd.value && !pwd.dataset.userTyped) {
+                    pwd.value = '';
+                }
+            }, 100);
+        });
+
+        // Tandai bahwa user mengetik sendiri
+        document.getElementById('passwordInput').addEventListener('input', function () {
+            this.dataset.userTyped = 'true';
+        });
+    </script>
 </body>
 
 </html>

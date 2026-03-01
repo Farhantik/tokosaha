@@ -458,7 +458,7 @@
 
                     <div id="produkList"
                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-1"
-                        style="max-height: calc(200vh - 22rem); min-height: 300px;">
+                        style="max-height: calc(130vh - 22rem); min-height: 300px;">
                         @foreach ($produk as $item)
                             <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 cursor-pointer {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
                                 data-id="{{ $item->id_produk }}" data-nama="{{ $item->nama_produk }}"
@@ -1177,7 +1177,7 @@
                             <div class="flex items-center justify-center">
                                 ${gambarUrl
                                     ? `<img src="${gambarUrl}" alt="${AppState.currentDetailProduct.nama}" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                               <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
+                                                                   <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                     : `<div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                 }
                             </div>
