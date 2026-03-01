@@ -30,7 +30,8 @@ class Produk extends Model
         'harga_produk',
         'stock_produk',
         'code_produk',
-        'gambar_produk'
+        'gambar_produk',
+        'deskripsi_produk'
     ];
 
     /**
@@ -80,7 +81,7 @@ class Produk extends Model
     public function logs()
     {
         return $this->hasMany(ProdukLog::class, 'id_produk', 'id_produk')
-                    ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
     }
 
     /**
@@ -119,7 +120,7 @@ class Produk extends Model
      */
     public function getBadgeStokColorAttribute()
     {
-        return match($this->status_stok) {
+        return match ($this->status_stok) {
             'habis' => 'red',
             'menipis' => 'orange',
             'aman' => 'green',
@@ -132,7 +133,7 @@ class Produk extends Model
      */
     public function getIconStokAttribute()
     {
-        return match($this->status_stok) {
+        return match ($this->status_stok) {
             'habis' => 'fa-times-circle',
             'menipis' => 'fa-exclamation-triangle',
             'aman' => 'fa-check-circle',
@@ -169,7 +170,7 @@ class Produk extends Model
      */
     public function scopeWithLogs($query, $limit = 10)
     {
-        return $query->with(['logs' => function($q) use ($limit) {
+        return $query->with(['logs' => function ($q) use ($limit) {
             $q->orderBy('created_at', 'desc')->limit($limit);
         }]);
     }

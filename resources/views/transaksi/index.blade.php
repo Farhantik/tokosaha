@@ -46,25 +46,28 @@
             padding: 0.75rem;
             margin-bottom: 0.5rem;
             background: #f9fafb;
+            overflow: hidden;
         }
 
         .payment-row .payment-method-select {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
+            gap: 0.35rem;
             margin-bottom: 0.5rem;
         }
 
         .pay-method-btn {
             border: 2px solid #e5e7eb;
             border-radius: 0.5rem;
-            padding: 0.5rem;
+            padding: 0.4rem 0.2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             background: white;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .pay-method-btn:hover {
@@ -123,6 +126,148 @@
         .grid-transaksi>.col-produk>.panel-produk,
         .grid-transaksi>.col-keranjang>.panel-keranjang {
             flex: 1;
+        }
+
+        /* ── Cart Item ── */
+        #cartItems,
+        #cartItemsMobile {
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-gutter: stable;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+
+        #cartItems::-webkit-scrollbar,
+        #cartItemsMobile::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #cartItems::-webkit-scrollbar-thumb,
+        #cartItemsMobile::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+
+        .cart-item-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 10px;
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 6px;
+            transition: border-color 0.2s;
+        }
+
+        .cart-item-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .cart-item-card:hover {
+            border-color: #10b981;
+        }
+
+        .cart-row1 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .cart-item-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: #0f172a;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cart-item-unit-price {
+            font-size: 11px;
+            color: #94a3b8;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cart-row2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .cart-item-total {
+            font-size: 13px;
+            font-weight: 700;
+            color: #10b981;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cart-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .cc-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s;
+            font-size: 10px;
+        }
+
+        .cc-btn.sub {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .cc-btn.sub:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .cc-btn.add {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .cc-btn.add:hover {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .cc-btn.del {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1.5px solid #fecaca;
+        }
+
+        .cc-btn.del:hover {
+            background: #dc2626;
+            color: #fff;
+            border-color: #dc2626;
+        }
+
+        .cc-qty {
+            min-width: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: #1e293b;
         }
 
         /* Pagination styles */
@@ -313,7 +458,7 @@
 
                     <div id="produkList"
                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-1"
-                        style="max-height: calc(100vh - 22rem); min-height: 300px;">
+                        style="max-height: calc(200vh - 22rem); min-height: 300px;">
                         @foreach ($produk as $item)
                             <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 cursor-pointer {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
                                 data-id="{{ $item->id_produk }}" data-nama="{{ $item->nama_produk }}"
@@ -363,8 +508,8 @@
 
             <!-- ── Keranjang Desktop ── -->
             <div class="hidden lg:flex col-keranjang">
-                <div class="bg-white rounded-2xl shadow-lg p-6 panel-keranjang sticky top-6 w-full"
-                    style="max-height: calc(100vh - 7rem); overflow-y: auto;">
+                <div class="bg-white rounded-2xl shadow-lg panel-keranjang sticky top-6 w-full"
+                    style="max-height: calc(200vh - 7rem); overflow-y: auto; padding: 20px;">
 
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-gray-800 flex items-center">
@@ -379,7 +524,8 @@
                     </div>
 
                     <!-- Cart Items -->
-                    <div id="cartItems" class="space-y-2 mb-4 overflow-y-auto" style="max-height: 280px;">
+                    <div id="cartItems"
+                        style="max-height: 340px; overflow-y: auto; overflow-x: hidden; margin-bottom: 16px;">
                         <div class="text-center py-8">
                             <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
                             <p class="text-gray-500 text-sm">Keranjang kosong</p>
@@ -444,7 +590,7 @@
     <!-- Mobile Cart Modal -->
     <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="p-6">
+            <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-gray-800 flex items-center">
                         <i class="fas fa-shopping-cart text-emerald-600 mr-2"></i>
@@ -455,7 +601,8 @@
                     </button>
                 </div>
 
-                <div id="cartItemsMobile" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                <div id="cartItemsMobile" class="mb-4 overflow-y-auto overflow-x-hidden"
+                    style="max-height: 220px; padding-right: 4px;">
                     <div class="text-center py-8">
                         <i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i>
                         <p class="text-gray-500 text-sm">Keranjang kosong</p>
@@ -912,14 +1059,14 @@
                         const activeClass = isActive ? `pay-method-btn ${meta.activeClass}` :
                             'pay-method-btn';
                         return `<button type="button" class="${activeClass}" onclick="PaymentManager.setMethod(${index}, '${key}')" title="${meta.label}">
-                            <i class="fas ${meta.icon} mb-1 block text-lg"></i><span>${meta.label}</span>
+                            <i class="fas ${meta.icon} mb-1 block text-base"></i><span>${meta.label}</span>
                         </button>`;
                     }).join('');
                     const showAmountInput = row.method === 'tunai';
                     const showQrisNote = row.method === 'qris';
                     const showBayarNanti = row.method === 'bayar_nanti';
                     const inputHtml = (id, label, borderClass = 'border-gray-200', placeholder =
-                        'Masukkan nominal') =>
+                            'Masukkan nominal') =>
                         `<div><label class="block text-xs text-gray-500 mb-1">${label}</label>
                         <input type="text" inputmode="numeric" id="${id}" placeholder="${placeholder}" value="${displayValue}"
                             class="w-full px-3 py-2 bg-white border-2 ${borderClass} rounded-lg text-sm focus:border-emerald-500 focus:outline-none"
@@ -943,7 +1090,7 @@
                             class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
                             <i class="fas fa-plus"></i> Tambah Metode Bayar</button>` : '';
                     const rowsHTML = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, false)).join(
-                    '');
+                        '');
                     const rowsHTMLMobile = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, true))
                         .join('');
                     if (DOM.paymentRowsDesktop) DOM.paymentRowsDesktop.innerHTML = rowsHTML + addBtnHTML;
@@ -1030,7 +1177,7 @@
                             <div class="flex items-center justify-center">
                                 ${gambarUrl
                                     ? `<img src="${gambarUrl}" alt="${AppState.currentDetailProduct.nama}" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                           <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
+                                                               <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                     : `<div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                 }
                             </div>
@@ -1137,6 +1284,25 @@
                         Utils.showToast('Ditambahkan ke keranjang');
                     }
                 },
+                // ── CART ITEM HTML ──
+                buildCartItemHTML(item) {
+                    return `
+                    <div class="cart-item-card">
+                        <div class="cart-row1">
+                            <span class="cart-item-name" title="${item.nama}">${item.nama}</span>
+                            <span class="cart-item-unit-price">${Utils.formatRupiah(item.harga)}/pcs</span>
+                        </div>
+                        <div class="cart-row2">
+                            <span class="cart-item-total">${Utils.formatRupiah(item.harga * item.qty)}</span>
+                            <div class="cart-ctrl">
+                                <button onclick="window.cartChangeQty('${item.id}',-1)" class="cc-btn sub"><i class="fas fa-minus"></i></button>
+                                <span class="cc-qty">${item.qty}</span>
+                                <button onclick="window.cartChangeQty('${item.id}',1)" class="cc-btn add"><i class="fas fa-plus"></i></button>
+                                <button onclick="window.cartRemoveItem('${item.id}')" class="cc-btn del"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+                },
                 updateCart() {
                     const emptyHTML =
                         `<div class="text-center py-8"><i class="fas fa-shopping-basket text-4xl text-gray-300 mb-2"></i><p class="text-gray-500 text-sm">Keranjang kosong</p></div>`;
@@ -1145,24 +1311,7 @@
                         DOM.cartItemsMobile.innerHTML = emptyHTML;
                         AppState.totalBelanja = 0;
                     } else {
-                        const cartHTML = AppState.cart.map(item => `
-                            <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
-                                <div class="flex items-start justify-between mb-2">
-                                    <div class="flex-1">
-                                        <p class="font-bold text-sm text-gray-800">${item.nama}</p>
-                                        <p class="text-xs text-gray-600">${Utils.formatRupiah(item.harga)} × ${item.qty}</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <p class="text-sm font-bold text-emerald-600">${Utils.formatRupiah(item.harga * item.qty)}</p>
-                                    <div class="flex items-center space-x-2">
-                                        <button onclick="window.cartChangeQty('${item.id}', -1)" class="bg-red-500 text-white w-7 h-7 rounded-lg hover:bg-red-600 transition">-</button>
-                                        <span class="font-bold w-8 text-center">${item.qty}</span>
-                                        <button onclick="window.cartChangeQty('${item.id}', 1)" class="bg-emerald-500 text-white w-7 h-7 rounded-lg hover:bg-emerald-600 transition">+</button>
-                                        <button onclick="window.cartRemoveItem('${item.id}')" class="text-red-600 ml-2 hover:text-red-700 transition"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>`).join('');
+                        const cartHTML = AppState.cart.map(item => this.buildCartItemHTML(item)).join('');
                         DOM.cartItems.innerHTML = cartHTML;
                         DOM.cartItemsMobile.innerHTML = cartHTML;
                         AppState.totalBelanja = AppState.cart.reduce((sum, item) => sum + (item.harga * item.qty),
@@ -1495,11 +1644,10 @@
                     DOM.piutangFilterBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     AppState.currentPiutangFilter = btn.dataset.status;
-                    AppState.piutangPage = 1; // reset ke halaman 1 saat filter berubah
+                    AppState.piutangPage = 1;
                     this.renderPiutangList();
                 },
                 renderPiutangList() {
-                    // ── Filter data ──
                     const filtered = AppState.currentPiutangFilter === 'all' ?
                         AppState.piutangData :
                         AppState.piutangData.filter(p => p.status_pembayaran === AppState.currentPiutangFilter);
@@ -1507,7 +1655,6 @@
                     const totalItems = filtered.length;
                     const totalPages = Math.max(1, Math.ceil(totalItems / AppState.piutangPerPage));
 
-                    // Pastikan page tidak melebihi total
                     if (AppState.piutangPage > totalPages) AppState.piutangPage = totalPages;
                     if (AppState.piutangPage < 1) AppState.piutangPage = 1;
 
@@ -1542,7 +1689,6 @@
                         }
                     };
 
-                    // ── Render cards ──
                     const cardsHTML = paginated.map(p => {
                         const cfg = statusConfig[p.status_pembayaran] || statusConfig.belum_bayar;
                         const showBayarBtn = p.status_pembayaran === 'belum_bayar' || p
@@ -1574,10 +1720,8 @@
                         </div>`;
                     }).join('');
 
-                    // ── Render pagination ──
                     let paginationHTML = '';
                     if (totalPages > 1) {
-                        // Tentukan range halaman yang ditampilkan (max 5 tombol angka)
                         const maxVisible = 5;
                         let pageStart = Math.max(1, AppState.piutangPage - Math.floor(maxVisible / 2));
                         let pageEnd = Math.min(totalPages, pageStart + maxVisible - 1);
@@ -1602,39 +1746,13 @@
                                 data
                             </p>
                             <div class="flex items-center gap-1 order-1 sm:order-2">
-                                <!-- Tombol First -->
-                                <button onclick="window.piutangGoToPage(1)"
-                                    class="piutang-page-btn"
-                                    ${AppState.piutangPage === 1 ? 'disabled' : ''}
-                                    title="Halaman pertama">
-                                    <i class="fas fa-angle-double-left text-xs"></i>
-                                </button>
-                                <!-- Tombol Prev -->
-                                <button onclick="window.piutangGoToPage(${AppState.piutangPage - 1})"
-                                    class="piutang-page-btn"
-                                    ${AppState.piutangPage === 1 ? 'disabled' : ''}
-                                    title="Halaman sebelumnya">
-                                    <i class="fas fa-chevron-left text-xs"></i>
-                                </button>
-
+                                <button onclick="window.piutangGoToPage(1)" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''} title="Halaman pertama"><i class="fas fa-angle-double-left text-xs"></i></button>
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage - 1})" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''} title="Halaman sebelumnya"><i class="fas fa-chevron-left text-xs"></i></button>
                                 ${pageStart > 1 ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
                                 ${pageButtons.join('')}
                                 ${pageEnd < totalPages ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
-
-                                <!-- Tombol Next -->
-                                <button onclick="window.piutangGoToPage(${AppState.piutangPage + 1})"
-                                    class="piutang-page-btn"
-                                    ${AppState.piutangPage === totalPages ? 'disabled' : ''}
-                                    title="Halaman berikutnya">
-                                    <i class="fas fa-chevron-right text-xs"></i>
-                                </button>
-                                <!-- Tombol Last -->
-                                <button onclick="window.piutangGoToPage(${totalPages})"
-                                    class="piutang-page-btn"
-                                    ${AppState.piutangPage === totalPages ? 'disabled' : ''}
-                                    title="Halaman terakhir">
-                                    <i class="fas fa-angle-double-right text-xs"></i>
-                                </button>
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage + 1})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''} title="Halaman berikutnya"><i class="fas fa-chevron-right text-xs"></i></button>
+                                <button onclick="window.piutangGoToPage(${totalPages})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''} title="Halaman terakhir"><i class="fas fa-angle-double-right text-xs"></i></button>
                             </div>
                         </div>`;
                     }
@@ -1914,7 +2032,6 @@
             window.piutangShowDetail = (id) => PiutangManager.showDetailPiutang(id);
             window.piutangBayar = (id, total, sisa) => PiutangManager.bayarPiutang(id, total, sisa ?? total);
 
-            // ── Pagination navigation ──
             window.piutangGoToPage = function(page) {
                 const filtered = AppState.currentPiutangFilter === 'all' ?
                     AppState.piutangData :
@@ -1923,7 +2040,6 @@
                 if (page < 1 || page > totalPages) return;
                 AppState.piutangPage = page;
                 PiutangManager.renderPiutangList();
-                // Scroll ke atas list piutang
                 const listEl = document.getElementById('piutangList');
                 if (listEl) listEl.scrollIntoView({
                     behavior: 'smooth',
@@ -1931,7 +2047,6 @@
                 });
             };
 
-            // ── Per page change ──
             window.piutangChangePerPage = function(value) {
                 AppState.piutangPerPage = parseInt(value) || 10;
                 AppState.piutangPage = 1;

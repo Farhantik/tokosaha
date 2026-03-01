@@ -118,7 +118,8 @@ class ProdukController extends Controller
             'id_produk_kategori' => 'nullable|exists:produk_kategori,id_produk_kategori',
             'harga_produk'       => 'required|numeric|min:0',
             'stock_produk'       => 'required|integer|min:0',
-            'gambar_produk'      => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
+            'gambar_produk'      => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'deskripsi_produk'   => 'nullable|string|max:500', // ✅ VALIDASI DESKRIPSI
         ], [
             'nama_produk.required'  => 'Nama produk wajib diisi.',
             'harga_produk.required' => 'Harga produk wajib diisi.',
@@ -126,6 +127,7 @@ class ProdukController extends Controller
             'stock_produk.required' => 'Stok produk wajib diisi.',
             'stock_produk.min'      => 'Stok produk tidak boleh negatif.',
             'stock_produk.integer'  => 'Stok produk harus berupa angka bulat.',
+            'deskripsi_produk.max'  => 'Deskripsi produk maksimal 500 karakter.', // ✅ PESAN ERROR
         ]);
 
         // ✅ Extra guard: pastikan stok tidak negatif
@@ -171,12 +173,21 @@ class ProdukController extends Controller
 
             $produk = Produk::create($data);
 
+            // ✅ Log deskripsi jika ada
+            $keterangan = "Produk baru ditambahkan: {$produk->nama_produk}";
+            if (!empty($produk->deskripsi_produk)) {
+                $deskripsiShort = strlen($produk->deskripsi_produk) > 50
+                    ? substr($produk->deskripsi_produk, 0, 50) . '...'
+                    : $produk->deskripsi_produk;
+                $keterangan .= " | Deskripsi: {$deskripsiShort}";
+            }
+
             // Catat log produk baru
             $this->catatLog($produk->id_produk, 'tambah', [
                 'stok_sebelum'     => 0,
                 'stok_sesudah'     => $produk->stock_produk,
                 'jumlah_perubahan' => $produk->stock_produk,
-                'keterangan'       => "Produk baru ditambahkan: {$produk->nama_produk}"
+                'keterangan'       => $keterangan
             ]);
 
             DB::commit();
@@ -207,7 +218,8 @@ class ProdukController extends Controller
             'harga_produk'       => 'required|numeric|min:0',
             'stock_produk'       => 'required|integer|min:0',
             'gambar_produk'      => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
-            'hapus_gambar'       => 'nullable|boolean'
+            'hapus_gambar'       => 'nullable|boolean',
+            'deskripsi_produk'   => 'nullable|string|max:500', // ✅ VALIDASI DESKRIPSI
         ], [
             'nama_produk.required'  => 'Nama produk wajib diisi.',
             'harga_produk.required' => 'Harga produk wajib diisi.',
@@ -215,6 +227,7 @@ class ProdukController extends Controller
             'stock_produk.required' => 'Stok produk wajib diisi.',
             'stock_produk.min'      => 'Stok produk tidak boleh negatif.',
             'stock_produk.integer'  => 'Stok produk harus berupa angka bulat.',
+            'deskripsi_produk.max'  => 'Deskripsi produk maksimal 500 karakter.', // ✅ PESAN ERROR
         ]);
 
         // ✅ Extra guard: pastikan stok tidak negatif
@@ -235,9 +248,10 @@ class ProdukController extends Controller
         try {
             $produk = Produk::findOrFail($id);
 
-            // Simpan stok lama untuk logging
-            $stokLama  = $produk->stock_produk;
-            $hargaLama = $produk->harga_produk;
+            // Simpan data lama untuk logging
+            $stokLama      = $produk->stock_produk;
+            $hargaLama     = $produk->harga_produk;
+            $deskripsiLama = $produk->deskripsi_produk; // ✅ SIMPAN DESKRIPSI LAMA
 
             $data = $request->except(['gambar_produk', 'hapus_gambar']);
 
@@ -282,8 +296,9 @@ class ProdukController extends Controller
             $produk->update($data);
 
             // Catat log perubahan
-            $stokBaru  = $produk->stock_produk;
-            $hargaBaru = $produk->harga_produk;
+            $stokBaru      = $produk->stock_produk;
+            $hargaBaru     = $produk->harga_produk;
+            $deskripsiBaru = $produk->deskripsi_produk; // ✅ AMBIL DESKRIPSI BARU
 
             // Jika ada perubahan stok
             if ($stokLama != $stokBaru) {
@@ -306,6 +321,17 @@ class ProdukController extends Controller
                 if ($hargaLama != $hargaBaru) {
                     $perubahanDetail[] = "Harga: Rp " . number_format($hargaLama, 0, ',', '.') .
                         " → Rp " . number_format($hargaBaru, 0, ',', '.');
+                }
+
+                // ✅ LOG PERUBAHAN DESKRIPSI
+                if ($deskripsiLama != $deskripsiBaru) {
+                    if (empty($deskripsiLama) && !empty($deskripsiBaru)) {
+                        $perubahanDetail[] = "Deskripsi ditambahkan";
+                    } elseif (!empty($deskripsiLama) && empty($deskripsiBaru)) {
+                        $perubahanDetail[] = "Deskripsi dihapus";
+                    } else {
+                        $perubahanDetail[] = "Deskripsi diubah";
+                    }
                 }
 
                 $keterangan = !empty($perubahanDetail)

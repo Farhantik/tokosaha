@@ -258,7 +258,7 @@
     <!-- ============================================================ -->
     <div id="modalProduk"
         class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl w-full max-w-md my-8 shadow-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
             <div class="p-4 sm:p-6">
                 <div class="flex justify-between items-center mb-4 sm:mb-6">
                     <h2 id="modalTitle" class="text-xl sm:text-2xl font-bold text-gray-800">Tambah Produk</h2>
@@ -298,22 +298,24 @@
                         </p>
                     </div>
 
-                    <!-- Nama -->
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2 text-sm">
-                            Nama Produk <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="nama_produk" id="nama_produk" required
-                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                            placeholder="Contoh: Indomie Goreng">
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nama -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">
+                                Nama Produk <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_produk" id="nama_produk" required
+                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                                placeholder="Contoh: Indomie Goreng">
+                        </div>
 
-                    <!-- Kode -->
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Kode Produk</label>
-                        <input type="text" name="code_produk" id="code_produk"
-                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                            placeholder="Contoh: PRD001">
+                        <!-- Kode -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">Kode Produk</label>
+                            <input type="text" name="code_produk" id="code_produk"
+                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                                placeholder="Contoh: PRD001">
+                        </div>
                     </div>
 
                     <!-- Kategori -->
@@ -328,38 +330,59 @@
                         </select>
                     </div>
 
-                    <!-- ✅ Harga dengan format ribuan otomatis -->
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2 text-sm">
-                            Harga <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span
-                                class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">Rp</span>
-                            {{-- Input display: user ketik di sini, tampil dengan titik ribuan --}}
-                            <input type="text" id="harga_produk_display" inputmode="numeric" autocomplete="off"
-                                class="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                                placeholder="50.000">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- ✅ Harga dengan format ribuan otomatis -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">
+                                Harga <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">Rp</span>
+                                {{-- Input display: user ketik di sini, tampil dengan titik ribuan --}}
+                                <input type="text" id="harga_produk_display" inputmode="numeric" autocomplete="off"
+                                    class="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                                    placeholder="50.000">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1 text-blue-400"></i>Titik pemisah ribuan muncul otomatis
+                            </p>
+                            <p id="harga_error" class="text-xs text-red-500 mt-1 hidden">
+                                <i class="fas fa-exclamation-circle mr-1"></i>Harga tidak boleh kosong atau negatif!
+                            </p>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">
-                            <i class="fas fa-info-circle mr-1 text-blue-400"></i>Titik pemisah ribuan muncul otomatis
-                        </p>
-                        <p id="harga_error" class="text-xs text-red-500 mt-1 hidden">
-                            <i class="fas fa-exclamation-circle mr-1"></i>Harga tidak boleh kosong atau negatif!
-                        </p>
+
+                        <!-- Stok -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">
+                                Stok <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="stock_produk" id="stock_produk" min="0" required
+                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                                placeholder="100">
+                            <p id="stok_error" class="text-xs text-red-500 mt-1 hidden">
+                                <i class="fas fa-exclamation-circle mr-1"></i>Stok tidak boleh kosong atau negatif!
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- Stok -->
+                    <!-- ✅ DESKRIPSI PRODUK (BARU) -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">
-                            Stok <span class="text-red-500">*</span>
+                            Deskripsi Produk
                         </label>
-                        <input type="number" name="stock_produk" id="stock_produk" min="0" required
-                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                            placeholder="100">
-                        <p id="stok_error" class="text-xs text-red-500 mt-1 hidden">
-                            <i class="fas fa-exclamation-circle mr-1"></i>Stok tidak boleh kosong atau negatif!
-                        </p>
+                        <textarea name="deskripsi_produk" id="deskripsi_produk" rows="4"
+                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm resize-none"
+                            placeholder="Contoh: Air mineral berkualitas tinggi dengan kandungan mineral alami..."></textarea>
+                        <div class="flex items-center justify-between mt-1">
+                            <p class="text-xs text-gray-400">
+                                <i class="fas fa-info-circle mr-1 text-blue-400"></i>Opsional - Jelaskan detail produk
+                                Anda
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                <span id="charCount" class="font-semibold">0</span>/500 karakter
+                            </p>
+                        </div>
                     </div>
 
                     <!-- Tombol -->
@@ -461,6 +484,36 @@
             stokInput.addEventListener('input', function() {
                 this.value = this.value.replace(/[^\d]/g, '');
                 if (this.value !== '' && parseInt(this.value) < 0) this.value = 0;
+            });
+
+            // ============================================================
+            // DESKRIPSI — Character Counter & Limit
+            // ============================================================
+            const deskripsiInput = document.getElementById('deskripsi_produk');
+            const charCount = document.getElementById('charCount');
+            const maxChars = 500;
+
+            deskripsiInput.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                charCount.textContent = currentLength;
+
+                // Batasi karakter
+                if (currentLength > maxChars) {
+                    this.value = this.value.substring(0, maxChars);
+                    charCount.textContent = maxChars;
+                }
+
+                // Ubah warna jika mendekati limit (90% = 450 karakter)
+                if (currentLength > maxChars * 0.9) {
+                    charCount.classList.add('text-red-600', 'font-bold');
+                    charCount.classList.remove('text-gray-400');
+                } else if (currentLength > maxChars * 0.7) {
+                    charCount.classList.add('text-orange-600', 'font-bold');
+                    charCount.classList.remove('text-gray-400', 'text-red-600');
+                } else {
+                    charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
+                    charCount.classList.add('text-gray-400');
+                }
             });
 
             // ============================================================
@@ -573,6 +626,12 @@
                 document.getElementById('hapusGambar').value = '0';
                 document.getElementById('existingImage').value = '';
 
+                // Reset deskripsi & counter
+                deskripsiInput.value = '';
+                charCount.textContent = '0';
+                charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
+                charCount.classList.add('text-gray-400');
+
                 // Reset error
                 document.getElementById('harga_error').classList.add('hidden');
                 document.getElementById('stok_error').classList.add('hidden');
@@ -608,6 +667,23 @@
 
                 // ✅ Stok: tampilkan 0 jika negatif
                 stokInput.value = Math.max(0, parseInt(produk.stock_produk) || 0);
+
+                // ✅ Deskripsi: isi jika ada
+                const deskripsi = produk.deskripsi_produk || '';
+                deskripsiInput.value = deskripsi;
+                charCount.textContent = deskripsi.length;
+
+                // Update warna counter sesuai jumlah karakter
+                if (deskripsi.length > maxChars * 0.9) {
+                    charCount.classList.add('text-red-600', 'font-bold');
+                    charCount.classList.remove('text-gray-400', 'text-orange-600');
+                } else if (deskripsi.length > maxChars * 0.7) {
+                    charCount.classList.add('text-orange-600', 'font-bold');
+                    charCount.classList.remove('text-gray-400', 'text-red-600');
+                } else {
+                    charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
+                    charCount.classList.add('text-gray-400');
+                }
 
                 // Gambar existing
                 if (produk.gambar_produk) {
