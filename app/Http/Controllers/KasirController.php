@@ -15,9 +15,11 @@ class KasirController extends Controller
 
     public function index()
     {
+        // ── Auto-close kasir jika sudah lewat jadwal ──
+        $this->runAutoClose();
+
         $user = Auth::user();
 
-        // Kasir aktif = belum ada waktu_close (milik user ini)
         $kasirAktif = DB::table('kasir')
             ->where('id_user', $user->id_user)
             ->whereNull('waktu_close')
@@ -27,7 +29,6 @@ class KasirController extends Controller
             $kasirAktif->waktu_open = Carbon::parse($kasirAktif->waktu_open);
         }
 
-        // Riwayat kasir dengan pagination
         $riwayatKasir = DB::table('kasir')
             ->where('id_user', $user->id_user)
             ->orderBy('waktu_open', 'desc')
@@ -44,7 +45,65 @@ class KasirController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════
-    // BUKA KASIR — hanya input modal_awal
+    // AUTO-CLOSE INTERNAL
+    // ═══════════════════════════════════════════════════════════
+
+    private function runAutoClose()
+    {
+        try {
+            $setting = DB::table('settings')->first();
+
+            if (!$setting || !$setting->auto_close_kasir || empty($setting->auto_close_time)) {
+                return;
+            }
+
+            $jamSekarang  = Carbon::now('Asia/Jakarta')->format('H:i');
+            $jamAutoClose = substr($setting->auto_close_time, 0, 5);
+
+            if ($jamSekarang < $jamAutoClose) {
+                return;
+            }
+
+            $sesiAktif = DB::table('kasir')->whereNull('waktu_close')->get();
+
+            if ($sesiAktif->isEmpty()) {
+                return;
+            }
+
+            foreach ($sesiAktif as $kasir) {
+                // Skip kasir yang dibuka SETELAH jam auto-close hari ini
+                $waktuBukaJkt = Carbon::parse($kasir->waktu_open)
+                    ->setTimezone('Asia/Jakarta')
+                    ->format('H:i');
+
+                if ($waktuBukaJkt >= $jamAutoClose) {
+                    continue;
+                }
+
+                $totalPenjualan = DB::table('penjualan')
+                    ->where('id_kasir', $kasir->id_kasir)
+                    ->whereNull('deleted_at')
+                    ->sum('total_pembayaran');
+
+                $saldoAkhir = $kasir->modal_awal + $totalPenjualan;
+
+                DB::table('kasir')
+                    ->where('id_kasir', $kasir->id_kasir)
+                    ->update([
+                        'saldo_akhir'    => $saldoAkhir,
+                        'waktu_close'    => Carbon::now('Asia/Jakarta'),
+                        'is_auto_closed' => true,
+                    ]);
+
+                \Log::info("Auto-close kasir id={$kasir->id_kasir}, saldo={$saldoAkhir}");
+            }
+        } catch (\Exception $e) {
+            \Log::error('runAutoClose error: ' . $e->getMessage());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // BUKA KASIR — validasi jam operasional untuk SEMUA role
     // ═══════════════════════════════════════════════════════════
 
     public function open(Request $request)
@@ -58,6 +117,27 @@ class KasirController extends Controller
         ]);
 
         $user = Auth::user();
+
+        // ── Validasi jam operasional (semua role termasuk owner) ──
+        $setting = DB::table('settings')->first();
+
+        if ($setting && $setting->auto_close_kasir && !empty($setting->auto_close_time)) {
+            $jamSekarang  = Carbon::now('Asia/Jakarta')->format('H:i');
+            $jamAutoClose = substr($setting->auto_close_time, 0, 5);
+
+            if ($jamSekarang >= $jamAutoClose) {
+                $pesan = "Kasir tidak dapat dibuka setelah jam {$jamAutoClose} WIB. Silakan buka kasir kembali besok.";
+
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $pesan
+                    ], 403);
+                }
+
+                return redirect()->route('kasir.index')->with('error', $pesan);
+            }
+        }
 
         // Cek kasir aktif milik user ini
         $kasirAktif = DB::table('kasir')
@@ -80,7 +160,7 @@ class KasirController extends Controller
         $idKasir = DB::table('kasir')->insertGetId([
             'id_user'        => $user->id_user,
             'modal_awal'     => $request->modal_awal,
-            'waktu_open'     => now(),
+            'waktu_open'     => Carbon::now('Asia/Jakarta'),
             'saldo_akhir'    => null,
             'waktu_close'    => null,
             'is_auto_closed' => false,
@@ -102,9 +182,7 @@ class KasirController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════
-    // TUTUP KASIR — saldo akhir OTOMATIS (modal + total penjualan)
-    // Tidak perlu input saldo dari user
-    // is_auto = false → tutup manual | is_auto = true → tutup otomatis
+    // TUTUP KASIR
     // ═══════════════════════════════════════════════════════════
 
     public function close(Request $request, $id)
@@ -113,7 +191,6 @@ class KasirController extends Controller
             $user   = Auth::user();
             $isAuto = (bool) $request->input('is_auto', false);
 
-            // Owner bisa tutup kasir siapapun, kasir hanya milik sendiri
             $query = DB::table('kasir')
                 ->where('id_kasir', $id)
                 ->whereNull('waktu_close');
@@ -135,22 +212,19 @@ class KasirController extends Controller
                     ->with('error', 'Kasir tidak ditemukan atau sudah ditutup.');
             }
 
-            // Hitung total penjualan dari sesi ini (exclude soft-deleted)
             $totalPenjualan = DB::table('penjualan')
                 ->where('id_kasir', $id)
                 ->whereNull('deleted_at')
                 ->sum('total_pembayaran');
 
-            // Saldo akhir dihitung OTOMATIS — tidak perlu input manual
             $saldoAkhir = $kasir->modal_awal + $totalPenjualan;
             $selisih    = $saldoAkhir - $kasir->modal_awal;
 
-            // Update kasir
             DB::table('kasir')
                 ->where('id_kasir', $id)
                 ->update([
                     'saldo_akhir'    => $saldoAkhir,
-                    'waktu_close'    => now(),
+                    'waktu_close'    => Carbon::now('Asia/Jakarta'),
                     'is_auto_closed' => $isAuto,
                 ]);
 
@@ -185,7 +259,7 @@ class KasirController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════
-    // AUTO-CLOSE ALL — tutup semua kasir aktif sekaligus (Owner)
+    // AUTO-CLOSE ALL
     // ═══════════════════════════════════════════════════════════
 
     public function autoCloseAll(Request $request)
@@ -217,7 +291,7 @@ class KasirController extends Controller
                     ->where('id_kasir', $kasir->id_kasir)
                     ->update([
                         'saldo_akhir'    => $saldoAkhir,
-                        'waktu_close'    => now(),
+                        'waktu_close'    => Carbon::now('Asia/Jakarta'),
                         'is_auto_closed' => true,
                     ]);
 
@@ -246,7 +320,7 @@ class KasirController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════
-    // UPDATE SETTING AUTO-CLOSE — simpan waktu & status (Owner)
+    // UPDATE SETTING AUTO-CLOSE
     // ═══════════════════════════════════════════════════════════
 
     public function updateAutoCloseSetting(Request $request)
