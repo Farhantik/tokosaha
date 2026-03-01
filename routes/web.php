@@ -26,7 +26,9 @@ use App\Http\Middleware\CheckRole;
 // Auth Routes
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login.form');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.post')
+    ->middleware('throttle:5,1'); // Maks 5 percobaan per menit per IP
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Thermal Printer - Public Access (tidak perlu login)
@@ -143,11 +145,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [PenerimaanController::class, 'index'])->name('index');
             Route::get('/create', [PenerimaanController::class, 'create'])->name('create');
             Route::post('/', [PenerimaanController::class, 'store'])->name('store');
-            Route::get('/export/csv', [PenerimaanController::class, 'export'])->name('export');         // ← static dulu
+            Route::get('/export/csv', [PenerimaanController::class, 'export'])->name('export');
             Route::get('/{id}', [PenerimaanController::class, 'show'])->name('show');
             Route::delete('/{id}', [PenerimaanController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/print', [PenerimaanController::class, 'print'])->name('print');
-            Route::get('/{id}/export-pdf', [PenerimaanController::class, 'exportPdf'])->name('exportPdf'); // ← BARU
+            Route::get('/{id}/export-pdf', [PenerimaanController::class, 'exportPdf'])->name('exportPdf');
         });
 
         // User Management

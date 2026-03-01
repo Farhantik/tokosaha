@@ -79,10 +79,6 @@
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6">
 
-        {{--
-        FIX #8: Flash data disimpan di data-attribute HTML murni.
-        Tidak ada Blade directive di dalam <script> — aman dari ParseError.
-    --}}
         @php
             $flashType = '';
             $flashMessage = '';
@@ -105,7 +101,7 @@
             <div id="flash-data" data-type="{{ $flashType }}" data-message="{{ $flashMessage }}"
                 data-html="{{ $flashHtml }}" class="hidden"></div>
         @endif
-        {{-- JS Data bridge: semua nilai PHP dikirim via data-attribute, BUKAN di dalam <script> --}}
+
         <div id="js-data" data-auto-print="{{ $settings && $settings->auto_print ? '1' : '0' }}"
             data-printer-name="{{ $settings ? $settings->printer_name : '' }}"
             data-paper-width="{{ $settings ? $settings->paper_width : 58 }}"
@@ -116,8 +112,7 @@
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        <i class="fas fa-print text-emerald-600 mr-3"></i>
-                        Pengaturan Printer Thermal
+                        <i class="fas fa-print text-emerald-600 mr-3"></i>Pengaturan Printer Thermal
                     </h2>
                     <p class="text-gray-600 text-sm mt-1">Konfigurasi printer thermal untuk cetak struk otomatis</p>
                 </div>
@@ -143,8 +138,7 @@
                         </div>
                     </div>
                     <span id="printerStatusBadge" class="printer-status disconnected">
-                        <i class="fas fa-circle mr-2 text-xs"></i>
-                        Offline
+                        <i class="fas fa-circle mr-2 text-xs"></i>Offline
                     </span>
                 </div>
             </div>
@@ -164,8 +158,7 @@
                             <p class="text-sm text-gray-600">Cetak struk otomatis setelah transaksi</p>
                         </div>
                     </div>
-                    <div id="autoPrintToggle"
-                        class="toggle-switch {{ $settings && $settings->auto_print ? 'active' : '' }}"
+                    <div id="autoPrintToggle" class="toggle-switch {{ $settings && $settings->auto_print ? 'active' : '' }}"
                         onclick="toggleAutoPrint()">
                         <div class="toggle-slider"></div>
                     </div>
@@ -173,7 +166,7 @@
                         value="{{ $settings && $settings->auto_print ? '1' : '0' }}">
                 </div>
 
-                <!-- Printer Selection -->
+                <!-- Printer Name + Scan -->
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -190,12 +183,13 @@
                             </button>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>Klik "Scan" untuk mencari printer Bluetooth atau masukkan
-                            nama manual
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Klik "Scan" untuk mencari printer Bluetooth. Setelah simpan, klik "Reconnect" untuk menyambung
+                            ulang.
                         </p>
                     </div>
 
-                    <!-- Printer Settings -->
+                    <!-- Paper Width & Font Size -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -228,8 +222,11 @@
                     <!-- Action Buttons -->
                     <div class="flex space-x-3">
                         {{--
-                        FIX #6: Ganti inline style display dengan class Tailwind 'hidden'
-                        agar tidak konflik dengan Tailwind utility classes
+                        PERBAIKAN KUNCI #1:
+                        Tombol Reconnect sekarang memanggil reconnectPrinter() yang
+                        menggunakan PrinterHelper.reconnect() (tanpa scan ulang jika
+                        device masih ada) ATAU PrinterHelper.scanAndPair() jika belum
+                        pernah pair sama sekali di session ini.
                     --}}
                         <button type="button" onclick="reconnectPrinter()" id="reconnectBtn"
                             class="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl {{ $settings && $settings->printer_name ? '' : 'hidden' }}">
@@ -251,62 +248,26 @@
         <!-- Instructions -->
         <div class="setting-card">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-book text-blue-600 mr-3"></i>
-                Panduan Penggunaan
+                <i class="fas fa-book text-blue-600 mr-3"></i>Panduan Penggunaan
             </h3>
             <div class="space-y-3">
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        1</div>
-                    <p class="text-gray-700 text-sm">Pastikan printer thermal Bluetooth (RPP02N/ALGOO) sudah ON dan dalam
-                        keadaan siap</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        2</div>
-                    <p class="text-gray-700 text-sm">Aktifkan Bluetooth di komputer/laptop Anda dan pastikan menggunakan
-                        browser Chrome/Edge</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        3</div>
-                    <p class="text-gray-700 text-sm">Klik tombol "Scan" untuk mencari printer Bluetooth yang tersedia</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        4</div>
-                    <p class="text-gray-700 text-sm">Pilih printer RPP02N/ALGOO dari popup Bluetooth browser</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        5</div>
-                    <p class="text-gray-700 text-sm">Klik "Test Print" untuk memastikan printer berfungsi dengan baik</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        6</div>
-                    <p class="text-gray-700 text-sm">Klik "Simpan Pengaturan" untuk menyimpan konfigurasi ke database</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        7</div>
-                    <p class="text-gray-700 text-sm">Aktifkan "Auto Print" agar struk otomatis tercetak setelah transaksi
-                        selesai</p>
-                </div>
-                <div class="flex items-start space-x-3">
-                    <div
-                        class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                        ⚠️</div>
-                    <p class="text-gray-700 text-sm"><strong>Penting:</strong> Setelah simpan pengaturan, klik tombol
-                        "Reconnect" untuk menyambungkan ulang printer sebelum test print</p>
-                </div>
+                @foreach ([
+            ['1', 'bg-emerald-100 text-emerald-600', 'Pastikan printer thermal Bluetooth (RPP02N/ALGOO) sudah ON dan dalam keadaan siap'],
+            ['2', 'bg-emerald-100 text-emerald-600', 'Aktifkan Bluetooth di komputer/laptop Anda dan pastikan menggunakan browser Chrome/Edge'],
+            ['3', 'bg-emerald-100 text-emerald-600', 'Klik tombol "Scan" untuk mencari printer Bluetooth yang tersedia'],
+            ['4', 'bg-emerald-100 text-emerald-600', 'Pilih printer RPP02N/ALGOO dari popup Bluetooth browser'],
+            ['5', 'bg-emerald-100 text-emerald-600', 'Klik "Test Print" untuk memastikan printer berfungsi dengan baik'],
+            ['6', 'bg-emerald-100 text-emerald-600', 'Klik "Simpan Pengaturan" untuk menyimpan konfigurasi ke database'],
+            ['7', 'bg-emerald-100 text-emerald-600', 'Aktifkan "Auto Print" agar struk otomatis tercetak setelah transaksi selesai'],
+            ['⚠️', 'bg-amber-100 text-amber-600', '<strong>Penting:</strong> Setiap kali buka halaman baru atau refresh, klik "Reconnect" untuk menyambung ulang printer karena koneksi Bluetooth tidak tersimpan antar session browser.'],
+        ] as [$num, $cls, $text])
+                    <div class="flex items-start space-x-3">
+                        <div
+                            class="w-8 h-8 {{ $cls }} rounded-lg flex items-center justify-center font-bold flex-shrink-0">
+                            {{ $num }}</div>
+                        <p class="text-gray-700 text-sm">{!! $text !!}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -315,18 +276,12 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{--
-    FIX #1: Hapus @once printer-helper.js di sini karena sudah di-load
-    di layouts/app.blade.php. Double load menyebabkan PrinterHelper
-    di-overwrite dan event listener terdaftar ganda.
---}}
     <script>
         // ============================================
-        // GLOBAL VARIABLES — nilai dari data-attribute, bukan Blade di JS
+        // DATA DARI SERVER (via data-attribute, aman dari ParseError)
         // ============================================
-        var _jsData = document.getElementById('js-data');
+        const _jsData = document.getElementById('js-data');
         let autoPrintEnabled = _jsData ? (_jsData.dataset.autoPrint === '1') : false;
-        let isReconnecting = false;
         const SAVED_PRINTER_NAME = _jsData ? (_jsData.dataset.printerName || '') : '';
         const SAVED_PAPER_WIDTH = _jsData ? (parseInt(_jsData.dataset.paperWidth) || 58) : 58;
         const SAVED_FONT_SIZE = _jsData ? (_jsData.dataset.fontSize || 'medium') : 'medium';
@@ -335,52 +290,46 @@
         // DOCUMENT READY
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ Settings page loaded');
 
-            // FIX #2: Cek ketersediaan PrinterHelper sebelum assign callback
-            // Jika belum tersedia, tampilkan peringatan dan hentikan init
             if (!window.PrinterHelper) {
                 console.warn('⚠️ PrinterHelper not loaded!');
                 updatePrinterStatus('disconnected', 'Printer Helper gagal dimuat — refresh halaman');
-                showToast('error', 'Printer Helper gagal dimuat. Silakan refresh halaman.');
                 return;
             }
 
-            // Setup callback untuk real-time status update
             window.PrinterHelper.onStatusChange = handlePrinterStatusChange;
-
-            // Lanjut load settings
             loadSettings();
 
-            // FIX #8: Flash messages dibaca dari data attribute (aman, tanpa Blade di JS)
-            var flashEl = document.getElementById('flash-data');
+            // Flash messages
+            const flashEl = document.getElementById('flash-data');
             if (flashEl) {
-                var flashType = flashEl.dataset.type;
-                var flashMsg = flashEl.dataset.message;
-                var flashHtml = flashEl.dataset.html || '';
-
-                if (flashType === 'success') {
+                const {
+                    type,
+                    message,
+                    html
+                } = flashEl.dataset;
+                if (type === 'success') {
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        text: flashMsg,
+                        text: message,
                         confirmButtonColor: '#10b981',
                         timer: 3000,
                         timerProgressBar: true,
                         showConfirmButton: false
                     });
-                } else if (flashType === 'error') {
+                } else if (type === 'error') {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal!',
-                        text: flashMsg,
+                        text: message,
                         confirmButtonColor: '#10b981'
                     });
-                } else if (flashType === 'validation') {
+                } else if (type === 'validation') {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Terdapat Kesalahan',
-                        html: flashHtml,
+                        html,
                         confirmButtonColor: '#10b981'
                     });
                 }
@@ -388,61 +337,48 @@
         });
 
         // ============================================
-        // LOAD SETTINGS
+        // LOAD SETTINGS — sinkronkan UI dari data server
         // ============================================
         function loadSettings() {
             if (SAVED_PRINTER_NAME) {
-                const statusText = document.getElementById('printerStatusText');
-                const statusBadge = document.getElementById('printerStatusBadge');
+                updatePrinterStatus('disconnected', SAVED_PRINTER_NAME + ' — klik Reconnect untuk menyambung');
+                document.getElementById('reconnectBtn')?.classList.remove('hidden');
 
-                if (statusText) {
-                    statusText.textContent = SAVED_PRINTER_NAME + ' (klik Reconnect)';
-                }
-                if (statusBadge) {
-                    statusBadge.className = 'printer-status disconnected';
-                    statusBadge.innerHTML = '<i class="fas fa-circle mr-2 text-xs"></i>Offline';
-                }
-
-                // Sync info printer ke localStorage
                 localStorage.setItem('thermal_printer_info', JSON.stringify({
                     name: SAVED_PRINTER_NAME,
                     id: '',
                     timestamp: new Date().toISOString()
                 }));
-
-                // Tampilkan tombol Reconnect
-                const reconnectBtn = document.getElementById('reconnectBtn');
-                if (reconnectBtn) reconnectBtn.classList.remove('hidden');
             }
 
-            // Sync semua settings ke localStorage
-            const settings = {
+            localStorage.setItem('printerSettings', JSON.stringify({
                 autoPrint: autoPrintEnabled,
                 selectedPrinter: SAVED_PRINTER_NAME,
                 paperWidth: SAVED_PAPER_WIDTH,
                 fontSize: SAVED_FONT_SIZE
-            };
-            localStorage.setItem('printerSettings', JSON.stringify(settings));
+            }));
 
-            console.log('📥 Settings loaded:', settings);
+            console.log('📥 Settings loaded:', {
+                SAVED_PRINTER_NAME,
+                autoPrintEnabled
+            });
         }
 
         // ============================================
-        // HANDLE PRINTER STATUS CHANGE (CALLBACK)
+        // HANDLE STATUS CALLBACK DARI PRINTER HELPER
         // ============================================
         function handlePrinterStatusChange(status, message) {
-            console.log('🔔 Status change:', status, message);
-
+            console.log('🔔 Status:', status, message);
             switch (status) {
                 case 'scanning':
-                    updatePrinterStatus('pairing', 'Mencari printer...');
+                case 'pairing':
+                    updatePrinterStatus('pairing', message || 'Mencari printer...');
                     break;
-                case 'paired':
                 case 'connected':
                     updatePrinterStatus('connected', message || 'Terhubung');
                     break;
                 case 'disconnected':
-                    if (!isReconnecting) updatePrinterStatus('disconnected', 'Terputus');
+                    updatePrinterStatus('disconnected', message || 'Terputus');
                     break;
                 case 'error':
                     updatePrinterStatus('disconnected', 'Error: ' + message);
@@ -461,71 +397,53 @@
         // ============================================
         function toggleAutoPrint() {
             autoPrintEnabled = !autoPrintEnabled;
+            document.getElementById('autoPrintToggle')?.classList.toggle('active', autoPrintEnabled);
+            const inp = document.getElementById('autoPrintInput');
+            if (inp) inp.value = autoPrintEnabled ? '1' : '0';
 
-            const toggle = document.getElementById('autoPrintToggle');
-            const input = document.getElementById('autoPrintInput');
+            const s = JSON.parse(localStorage.getItem('printerSettings') || '{}');
+            s.autoPrint = autoPrintEnabled;
+            localStorage.setItem('printerSettings', JSON.stringify(s));
 
-            if (toggle) toggle.classList.toggle('active', autoPrintEnabled);
-            if (input) input.value = autoPrintEnabled ? '1' : '0';
-
-            // Update localStorage
-            const settings = JSON.parse(localStorage.getItem('printerSettings') || '{}');
-            settings.autoPrint = autoPrintEnabled;
-            localStorage.setItem('printerSettings', JSON.stringify(settings));
-
-            console.log('🔄 Auto Print toggled:', autoPrintEnabled);
             showToast('info', `Auto Print ${autoPrintEnabled ? 'diaktifkan' : 'dinonaktifkan'}`);
         }
 
         // ============================================
-        // RECONNECT PRINTER
+        // RECONNECT — PERBAIKAN KUNCI
+        // Menggunakan PrinterHelper.reconnect() yang tidak perlu scan ulang jika
+        // device sudah pernah dipair di session ini.
+        // Jika belum pernah pair (halaman baru/refresh), akan scan ulang otomatis.
         // ============================================
         async function reconnectPrinter() {
             const btn = document.getElementById('reconnectBtn');
-            const originalHtml = btn.innerHTML;
+            const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Reconnecting...';
             btn.disabled = true;
-            isReconnecting = true;
 
             try {
-                console.log('🔄 Starting reconnect...');
-
-                if (!window.PrinterHelper) {
-                    throw new Error('Printer Helper belum dimuat. Refresh halaman dan coba lagi.');
-                }
+                if (!window.PrinterHelper) throw new Error('Printer Helper belum dimuat. Refresh halaman.');
 
                 const printerName = document.getElementById('printerName').value.trim();
-                if (!printerName) {
-                    throw new Error('Tidak ada printer yang tersimpan.');
-                }
+                if (!printerName) throw new Error('Simpan nama printer terlebih dahulu.');
 
                 updatePrinterStatus('pairing', 'Menyambungkan ke ' + printerName + '...');
 
-                const result = await window.PrinterHelper.scanAndPair();
-                console.log('✅ Reconnect result:', result);
+                // PrinterHelper.reconnect() = pakai device lama jika ada, scan baru jika belum
+                const result = await window.PrinterHelper.reconnect();
 
+                // Jika printer berbeda dari yang tersimpan
                 if (result.name !== printerName) {
-                    // FIX #5: Jika printer berbeda, prompt update DAN ingatkan untuk simpan
-                    const dialogResult = await Swal.fire({
+                    const dlg = await Swal.fire({
                         icon: 'warning',
                         title: 'Printer Berbeda',
-                        html: `Anda memilih <strong>${result.name}</strong> tapi yang tersimpan adalah <strong>${printerName}</strong>.<br><br>Update nama printer dan simpan pengaturan?`,
+                        html: `Anda memilih <strong>${result.name}</strong> tapi yang tersimpan <strong>${printerName}</strong>.<br><br>Update nama printer?`,
                         showCancelButton: true,
                         confirmButtonColor: '#10b981',
-                        cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, Update',
                         cancelButtonText: 'Batal'
                     });
-
-                    if (dialogResult.isConfirmed) {
+                    if (dlg.isConfirmed) {
                         document.getElementById('printerName').value = result.name;
-
-                        // FIX #5: Update localStorage agar konsisten dengan input field
-                        const settings = JSON.parse(localStorage.getItem('printerSettings') || '{}');
-                        settings.selectedPrinter = result.name;
-                        localStorage.setItem('printerSettings', JSON.stringify(settings));
-
-                        // FIX #5: Ingatkan user untuk simpan ke DB
                         showToast('warning', 'Nama printer berubah! Jangan lupa klik Simpan Pengaturan.');
                     }
                 }
@@ -536,85 +454,65 @@
             } catch (error) {
                 console.error('❌ Reconnect error:', error);
                 updatePrinterStatus('disconnected', 'Gagal reconnect');
-
-                if (error.name === 'NotFoundError') {
-                    showToast('info', 'Koneksi dibatalkan');
-                } else {
+                if (error.name !== 'NotFoundError') {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal Reconnect',
                         html: `<div class="text-left"><strong>Error:</strong><br>${error.message}<br><br>Pastikan printer sudah ON dan Bluetooth aktif.</div>`,
                         confirmButtonColor: '#10b981'
                     });
+                } else {
+                    showToast('info', 'Koneksi dibatalkan');
                 }
             } finally {
-                btn.innerHTML = originalHtml;
+                btn.innerHTML = orig;
                 btn.disabled = false;
-                isReconnecting = false;
             }
         }
 
         // ============================================
-        // SCAN PRINTERS (BLUETOOTH)
+        // SCAN PRINTERS (PAIR BARU)
         // ============================================
         async function scanPrinters() {
             const btn = document.getElementById('scanBtn');
-            const originalHtml = btn.innerHTML;
+            const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Pairing...';
             btn.disabled = true;
 
             try {
-                console.log('🔍 Starting scan...');
-
-                if (!window.PrinterHelper) {
-                    throw new Error('Printer Helper belum dimuat. Refresh halaman dan coba lagi.');
-                }
+                if (!window.PrinterHelper) throw new Error('Printer Helper belum dimuat. Refresh halaman.');
 
                 const result = await window.PrinterHelper.scanAndPair();
-                console.log('✅ Pair result:', result);
-
-                // Update input field
                 document.getElementById('printerName').value = result.name;
-
-                // Update status & tampilkan tombol Reconnect
                 updatePrinterStatus('connected', result.name);
-                const reconnectBtn = document.getElementById('reconnectBtn');
-                if (reconnectBtn) reconnectBtn.classList.remove('hidden');
+                document.getElementById('reconnectBtn')?.classList.remove('hidden');
 
-                // Update localStorage
-                const settings = JSON.parse(localStorage.getItem('printerSettings') || '{}');
-                settings.selectedPrinter = result.name;
-                localStorage.setItem('printerSettings', JSON.stringify(settings));
+                const s = JSON.parse(localStorage.getItem('printerSettings') || '{}');
+                s.selectedPrinter = result.name;
+                localStorage.setItem('printerSettings', JSON.stringify(s));
 
                 Swal.fire({
                     icon: 'success',
                     title: 'Printer Berhasil Di-Pair!',
-                    html: `<strong>${result.name}</strong> siap untuk auto-print.<br><br>Klik <strong>"Test Print"</strong> untuk test atau <strong>"Simpan Pengaturan"</strong> untuk menyimpan ke database.`,
-                    confirmButtonColor: '#10b981',
-                    confirmButtonText: 'OK'
+                    html: `<strong>${result.name}</strong> siap digunakan.<br><br>Klik <strong>"Test Print"</strong> untuk test atau <strong>"Simpan Pengaturan"</strong> untuk menyimpan.`,
+                    confirmButtonColor: '#10b981'
                 });
 
             } catch (error) {
                 console.error('❌ Scan error:', error);
                 updatePrinterStatus('disconnected');
-
-                if (error.name === 'NotFoundError') {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Koneksi Dibatalkan',
-                        text: 'Tidak ada printer yang dipilih',
-                        confirmButtonColor: '#10b981'
-                    });
-                } else {
+                if (error.name !== 'NotFoundError') {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal Pairing',
                         html: `<div class="text-left"><strong>Error:</strong><br>${error.message}</div>`,
                         confirmButtonColor: '#10b981'
                     });
+                } else {
+                    showToast('info', 'Koneksi dibatalkan');
                 }
             } finally {
-                btn.innerHTML = originalHtml;
+                btn.innerHTML = orig;
                 btn.disabled = false;
             }
         }
@@ -624,20 +522,13 @@
         // ============================================
         async function testPrint() {
             const btn = document.getElementById('testPrintBtn');
-            const originalHtml = btn.innerHTML;
+            const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Printing...';
             btn.disabled = true;
 
             try {
-                console.log('🖨️ Starting test print...');
-
-                if (!window.PrinterHelper) {
-                    throw new Error('Printer Helper belum dimuat. Refresh halaman dan coba lagi.');
-                }
-
-                const result = await window.PrinterHelper.testPrint();
-                console.log('✅ Test print result:', result);
-
+                if (!window.PrinterHelper) throw new Error('Printer Helper belum dimuat. Refresh halaman.');
+                await window.PrinterHelper.testPrint();
                 Swal.fire({
                     icon: 'success',
                     title: 'Print Berhasil!',
@@ -646,19 +537,16 @@
                     timer: 3000,
                     showConfirmButton: false
                 });
-
             } catch (error) {
                 console.error('❌ Test print error:', error);
-
                 let suggestion = '';
-                if (error.message.includes('belum di-pair')) {
+                if (error.message.includes('belum terhubung') || error.message.includes('belum di-pair')) {
                     suggestion =
-                        '<br><br>Klik tombol <strong>"Reconnect"</strong> atau <strong>"Scan"</strong> untuk pair printer terlebih dahulu.';
+                        '<br><br>Klik tombol <strong>"Reconnect"</strong> atau <strong>"Scan"</strong> terlebih dahulu.';
                 } else if (error.message.includes('GATT') || error.message.includes('disconnected')) {
-                    suggestion = '<br><br>Printer terputus. Klik <strong>"Reconnect"</strong> untuk koneksi ulang.';
+                    suggestion = '<br><br>Printer terputus. Klik <strong>"Reconnect"</strong>.';
                     updatePrinterStatus('disconnected', 'Terputus - klik Reconnect');
                 }
-
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal Print',
@@ -666,91 +554,72 @@
                     confirmButtonColor: '#10b981'
                 });
             } finally {
-                btn.innerHTML = originalHtml;
+                btn.innerHTML = orig;
                 btn.disabled = false;
             }
         }
 
         // ============================================
-        // UPDATE PRINTER STATUS UI
+        // UPDATE STATUS UI
         // ============================================
         function updatePrinterStatus(status, message = '') {
             const statusText = document.getElementById('printerStatusText');
             const statusBadge = document.getElementById('printerStatusBadge');
-
-            let badgeClass, badgeText, statusMessage;
-
-            switch (status) {
-                case 'connected':
-                    badgeClass = 'printer-status connected';
-                    badgeText = '<i class="fas fa-circle mr-2 text-xs"></i>Online';
-                    statusMessage = message || 'Terhubung';
-                    break;
-                case 'pairing':
-                    badgeClass = 'printer-status pairing';
-                    badgeText = '<i class="fas fa-spinner fa-spin mr-2 text-xs"></i>Pairing';
-                    statusMessage = message || 'Mencari printer...';
-                    break;
-                case 'disconnected':
-                default:
-                    badgeClass = 'printer-status disconnected';
-                    badgeText = '<i class="fas fa-circle mr-2 text-xs"></i>Offline';
-                    statusMessage = message || 'Tidak Terhubung';
-                    break;
-            }
-
-            if (statusText) statusText.textContent = statusMessage;
+            const map = {
+                connected: {
+                    cls: 'printer-status connected',
+                    badge: '<i class="fas fa-circle mr-2 text-xs"></i>Online',
+                    msg: message || 'Terhubung'
+                },
+                pairing: {
+                    cls: 'printer-status pairing',
+                    badge: '<i class="fas fa-spinner fa-spin mr-2 text-xs"></i>Pairing',
+                    msg: message || 'Mencari printer...'
+                },
+                disconnected: {
+                    cls: 'printer-status disconnected',
+                    badge: '<i class="fas fa-circle mr-2 text-xs"></i>Offline',
+                    msg: message || 'Tidak Terhubung'
+                },
+            };
+            const cfg = map[status] || map.disconnected;
+            if (statusText) statusText.textContent = cfg.msg;
             if (statusBadge) {
-                statusBadge.className = badgeClass;
-                statusBadge.innerHTML = badgeText;
+                statusBadge.className = cfg.cls;
+                statusBadge.innerHTML = cfg.badge;
             }
         }
 
-        // ============================================
-        // SHOW TOAST (SIMPLE NOTIFICATION)
-        // ============================================
         function showToast(type, message) {
             Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                }
-            }).fire({
-                icon: type,
-                title: message
-            });
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                })
+                .fire({
+                    icon: type,
+                    title: message
+                });
         }
 
         // ============================================
-        // FORM SUBMIT HANDLER
+        // FORM SUBMIT
         // ============================================
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             const printerName = document.getElementById('printerName').value.trim();
-
             if (!printerName) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'warning',
                     title: 'Nama Printer Kosong',
-                    text: 'Silakan klik "Scan" untuk pair printer terlebih dahulu',
+                    text: 'Klik "Scan" untuk pair printer terlebih dahulu',
                     confirmButtonColor: '#10b981'
                 });
                 return false;
             }
-
-            console.log('📝 Submitting form with data:', {
-                printerName,
-                autoPrint: document.getElementById('autoPrintInput').value,
-                paperWidth: document.getElementById('paperWidth').value,
-                fontSize: document.getElementById('fontSize').value
-            });
-
-            showToast('info', 'Setelah simpan, klik "Reconnect" untuk menyambungkan printer');
+            showToast('info', 'Pengaturan disimpan. Klik "Reconnect" untuk menyambung ulang printer.');
         });
     </script>
 @endpush

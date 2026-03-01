@@ -13,10 +13,7 @@ class TransaksiController extends Controller
     {
         $produk = DB::table('produk')
             ->leftJoin('produk_kategori', 'produk.id_produk_kategori', '=', 'produk_kategori.id_produk_kategori')
-            ->select(
-                'produk.*',
-                'produk_kategori.nama_kategori as kategori_produk'
-            )
+            ->select('produk.*', 'produk_kategori.nama_kategori as kategori_produk')
             ->orderBy('produk.nama_produk', 'asc')
             ->get();
 
@@ -29,14 +26,17 @@ class TransaksiController extends Controller
             DB::beginTransaction();
 
             $validated = $request->validate([
-                'items'                        => 'required|array',
-                'items.*.id_produk'            => 'required|exists:produk,id_produk',
-                'items.*.qty'                  => 'required|integer|min:1',
-                'items.*.harga'                => 'required|numeric|min:0',
-                'total_bayar'                  => 'required|numeric|min:0',
-                'total_pembayaran'             => 'required|numeric|min:0',
-                // ✅ FIX: tambahkan bayar_sebagian ke daftar nilai yang diizinkan
-                'status_pembayaran'            => 'required|in:lunas,belum_bayar,bayar_sebagian',
+                'items'                    => 'required|array',
+                'items.*.id_produk'        => 'required|exists:produk,id_produk',
+                'items.*.qty'              => 'required|integer|min:1',
+                'items.*.harga'            => 'required|numeric|min:0',
+                'total_bayar'              => 'required|numeric|min:0',
+                'total_pembayaran'         => 'required|numeric|min:0',
+                'status_pembayaran'        => 'required|in:lunas,belum_bayar,bayar_sebagian',
+                // ✅ FIX: tambahkan validasi payment_methods
+                'payment_methods'          => 'nullable|array',
+                'payment_methods.*.method' => 'nullable|string',
+                'payment_methods.*.amount' => 'nullable|numeric',
             ]);
 
             $user = Auth::user();
@@ -62,7 +62,6 @@ class TransaksiController extends Controller
                 }
 
                 $stokTersedia = max(0, $produk->stock_produk);
-
                 if ($stokTersedia < $item['qty']) {
                     throw new \Exception(
                         "Stok \"{$produk->nama_produk}\" tidak mencukupi! " .
@@ -71,23 +70,49 @@ class TransaksiController extends Controller
                 }
             }
 
-            // ✅ FIX: Hitung sisa_tagihan berdasarkan status pembayaran
             $totalPembayaran = $validated['total_pembayaran'];
             $totalBayar      = $validated['total_bayar'];
             $status          = $validated['status_pembayaran'];
 
             if ($status === 'lunas') {
-                $sisaTagihan   = 0;
-                $kembalian     = $totalBayar - $totalPembayaran;
+                $sisaTagihan = 0;
+                $kembalian   = max(0, $totalBayar - $totalPembayaran);
             } elseif ($status === 'bayar_sebagian') {
-                $sisaTagihan   = $totalPembayaran - $totalBayar;
-                $kembalian     = 0;
+                $sisaTagihan = max(0, $totalPembayaran - $totalBayar);
+                $kembalian   = 0;
             } else {
-                // belum_bayar
-                $sisaTagihan   = $totalPembayaran;
-                $kembalian     = 0;
+                $sisaTagihan = $totalPembayaran;
+                $kembalian   = 0;
             }
 
+            // ✅ FIX UTAMA: Proses payment_methods
+            $pmInput = $validated['payment_methods'] ?? [];
+            $pmFinal = [];
+
+            foreach ($pmInput as $pm) {
+                $method = $pm['method'] ?? 'tunai';
+                $amount = (float) ($pm['amount'] ?? 0);
+                if ($method === 'bayar_nanti' && $amount <= 0) {
+                    $amount = $sisaTagihan;
+                }
+                $pmFinal[] = ['method' => $method, 'amount' => $amount];
+            }
+
+            // Fallback otomatis jika frontend tidak kirim payment_methods
+            if (empty($pmFinal)) {
+                if ($status === 'lunas') {
+                    $pmFinal = [['method' => 'tunai', 'amount' => $totalBayar]];
+                } elseif ($status === 'bayar_sebagian') {
+                    $pmFinal = [
+                        ['method' => 'tunai',       'amount' => $totalBayar],
+                        ['method' => 'bayar_nanti', 'amount' => $sisaTagihan],
+                    ];
+                } else {
+                    $pmFinal = [['method' => 'bayar_nanti', 'amount' => $totalPembayaran]];
+                }
+            }
+
+            // ✅ FIX: Simpan payment_methods ke database
             $idPenjualan = DB::table('penjualan')->insertGetId([
                 'id_kasir'             => $kasirAktif->id_kasir,
                 'tanggal_penjualan'    => now(),
@@ -96,6 +121,7 @@ class TransaksiController extends Controller
                 'kembalian_pembayaran' => $kembalian,
                 'status_pembayaran'    => $status,
                 'sisa_tagihan'         => $sisaTagihan,
+                'payment_methods'      => json_encode($pmFinal), // ← KOLOM INI YANG SEBELUMNYA HILANG
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -127,11 +153,10 @@ class TransaksiController extends Controller
                     ->where('id_produk', $item['id_produk'])
                     ->update(['stock_produk' => $stokBaru]);
 
-                // ✅ FIX: keterangan log lebih deskriptif sesuai status
                 $keteranganLog = match ($status) {
-                    'lunas'         => 'Penjualan produk via transaksi kasir (Lunas)',
+                    'lunas'          => 'Penjualan produk via transaksi kasir (Lunas)',
                     'bayar_sebagian' => 'Penjualan produk via transaksi kasir (Bayar Sebagian)',
-                    default         => 'Penjualan produk via transaksi kasir (Piutang)',
+                    default          => 'Penjualan produk via transaksi kasir (Piutang)',
                 };
 
                 DB::table('produk_logs')->insert([
@@ -164,6 +189,7 @@ class TransaksiController extends Controller
                     'kembalian_pembayaran' => $kembalian,
                     'sisa_tagihan'         => $sisaTagihan,
                     'status_pembayaran'    => $status,
+                    'payment_methods'      => $pmFinal, // ← dikembalikan untuk auto-print
                     'auto_print'           => $settings->auto_print ?? false,
                     'printer_name'         => $settings->printer_name ?? '',
                     'print_url'            => route('transaksi.struk.printer', $idPenjualan)
@@ -171,21 +197,13 @@ class TransaksiController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors'  => $e->errors()
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    // Get Daftar Piutang
     public function getPiutang()
     {
         try {
@@ -220,19 +238,12 @@ class TransaksiController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'success' => true,
-                'data'    => $piutang
-            ]);
+            return response()->json(['success' => true, 'data' => $piutang]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    // Get Detail Transaksi
     public function getDetail($id)
     {
         try {
@@ -244,10 +255,7 @@ class TransaksiController extends Controller
                 ->first();
 
             if (!$penjualan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Transaksi tidak ditemukan'
-                ], 404);
+                return response()->json(['success' => false, 'message' => 'Transaksi tidak ditemukan'], 404);
             }
 
             $detail = DB::table('penjualan_detail')
@@ -255,14 +263,12 @@ class TransaksiController extends Controller
                 ->where('penjualan_detail.id_penjualan', $id)
                 ->select('penjualan_detail.*', 'produk.nama_produk')
                 ->get()
-                ->map(function ($item) {
-                    return [
-                        'nama_produk' => $item->nama_produk,
-                        'qty'         => $item->qty_produk,
-                        'harga'       => $item->harga_produk,
-                        'subtotal'    => $item->subtotal_harga
-                    ];
-                });
+                ->map(fn($item) => [
+                    'nama_produk' => $item->nama_produk,
+                    'qty'         => $item->qty_produk,
+                    'harga'       => $item->harga_produk,
+                    'subtotal'    => $item->subtotal_harga
+                ]);
 
             $sisaTagihan = isset($penjualan->sisa_tagihan) && $penjualan->sisa_tagihan !== null
                 ? (float) $penjualan->sisa_tagihan
@@ -283,39 +289,31 @@ class TransaksiController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    // Bayar Piutang — support bayar sebagian
     public function bayarPiutang(Request $request, $id)
     {
         try {
             DB::beginTransaction();
 
             $validated = $request->validate([
-                'total_bayar'       => 'required|numeric|min:1',
-                'status_pembayaran' => 'nullable|in:lunas,bayar_sebagian',
-                'payment_methods'   => 'nullable|array',
+                'total_bayar'              => 'required|numeric|min:1',
+                'status_pembayaran'        => 'nullable|in:lunas,bayar_sebagian',
+                // ✅ FIX: validasi payment_methods dengan detail field
+                'payment_methods'          => 'nullable|array',
+                'payment_methods.*.method' => 'nullable|string',
+                'payment_methods.*.amount' => 'nullable|numeric',
             ]);
 
             $penjualan = DB::table('penjualan')->where('id_penjualan', $id)->lockForUpdate()->first();
 
             if (!$penjualan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Transaksi tidak ditemukan'
-                ], 404);
+                return response()->json(['success' => false, 'message' => 'Transaksi tidak ditemukan'], 404);
             }
-
             if ($penjualan->status_pembayaran === 'lunas') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Piutang sudah lunas'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'Piutang sudah lunas'], 400);
             }
 
             $sisaSekarang    = isset($penjualan->sisa_tagihan) && $penjualan->sisa_tagihan !== null
@@ -328,7 +326,7 @@ class TransaksiController extends Controller
             if ($sisaBaru <= 0) {
                 $statusBaru = 'lunas';
                 $sisaBaru   = 0;
-                $kembalian  = $totalBayarBaru - $sisaSekarang;
+                $kembalian  = max(0, $totalBayarBaru - $sisaSekarang);
             } else {
                 $statusBaru = 'bayar_sebagian';
                 $kembalian  = 0;
@@ -336,14 +334,27 @@ class TransaksiController extends Controller
 
             $totalBayarAkumulasi = (float) $penjualan->total_bayar + $totalBayarBaru;
 
-            DB::table('penjualan')
-                ->where('id_penjualan', $id)
-                ->update([
-                    'total_bayar'          => $totalBayarAkumulasi,
-                    'kembalian_pembayaran' => $kembalian,
-                    'status_pembayaran'    => $statusBaru,
-                    'sisa_tagihan'         => $sisaBaru,
-                ]);
+            // ✅ FIX: Gabung payment_methods lama + baru
+            $pmLama = [];
+            if (!empty($penjualan->payment_methods)) {
+                $decoded = json_decode($penjualan->payment_methods, true);
+                if (is_array($decoded)) $pmLama = $decoded;
+            }
+
+            $pmBaru = $validated['payment_methods'] ?? [];
+            if (empty($pmBaru)) {
+                $pmBaru = [['method' => 'tunai', 'amount' => $totalBayarBaru]];
+            }
+
+            $pmGabung = array_merge($pmLama, $pmBaru);
+
+            DB::table('penjualan')->where('id_penjualan', $id)->update([
+                'total_bayar'          => $totalBayarAkumulasi,
+                'kembalian_pembayaran' => $kembalian,
+                'status_pembayaran'    => $statusBaru,
+                'sisa_tagihan'         => $sisaBaru,
+                'payment_methods'      => json_encode($pmGabung), // ← KOLOM INI YANG SEBELUMNYA TIDAK DIUPDATE
+            ]);
 
             DB::commit();
 
@@ -359,6 +370,7 @@ class TransaksiController extends Controller
                     'kembalian_pembayaran'  => $kembalian,
                     'sisa_tagihan'          => $sisaBaru,
                     'status_pembayaran'     => $statusBaru,
+                    'payment_methods'       => $pmGabung, // ← dikembalikan untuk auto-print
                     'auto_print'            => $settings->auto_print ?? false,
                     'printer_name'          => $settings->printer_name ?? '',
                     'print_url'             => route('transaksi.struk.printer', $id)
@@ -366,21 +378,13 @@ class TransaksiController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors'  => $e->errors()
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    // Struk untuk browser (PDF/HTML)
     public function struk($id)
     {
         $penjualan = DB::table('penjualan')
@@ -390,9 +394,7 @@ class TransaksiController extends Controller
             ->select('penjualan.*', 'user.nama_user as kasir')
             ->first();
 
-        if (!$penjualan) {
-            abort(404, 'Transaksi tidak ditemukan');
-        }
+        if (!$penjualan) abort(404, 'Transaksi tidak ditemukan');
 
         $detail = DB::table('penjualan_detail')
             ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
@@ -403,7 +405,6 @@ class TransaksiController extends Controller
         return view('transaksi.struk', compact('penjualan', 'detail'));
     }
 
-    // Struk untuk thermal printer (auto print)
     public function strukPrinter($id)
     {
         $penjualan = DB::table('penjualan')
@@ -413,11 +414,9 @@ class TransaksiController extends Controller
             ->select('penjualan.*', 'user.nama_user as kasir')
             ->first();
 
-        if (!$penjualan) {
-            abort(404, 'Transaksi tidak ditemukan');
-        }
+        if (!$penjualan) abort(404, 'Transaksi tidak ditemukan');
 
-        $detail = DB::table('penjualan_detail')
+        $detail   = DB::table('penjualan_detail')
             ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
             ->where('penjualan_detail.id_penjualan', $id)
             ->select('penjualan_detail.*', 'produk.nama_produk')
@@ -432,17 +431,16 @@ class TransaksiController extends Controller
             'kasir'                => $penjualan->kasir,
             'total_bayar'          => (float) $penjualan->total_bayar,
             'total_pembayaran'     => (float) $penjualan->total_pembayaran,
-            'kembalian_pembayaran' => (float) $penjualan->kembalian_pembayaran,
+            'kembalian_pembayaran' => (float) ($penjualan->kembalian_pembayaran ?? 0),
             'sisa_tagihan'         => (float) ($penjualan->sisa_tagihan ?? 0),
             'status_pembayaran'    => $penjualan->status_pembayaran ?? 'lunas',
-            'items'                => $detail->map(function ($item) {
-                return [
-                    'nama_produk'    => $item->nama_produk,
-                    'qty_produk'     => (int) $item->qty_produk,
-                    'harga_produk'   => (float) $item->harga_produk,
-                    'subtotal_harga' => (float) $item->subtotal_harga
-                ];
-            })->toArray()
+            'payment_methods'      => json_decode($penjualan->payment_methods ?? '[]', true) ?? [],
+            'items'                => $detail->map(fn($item) => [
+                'nama_produk'    => $item->nama_produk,
+                'qty_produk'     => (int) $item->qty_produk,
+                'harga_produk'   => (float) $item->harga_produk,
+                'subtotal_harga' => (float) $item->subtotal_harga
+            ])->toArray()
         ];
 
         return view('transaksi.printer', compact('receiptData', 'settings'));
