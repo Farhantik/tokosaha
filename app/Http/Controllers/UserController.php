@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -48,7 +49,6 @@ class UserController extends Controller
     private function deleteFromBothLocations($filename)
     {
         Log::info("=== Delete From Both Locations: " . $filename . " ===");
-
         Storage::delete('public/users/' . $filename);
 
         $publicPath = '/home/irryvkri/public_html/storage/users/' . $filename;
@@ -75,6 +75,28 @@ class UserController extends Controller
 
         Log::info("✅ File uploaded: " . $filename);
         return $filename;
+    }
+
+    /**
+     * Aturan validasi password yang kuat (reusable)
+     * - Min 8 karakter
+     * - Minimal 1 huruf besar
+     * - Minimal 1 huruf kecil
+     * - Minimal 1 angka
+     * - Minimal 1 simbol
+     * - Tidak boleh password umum
+     */
+    private function passwordRules(bool $required = true): array
+    {
+        $rule = Password::min(8)
+            ->mixedCase()   // huruf besar + kecil
+            ->numbers()     // minimal 1 angka
+            ->symbols()     // minimal 1 simbol
+            ->uncompromised(); // cek di database Have I Been Pwned (opsional, butuh internet)
+
+        return $required
+            ? ['required', 'string', 'confirmed', $rule]
+            : ['nullable', 'string', 'confirmed', $rule];
     }
 
     // =========================================================
@@ -116,16 +138,22 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'nama_user'     => 'required|string|max:150',
-            'username_user' => 'required|string|max:50|unique:user,username_user',
-            'password_user' => 'required|string|min:6|confirmed',
+            'username_user' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[a-zA-Z0-9._-]+$/', // hanya huruf, angka, . _ -
+                'unique:user,username_user',
+            ],
+            'password_user' => $this->passwordRules(true),
             'role_user'     => ['required', Rule::in(['owner', 'kasir'])],
             'gambar_user'   => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ], [
             'nama_user.required'      => 'Nama harus diisi',
             'username_user.required'  => 'Username harus diisi',
             'username_user.unique'    => 'Username sudah digunakan',
+            'username_user.regex'     => 'Username hanya boleh berisi huruf, angka, titik, underscore, atau strip',
             'password_user.required'  => 'Password harus diisi',
-            'password_user.min'       => 'Password minimal 6 karakter',
             'password_user.confirmed' => 'Konfirmasi password tidak cocok',
             'role_user.required'      => 'Role harus dipilih',
             'gambar_user.image'       => 'File harus berupa gambar',
@@ -136,7 +164,7 @@ class UserController extends Controller
         $data = [
             'nama_user'     => $validated['nama_user'],
             'username_user' => $validated['username_user'],
-            'password_user' => bcrypt($validated['password_user']),
+            'password_user' => Hash::make($validated['password_user']),
             'role_user'     => $validated['role_user'],
             'created_at'    => now(),
         ];
@@ -215,17 +243,18 @@ class UserController extends Controller
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('user', 'username_user')->ignore($id, 'id_user')
+                'regex:/^[a-zA-Z0-9._-]+$/',
+                Rule::unique('user', 'username_user')->ignore($id, 'id_user'),
             ],
             'role_user'     => ['required', Rule::in(['owner', 'kasir'])],
-            'password_user' => 'nullable|string|min:6|confirmed',
+            'password_user' => $this->passwordRules(false), // opsional saat edit
             'gambar_user'   => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
             'hapus_gambar'  => 'nullable|boolean',
         ], [
             'nama_user.required'      => 'Nama harus diisi',
             'username_user.required'  => 'Username harus diisi',
             'username_user.unique'    => 'Username sudah digunakan',
-            'password_user.min'       => 'Password minimal 6 karakter',
+            'username_user.regex'     => 'Username hanya boleh berisi huruf, angka, titik, underscore, atau strip',
             'password_user.confirmed' => 'Konfirmasi password tidak cocok',
             'role_user.required'      => 'Role harus dipilih',
             'gambar_user.image'       => 'File harus berupa gambar',
@@ -240,7 +269,7 @@ class UserController extends Controller
         ];
 
         if ($request->filled('password_user')) {
-            $updateData['password_user'] = bcrypt($validated['password_user']);
+            $updateData['password_user'] = Hash::make($validated['password_user']);
         }
 
         if ($request->input('hapus_gambar') == '1') {
@@ -305,8 +334,7 @@ class UserController extends Controller
     }
 
     // =========================================================
-    // RESET PASSWORD ✅ RETURN JSON — sinkron dengan AJAX di
-    // index.blade.php dan show.blade.php
+    // RESET PASSWORD
     // =========================================================
     public function resetPassword(Request $request, $id)
     {
@@ -321,10 +349,9 @@ class UserController extends Controller
 
         try {
             $request->validate([
-                'new_password' => 'required|string|min:6|confirmed',
+                'new_password' => $this->passwordRules(true),
             ], [
                 'new_password.required'  => 'Password baru harus diisi',
-                'new_password.min'       => 'Password minimal 6 karakter',
                 'new_password.confirmed' => 'Konfirmasi password tidak cocok',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -337,7 +364,7 @@ class UserController extends Controller
 
         try {
             DB::table('user')->where('id_user', $id)->update([
-                'password_user' => bcrypt($request->new_password),
+                'password_user' => Hash::make($request->new_password),
             ]);
 
             Log::info("✅ Password reset for user ID: " . $id);
@@ -386,10 +413,11 @@ class UserController extends Controller
                     'required',
                     'string',
                     'max:50',
-                    Rule::unique('user', 'username_user')->ignore($currentUser->id_user, 'id_user')
+                    'regex:/^[a-zA-Z0-9._-]+$/',
+                    Rule::unique('user', 'username_user')->ignore($currentUser->id_user, 'id_user'),
                 ],
                 'current_password' => 'required_with:new_password',
-                'new_password'     => 'nullable|string|min:6|confirmed',
+                'new_password'     => $this->passwordRules(false),
                 'gambar_user'      => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
                 'hapus_gambar'     => 'nullable|boolean',
             ], [
@@ -398,8 +426,8 @@ class UserController extends Controller
                 'username_user.required'         => 'Username harus diisi',
                 'username_user.unique'           => 'Username sudah digunakan',
                 'username_user.max'              => 'Username maksimal 50 karakter',
+                'username_user.regex'            => 'Username hanya boleh berisi huruf, angka, titik, underscore, atau strip',
                 'current_password.required_with' => 'Password lama harus diisi untuk mengganti password',
-                'new_password.min'               => 'Password baru minimal 6 karakter',
                 'new_password.confirmed'         => 'Konfirmasi password tidak cocok',
                 'gambar_user.image'              => 'File harus berupa gambar',
                 'gambar_user.mimes'              => 'Format gambar harus JPG, PNG, atau GIF',
@@ -419,7 +447,7 @@ class UserController extends Controller
                         'errors'  => ['current_password' => ['Password lama tidak sesuai']],
                     ], 422);
                 }
-                $updateData['password_user'] = bcrypt($validated['new_password']);
+                $updateData['password_user'] = Hash::make($validated['new_password']);
             }
 
             if ($request->input('hapus_gambar') == '1') {

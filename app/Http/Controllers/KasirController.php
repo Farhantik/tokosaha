@@ -116,30 +116,38 @@ class KasirController extends Controller
             'modal_awal.min'      => 'Modal awal minimal Rp 1'
         ]);
 
-        $user = Auth::user();
-
-        // ── Validasi jam operasional (semua role termasuk owner) ──
+        $user    = Auth::user();
         $setting = DB::table('settings')->first();
 
-        if ($setting && $setting->auto_close_kasir && !empty($setting->auto_close_time)) {
-            $jamSekarang  = Carbon::now('Asia/Jakarta')->format('H:i');
-            $jamAutoClose = substr($setting->auto_close_time, 0, 5);
+        if ($setting) {
+            $jamSekarang = Carbon::now('Asia/Jakarta')->format('H:i');
 
-            if ($jamSekarang >= $jamAutoClose) {
-                $pesan = "Kasir tidak dapat dibuka setelah jam {$jamAutoClose} WIB. Silakan buka kasir kembali besok.";
+            // ── Validasi jam buka ──
+            $jamBuka = !empty($setting->open_time) ? substr($setting->open_time, 0, 5) : null;
+            if ($jamBuka && $jamSekarang < $jamBuka) {
+                $pesan = "Kasir belum bisa dibuka. Jam operasional mulai pukul {$jamBuka} WIB.";
 
                 if ($request->wantsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => $pesan
-                    ], 403);
+                    return response()->json(['success' => false, 'message' => $pesan], 403);
                 }
-
                 return redirect()->route('kasir.index')->with('error', $pesan);
+            }
+
+            // ── Validasi jam tutup (auto-close) ──
+            if ($setting->auto_close_kasir && !empty($setting->auto_close_time)) {
+                $jamAutoClose = substr($setting->auto_close_time, 0, 5);
+                if ($jamSekarang >= $jamAutoClose) {
+                    $pesan = "Kasir tidak dapat dibuka setelah jam {$jamAutoClose} WIB. Silakan buka kasir kembali besok.";
+
+                    if ($request->wantsJson() || $request->ajax()) {
+                        return response()->json(['success' => false, 'message' => $pesan], 403);
+                    }
+                    return redirect()->route('kasir.index')->with('error', $pesan);
+                }
             }
         }
 
-        // Cek kasir aktif milik user ini
+        // ── Cek kasir aktif milik user ini ──
         $kasirAktif = DB::table('kasir')
             ->where('id_user', $user->id_user)
             ->whereNull('waktu_close')
@@ -156,7 +164,7 @@ class KasirController extends Controller
                 ->with('error', 'Kasir sudah aktif. Tutup kasir terlebih dahulu.');
         }
 
-        // Buka kasir baru
+        // ── Buka kasir baru ──
         $idKasir = DB::table('kasir')->insertGetId([
             'id_user'        => $user->id_user,
             'modal_awal'     => $request->modal_awal,
@@ -320,7 +328,7 @@ class KasirController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════
-    // UPDATE SETTING AUTO-CLOSE
+    // UPDATE SETTING AUTO-CLOSE + JAM BUKA
     // ═══════════════════════════════════════════════════════════
 
     public function updateAutoCloseSetting(Request $request)
@@ -328,26 +336,34 @@ class KasirController extends Controller
         try {
             $request->validate([
                 'auto_close_kasir' => 'required|in:0,1',
-                'auto_close_time'  => [
-                    'required',
-                    'regex:/^([01]\d|2[0-3]):([0-5]\d)$/',
-                ],
+                'auto_close_time'  => ['required', 'regex:/^([01]\d|2[0-3]):([0-5]\d)$/'],
+                'open_time'        => ['required', 'regex:/^([01]\d|2[0-3]):([0-5]\d)$/'],
             ], [
-                'auto_close_time.regex' => 'Format waktu harus HH:MM, contoh: 23:59',
+                'auto_close_time.regex' => 'Format waktu tutup harus HH:MM, contoh: 23:59',
+                'open_time.regex'       => 'Format waktu buka harus HH:MM, contoh: 08:00',
             ]);
+
+            // Validasi: jam buka harus lebih awal dari jam tutup
+            if ($request->open_time >= $request->auto_close_time) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jam buka harus lebih awal dari jam tutup kasir.',
+                ], 422);
+            }
 
             DB::table('settings')
                 ->where('id', 1)
                 ->update([
                     'auto_close_kasir' => (bool) $request->auto_close_kasir,
                     'auto_close_time'  => $request->auto_close_time,
+                    'open_time'        => $request->open_time,
                     'updated_at'       => now(),
                 ]);
 
             $aktif  = (bool) $request->auto_close_kasir;
             $status = $aktif
-                ? "Aktif — kasir akan ditutup otomatis pukul {$request->auto_close_time} setiap hari."
-                : "Nonaktif — kasir tidak akan ditutup otomatis.";
+                ? "Aktif — kasir buka pukul {$request->open_time} dan tutup otomatis pukul {$request->auto_close_time} WIB."
+                : "Jam buka disimpan: {$request->open_time} WIB. Auto-close nonaktif.";
 
             return response()->json([
                 'success' => true,

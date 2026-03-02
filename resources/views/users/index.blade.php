@@ -43,7 +43,6 @@
         <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
             <form method="GET" action="{{ route('users.index') }}" class="space-y-3 sm:space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    <!-- Search -->
                     <div class="sm:col-span-2">
                         <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-search mr-1 text-emerald-600"></i>Pencarian
@@ -52,8 +51,6 @@
                             placeholder="Cari nama atau username..."
                             class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition text-sm">
                     </div>
-
-                    <!-- Filter Role -->
                     <div>
                         <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-filter mr-1 text-emerald-600"></i>Role
@@ -66,8 +63,6 @@
                         </select>
                     </div>
                 </div>
-
-                <!-- Buttons -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <button type="submit"
                         class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl transition transform hover:scale-[1.02] active:scale-[0.98] text-sm">
@@ -88,9 +83,7 @@
                     class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border border-gray-200">
                     <div class="h-1.5 bg-gradient-to-r from-emerald-500 to-green-500"></div>
                     <div class="p-4">
-                        <!-- Header -->
                         <div class="flex items-start gap-3 mb-3">
-                            <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 @if ($user->gambar_user)
                                     <img src="{{ asset('storage/users/' . $user->gambar_user) }}"
@@ -103,17 +96,12 @@
                                     </div>
                                 @endif
                             </div>
-
-                            <!-- Info -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-start justify-between gap-2 mb-1">
                                     <div class="min-w-0 flex-1">
                                         <h3 class="font-bold text-gray-900 text-base leading-tight mb-1">
-                                            {{ $user->nama_user }}
-                                        </h3>
-                                        <p class="text-xs text-gray-500 break-all">
-                                            &#64;{{ $user->username_user }}
-                                        </p>
+                                            {{ $user->nama_user }}</h3>
+                                        <p class="text-xs text-gray-500 break-all">&#64;{{ $user->username_user }}</p>
                                     </div>
                                     @if (Auth::user()->id_user == $user->id_user)
                                         <span
@@ -122,8 +110,6 @@
                                         </span>
                                     @endif
                                 </div>
-
-                                <!-- Role Badge -->
                                 <div class="mt-2">
                                     @if ($user->role_user == 'owner')
                                         <span
@@ -139,14 +125,10 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Registration Date -->
                         <div class="flex items-center text-xs text-gray-500 mb-3 pb-3 border-b border-gray-200">
                             <i class="fas fa-calendar-alt mr-1.5 flex-shrink-0 text-emerald-500"></i>
                             <span>Terdaftar: {{ date('d/m/Y', strtotime($user->created_at)) }}</span>
                         </div>
-
-                        <!-- Action Buttons -->
                         @if (Auth::user()->id_user != $user->id_user)
                             <div class="grid grid-cols-4 gap-2">
                                 <a href="{{ route('users.show', $user->id_user) }}"
@@ -196,12 +178,8 @@
                     @endif
                 </div>
             @endforelse
-
-            <!-- Mobile Pagination -->
             @if ($users->hasPages())
-                <div class="bg-white rounded-xl shadow-lg p-4">
-                    {{ $users->links() }}
-                </div>
+                <div class="bg-white rounded-xl shadow-lg p-4">{{ $users->links() }}</div>
             @endif
         </div>
 
@@ -223,8 +201,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($users as $index => $user)
                             <tr class="hover:bg-emerald-50 transition-colors duration-150">
-                                <td class="px-4 py-4 text-sm text-gray-700 font-medium">
-                                    {{ $users->firstItem() + $index }}
+                                <td class="px-4 py-4 text-sm text-gray-700 font-medium">{{ $users->firstItem() + $index }}
                                 </td>
                                 <td class="px-4 py-4">
                                     @if ($user->gambar_user)
@@ -239,14 +216,11 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
-                                    <div>
-                                        <p class="font-semibold text-gray-800 text-sm">{{ $user->nama_user }}</p>
-                                        @if (Auth::user()->id_user == $user->id_user)
-                                            <span class="text-xs text-emerald-600 font-medium">
-                                                <i class="fas fa-user-circle mr-0.5"></i>Anda
-                                            </span>
-                                        @endif
-                                    </div>
+                                    <p class="font-semibold text-gray-800 text-sm">{{ $user->nama_user }}</p>
+                                    @if (Auth::user()->id_user == $user->id_user)
+                                        <span class="text-xs text-emerald-600 font-medium"><i
+                                                class="fas fa-user-circle mr-0.5"></i>Anda</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-4 text-sm">
                                     <span class="text-gray-600 font-medium">{{ $user->username_user }}</span>
@@ -277,7 +251,6 @@
                                             title="Detail">
                                             <i class="fas fa-eye text-sm"></i>
                                         </a>
-
                                         @if (Auth::user()->id_user != $user->id_user)
                                             <a href="{{ route('users.edit', $user->id_user) }}"
                                                 class="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-all"
@@ -324,12 +297,8 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- Desktop Pagination -->
             @if ($users->hasPages())
-                <div class="px-4 py-4 bg-gray-50 border-t border-gray-100">
-                    {{ $users->links() }}
-                </div>
+                <div class="px-4 py-4 bg-gray-50 border-t border-gray-100">{{ $users->links() }}</div>
             @endif
         </div>
     </div>
@@ -338,7 +307,7 @@
     <div id="resetPasswordModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
-            <div class="h-1.5 bg-gradient-to-r from-emerald-500 to-green-500 rounded-t-2xl"></div>
+            <div class="h-1.5 bg-gradient-to-r from-orange-400 to-red-500 rounded-t-2xl"></div>
             <div class="p-4 sm:p-6">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="bg-orange-100 p-3 rounded-xl flex-shrink-0">
@@ -363,34 +332,64 @@
                             <i class="fas fa-lock mr-1 text-emerald-500"></i>Password Baru
                         </label>
                         <div class="relative">
-                            <input type="password" id="reset_new_password"
+                            <input type="password" id="reset_new_password" autocomplete="new-password"
                                 class="w-full px-4 py-2.5 pr-11 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition"
-                                placeholder="Minimal 6 karakter" autocomplete="new-password">
+                                placeholder="Min 8 karakter" oninput="resetCheckStrength(this.value)">
                             <button type="button" onclick="toggleResetPassword('reset_new_password', 'icon_pass1')"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1">
                                 <i class="fas fa-eye text-sm" id="icon_pass1"></i>
                             </button>
                         </div>
+
+                        <!-- Strength Bar -->
+                        <div class="mt-2">
+                            <div class="flex gap-1 mb-1">
+                                <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all" id="rbar1"></div>
+                                <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all" id="rbar2"></div>
+                                <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all" id="rbar3"></div>
+                                <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all" id="rbar4"></div>
+                            </div>
+                            <p id="rstrength-text" class="text-xs text-gray-400"></p>
+                        </div>
+
+                        <!-- Syarat -->
+                        <div class="mt-2 bg-gray-50 rounded-xl p-3 hidden" id="reset-requirements">
+                            <p class="text-xs font-semibold text-gray-600 mb-1.5">Syarat password:</p>
+                            <div class="grid grid-cols-2 gap-1">
+                                <p class="text-xs flex items-center gap-1.5" id="rreq-length"><i
+                                        class="fas fa-circle text-gray-300 text-xs"></i>Min 8 karakter</p>
+                                <p class="text-xs flex items-center gap-1.5" id="rreq-upper"><i
+                                        class="fas fa-circle text-gray-300 text-xs"></i>Huruf besar (A-Z)</p>
+                                <p class="text-xs flex items-center gap-1.5" id="rreq-lower"><i
+                                        class="fas fa-circle text-gray-300 text-xs"></i>Huruf kecil (a-z)</p>
+                                <p class="text-xs flex items-center gap-1.5" id="rreq-number"><i
+                                        class="fas fa-circle text-gray-300 text-xs"></i>Angka (0-9)</p>
+                                <p class="text-xs flex items-center gap-1.5 col-span-2" id="rreq-symbol"><i
+                                        class="fas fa-circle text-gray-300 text-xs"></i>Simbol (!@#$%...)</p>
+                            </div>
+                        </div>
+
                         <p id="err_new_password" class="hidden text-red-500 text-xs mt-1.5">
                             <i class="fas fa-exclamation-circle mr-1"></i><span></span>
                         </p>
                     </div>
 
-                    <!-- Konfirmasi Password -->
-                    <div>
+                    <!-- Konfirmasi Password (muncul setelah mengetik password) -->
+                    <div id="reset-confirm-wrapper" class="hidden">
                         <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-lock mr-1 text-emerald-500"></i>Konfirmasi Password
                         </label>
                         <div class="relative">
-                            <input type="password" id="reset_new_password_confirmation"
+                            <input type="password" id="reset_new_password_confirmation" autocomplete="new-password"
                                 class="w-full px-4 py-2.5 pr-11 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition"
-                                placeholder="Ulangi password baru" autocomplete="new-password">
+                                placeholder="Ulangi password baru" oninput="resetCheckMatch()">
                             <button type="button"
                                 onclick="toggleResetPassword('reset_new_password_confirmation', 'icon_pass2')"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1">
                                 <i class="fas fa-eye text-sm" id="icon_pass2"></i>
                             </button>
                         </div>
+                        <p id="reset-match-text" class="text-xs mt-1.5 hidden"></p>
                         <p id="err_confirm_password" class="hidden text-red-500 text-xs mt-1.5">
                             <i class="fas fa-exclamation-circle mr-1"></i><span></span>
                         </p>
@@ -434,13 +433,11 @@
                         <p class="text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan</p>
                     </div>
                 </div>
-
                 <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
                     <p class="text-sm text-gray-700">
                         Anda akan menghapus user: <span id="deleteUserName" class="font-bold text-red-600"></span>
                     </p>
                 </div>
-
                 <form id="deleteForm" method="POST">
                     @csrf
                     @method('DELETE')
@@ -464,30 +461,108 @@
             let _resetUserId = null;
 
             // ================================================================
-            // FLASH MESSAGE TOAST
+            // FLASH TOAST
             // ================================================================
             function _showFlashMessage(message, type = 'success') {
                 const isSuccess = type === 'success';
-                const container = document.createElement('div');
-                container.style.opacity = '0';
-                container.style.transition = 'opacity 0.3s ease';
-                container.className = `fixed top-5 right-5 z-[100] flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl text-sm font-semibold ${
-                    isSuccess ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                }`;
-                container.innerHTML = `
-                    <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                    <span>${message}</span>
-                `;
-                document.body.appendChild(container);
-                setTimeout(() => container.style.opacity = '1', 10);
+                const el = document.createElement('div');
+                el.style.cssText = 'opacity:0;transition:opacity 0.3s ease;';
+                el.className =
+                    `fixed top-5 right-5 z-[100] flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl text-sm font-semibold ${isSuccess ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`;
+                el.innerHTML =
+                    `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><span>${message}</span>`;
+                document.body.appendChild(el);
+                setTimeout(() => el.style.opacity = '1', 10);
                 setTimeout(() => {
-                    container.style.opacity = '0';
-                    setTimeout(() => container.remove(), 300);
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 300);
                 }, 3500);
             }
 
             // ================================================================
-            // RESET PASSWORD MODAL
+            // RESET PASSWORD — STRENGTH CHECKER
+            // ================================================================
+            function resetCheckStrength(value) {
+                const bars = ['rbar1', 'rbar2', 'rbar3', 'rbar4'].map(id => document.getElementById(id));
+                const txtEl = document.getElementById('rstrength-text');
+                const reqBox = document.getElementById('reset-requirements');
+                const confWrap = document.getElementById('reset-confirm-wrapper');
+
+                if (value.length > 0) {
+                    reqBox.classList.remove('hidden');
+                    confWrap.classList.remove('hidden');
+                } else {
+                    reqBox.classList.add('hidden');
+                    confWrap.classList.add('hidden');
+                }
+
+                const checks = {
+                    length: value.length >= 8,
+                    upper: /[A-Z]/.test(value),
+                    lower: /[a-z]/.test(value),
+                    number: /[0-9]/.test(value),
+                    symbol: /[^A-Za-z0-9]/.test(value),
+                };
+
+                _resetUpdateReq('rreq-length', checks.length);
+                _resetUpdateReq('rreq-upper', checks.upper);
+                _resetUpdateReq('rreq-lower', checks.lower);
+                _resetUpdateReq('rreq-number', checks.number);
+                _resetUpdateReq('rreq-symbol', checks.symbol);
+
+                const score = Object.values(checks).filter(Boolean).length;
+                const colorMap = ['', 'bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-emerald-500'];
+                const labelMap = ['', 'Sangat Lemah', 'Lemah', 'Sedang', 'Kuat'];
+                const textColorMap = ['', 'text-red-500', 'text-orange-500', 'text-yellow-600', 'text-emerald-600'];
+
+                bars.forEach((bar, i) => {
+                    bar.className = 'h-1.5 flex-1 rounded-full transition-all ' + (i < score && score > 0 ? colorMap[
+                        score] : 'bg-gray-200');
+                });
+
+                txtEl.textContent = value.length === 0 ? '' : (labelMap[score] || '');
+                txtEl.className = 'text-xs font-semibold ' + (value.length === 0 ? 'text-gray-400' : (textColorMap[score] ||
+                    'text-gray-400'));
+
+                resetCheckMatch();
+            }
+
+            function _resetUpdateReq(id, passed) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const icon = el.querySelector('i');
+                if (passed) {
+                    icon.className = 'fas fa-check-circle text-emerald-500 text-xs';
+                    el.classList.add('text-emerald-600');
+                    el.classList.remove('text-gray-500');
+                } else {
+                    icon.className = 'fas fa-circle text-gray-300 text-xs';
+                    el.classList.remove('text-emerald-600');
+                    el.classList.add('text-gray-500');
+                }
+            }
+
+            function resetCheckMatch() {
+                const pass = document.getElementById('reset_new_password').value;
+                const confirm = document.getElementById('reset_new_password_confirmation').value;
+                const matchEl = document.getElementById('reset-match-text');
+                if (!matchEl) return;
+                if (confirm.length === 0) {
+                    matchEl.classList.add('hidden');
+                    return;
+                }
+                matchEl.classList.remove('hidden');
+                if (pass === confirm) {
+                    matchEl.textContent = '✓ Password cocok';
+                    matchEl.className = 'text-xs mt-1.5 text-emerald-600 font-semibold';
+                } else {
+                    matchEl.textContent = '✗ Password tidak cocok';
+                    matchEl.className = 'text-xs mt-1.5 text-red-500 font-semibold';
+                }
+            }
+
+            // ================================================================
+            // RESET PASSWORD MODAL — OPEN / CLOSE
             // ================================================================
             function openResetPasswordModal(userId, userName) {
                 _resetUserId = userId;
@@ -506,8 +581,10 @@
             }
 
             function _clearResetForm() {
-                document.getElementById('reset_new_password').value = '';
-                document.getElementById('reset_new_password_confirmation').value = '';
+                ['reset_new_password', 'reset_new_password_confirmation'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
                 _resetFieldType('reset_new_password', 'icon_pass1');
                 _resetFieldType('reset_new_password_confirmation', 'icon_pass2');
                 _hideError('err_new_password');
@@ -515,6 +592,20 @@
                 _hideGeneralError();
                 document.getElementById('reset_new_password').classList.remove('border-red-400');
                 document.getElementById('reset_new_password_confirmation').classList.remove('border-red-400');
+                document.getElementById('reset-requirements').classList.add('hidden');
+                document.getElementById('reset-confirm-wrapper').classList.add('hidden');
+                const matchEl = document.getElementById('reset-match-text');
+                if (matchEl) matchEl.classList.add('hidden');
+                // Reset bars
+                ['rbar1', 'rbar2', 'rbar3', 'rbar4'].forEach(id => {
+                    const bar = document.getElementById(id);
+                    if (bar) bar.className = 'h-1.5 flex-1 rounded-full bg-gray-200 transition-all';
+                });
+                const txtEl = document.getElementById('rstrength-text');
+                if (txtEl) {
+                    txtEl.textContent = '';
+                    txtEl.className = 'text-xs text-gray-400';
+                }
                 _setResetBtnLoading(false);
             }
 
@@ -541,6 +632,9 @@
                 }
             }
 
+            // ================================================================
+            // VALIDASI SISI KLIEN — sesuai aturan password kuat
+            // ================================================================
             function _validateResetForm(password, confirmation) {
                 let valid = true;
                 document.getElementById('reset_new_password').classList.remove('border-red-400');
@@ -549,11 +643,32 @@
                 _hideError('err_confirm_password');
                 _hideGeneralError();
 
-                if (!password || password.length < 6) {
-                    _showError('err_new_password', 'Password minimal 6 karakter');
+                if (!password) {
+                    _showError('err_new_password', 'Password baru harus diisi');
+                    document.getElementById('reset_new_password').classList.add('border-red-400');
+                    valid = false;
+                } else if (password.length < 8) {
+                    _showError('err_new_password', 'Password minimal 8 karakter');
+                    document.getElementById('reset_new_password').classList.add('border-red-400');
+                    valid = false;
+                } else if (!/[A-Z]/.test(password)) {
+                    _showError('err_new_password', 'Password harus mengandung huruf besar');
+                    document.getElementById('reset_new_password').classList.add('border-red-400');
+                    valid = false;
+                } else if (!/[a-z]/.test(password)) {
+                    _showError('err_new_password', 'Password harus mengandung huruf kecil');
+                    document.getElementById('reset_new_password').classList.add('border-red-400');
+                    valid = false;
+                } else if (!/[0-9]/.test(password)) {
+                    _showError('err_new_password', 'Password harus mengandung angka');
+                    document.getElementById('reset_new_password').classList.add('border-red-400');
+                    valid = false;
+                } else if (!/[^A-Za-z0-9]/.test(password)) {
+                    _showError('err_new_password', 'Password harus mengandung simbol (!@#$%...)');
                     document.getElementById('reset_new_password').classList.add('border-red-400');
                     valid = false;
                 }
+
                 if (!confirmation) {
                     _showError('err_confirm_password', 'Konfirmasi password wajib diisi');
                     document.getElementById('reset_new_password_confirmation').classList.add('border-red-400');
@@ -563,6 +678,7 @@
                     document.getElementById('reset_new_password_confirmation').classList.add('border-red-400');
                     valid = false;
                 }
+
                 return valid;
             }
 
@@ -580,7 +696,6 @@
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                     if (!csrfToken) {
                         _showGeneralError('CSRF token tidak ditemukan. Silakan refresh halaman.');
-                        _setResetBtnLoading(false);
                         return;
                     }
 
@@ -690,22 +805,19 @@
             // ================================================================
             // EVENT LISTENERS
             // ================================================================
-            document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
-                if (e.target === this) closeResetPasswordModal();
+            document.getElementById('resetPasswordModal').addEventListener('click', e => {
+                if (e.target === e.currentTarget) closeResetPasswordModal();
             });
-
-            document.getElementById('deleteModal').addEventListener('click', function(e) {
-                if (e.target === this) closeDeleteModal();
+            document.getElementById('deleteModal').addEventListener('click', e => {
+                if (e.target === e.currentTarget) closeDeleteModal();
             });
-
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
                     closeResetPasswordModal();
                     closeDeleteModal();
                 }
             });
-
-            document.getElementById('resetPasswordModal').addEventListener('keydown', function(e) {
+            document.getElementById('resetPasswordModal').addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     submitResetPassword();

@@ -73,6 +73,8 @@ class RunScheduler
                         'waktu_close'    => Carbon::now('Asia/Jakarta'),
                         'is_auto_closed' => true,
                     ]);
+
+                \Log::info("RunScheduler auto-close kasir id={$kasir->id_kasir}, saldo={$saldoAkhir}");
             }
         } catch (\Exception $e) {
             \Log::error('RunScheduler auto-close error: ' . $e->getMessage());
