@@ -5,6 +5,22 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
+
+        {{-- Alert --}}
+        @if (session('success'))
+            <div
+                class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm">
+                <i class="fas fa-check-circle text-green-500 text-lg"></i>
+                <span class="font-medium text-sm">{{ session('success') }}</span>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm">
+                <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+                <span class="font-medium text-sm">{{ session('error') }}</span>
+            </div>
+        @endif
+
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div class="flex items-center">
@@ -17,10 +33,16 @@
                     <p class="text-xs sm:text-sm text-gray-500">Kelola produk toko</p>
                 </div>
             </div>
-            <button onclick="openModal()"
-                class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
-                <i class="fas fa-plus mr-2"></i>Tambah Produk
-            </button>
+            <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+                <button onclick="openModalKategori()"
+                    class="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
+                    <i class="fas fa-tags mr-2"></i>Tambah Kategori
+                </button>
+                <button onclick="openModal()"
+                    class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
+                    <i class="fas fa-plus mr-2"></i>Tambah Produk
+                </button>
+            </div>
         </div>
 
         <!-- Search & Filter -->
@@ -254,7 +276,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- MODAL PRODUK                                                  -->
+    <!-- MODAL TAMBAH / EDIT PRODUK                                    -->
     <!-- ============================================================ -->
     <div id="modalProduk"
         class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -267,16 +289,13 @@
                         <i class="fas fa-times text-xl sm:text-2xl"></i>
                     </button>
                 </div>
-
                 <form id="formProduk" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <input type="hidden" id="methodField" name="_method" value="POST">
                     <input type="hidden" id="existingImage" name="existing_image" value="">
                     <input type="hidden" id="hapusGambar" name="hapus_gambar" value="0">
-                    {{-- ✅ Hidden: nilai angka murni yang dikirim ke server --}}
                     <input type="hidden" id="harga_produk" name="harga_produk" value="">
 
-                    <!-- Gambar -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Gambar Produk</label>
                         <div id="imagePreview" class="mb-3 hidden">
@@ -299,7 +318,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Nama -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">
                                 Nama Produk <span class="text-red-500">*</span>
@@ -308,8 +326,6 @@
                                 class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                                 placeholder="Contoh: Indomie Goreng">
                         </div>
-
-                        <!-- Kode -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">Kode Produk</label>
                             <input type="text" name="code_produk" id="code_produk"
@@ -318,7 +334,6 @@
                         </div>
                     </div>
 
-                    <!-- Kategori -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2 text-sm">Kategori</label>
                         <select name="id_produk_kategori" id="id_produk_kategori"
@@ -331,7 +346,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- ✅ Harga dengan format ribuan otomatis -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">
                                 Harga <span class="text-red-500">*</span>
@@ -339,7 +353,6 @@
                             <div class="relative">
                                 <span
                                     class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">Rp</span>
-                                {{-- Input display: user ketik di sini, tampil dengan titik ribuan --}}
                                 <input type="text" id="harga_produk_display" inputmode="numeric" autocomplete="off"
                                     class="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                                     placeholder="50.000">
@@ -351,8 +364,6 @@
                                 <i class="fas fa-exclamation-circle mr-1"></i>Harga tidak boleh kosong atau negatif!
                             </p>
                         </div>
-
-                        <!-- Stok -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2 text-sm">
                                 Stok <span class="text-red-500">*</span>
@@ -366,28 +377,22 @@
                         </div>
                     </div>
 
-                    <!-- ✅ DESKRIPSI PRODUK (BARU) -->
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2 text-sm">
-                            Deskripsi Produk
-                        </label>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Deskripsi Produk</label>
                         <textarea name="deskripsi_produk" id="deskripsi_produk" rows="4"
                             class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm resize-none"
-                            placeholder="Contoh: Air mineral berkualitas tinggi dengan kandungan mineral alami..."></textarea>
+                            placeholder="Contoh: Air mineral berkualitas tinggi..."></textarea>
                         <div class="flex items-center justify-between mt-1">
                             <p class="text-xs text-gray-400">
-                                <i class="fas fa-info-circle mr-1 text-blue-400"></i>Opsional - Jelaskan detail produk
-                                Anda
+                                <i class="fas fa-info-circle mr-1 text-blue-400"></i>Opsional
                             </p>
-                            <p class="text-xs text-gray-400">
-                                <span id="charCount" class="font-semibold">0</span>/500 karakter
-                            </p>
+                            <p class="text-xs text-gray-400"><span id="charCount" class="font-semibold">0</span>/500
+                                karakter</p>
                         </div>
                     </div>
 
-                    <!-- Tombol -->
                     <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button type="submit" id="btnSubmit"
+                        <button type="submit"
                             class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base">
                             <i class="fas fa-save mr-2"></i>Simpan
                         </button>
@@ -401,58 +406,184 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- MODAL TAMBAH / EDIT KATEGORI                                  -->
+    <!-- ============================================================ -->
+    <div id="modalKategori" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div class="p-5 sm:p-6">
+                <div class="flex justify-between items-center mb-5">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md">
+                            <i class="fas fa-tags text-white"></i>
+                        </div>
+                        <h2 id="modalKategoriTitle" class="text-xl font-bold text-gray-800">Tambah Kategori</h2>
+                    </div>
+                    <button onclick="closeModalKategori()"
+                        class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                {{-- Form kategori (store/update) — TIDAK ada form hapus di sini --}}
+                <form id="formKategori" method="POST" action="{{ route('kategori.store') }}" class="space-y-4">
+                    @csrf
+                    <input type="hidden" id="kategoriMethodField" name="_method" value="POST">
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">
+                            Nama Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nama_kategori" id="nama_kategori"
+                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-sm"
+                            placeholder="Contoh: Minuman, Makanan, Snack...">
+                        <p id="nama_kategori_error" class="text-xs text-red-500 mt-1 hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Nama kategori wajib diisi!
+                        </p>
+                    </div>
+
+                    <!-- Daftar Kategori yang Ada -->
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Kategori yang Ada</label>
+                        <div class="border-2 border-gray-200 rounded-xl overflow-hidden max-h-52 overflow-y-auto">
+                            @forelse($kategori as $kat)
+                                <div
+                                    class="flex items-center justify-between px-4 py-2.5 hover:bg-purple-50 transition-colors border-b border-gray-100 last:border-0">
+                                    <span class="text-sm font-medium text-gray-700">
+                                        <i class="fas fa-tag text-purple-400 mr-2 text-xs"></i>{{ $kat->nama_kategori }}
+                                    </span>
+                                    <div class="flex gap-1.5">
+                                        <button type="button"
+                                            onclick="editKategori({{ $kat->id_produk_kategori }}, '{{ addslashes($kat->nama_kategori) }}')"
+                                            class="bg-yellow-100 hover:bg-yellow-500 text-yellow-600 hover:text-white w-7 h-7 rounded-lg flex items-center justify-center transition-all text-xs"
+                                            title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button"
+                                            onclick="hapusKategori({{ $kat->id_produk_kategori }}, '{{ addslashes($kat->nama_kategori) }}')"
+                                            class="bg-red-100 hover:bg-red-500 text-red-600 hover:text-white w-7 h-7 rounded-lg flex items-center justify-center transition-all text-xs"
+                                            title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="px-4 py-6 text-center text-gray-400 text-sm">
+                                    <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                    Belum ada kategori
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-1">
+                        <button type="submit" id="btnSubmitKategori"
+                            class="flex-1 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                            <i class="fas fa-save mr-2"></i>Simpan
+                        </button>
+                        <button type="button" onclick="closeModalKategori()"
+                            class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                            <i class="fas fa-times mr-2"></i>Tutup
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ Form hapus kategori — di LUAR semua modal agar tidak nested --}}
+    <form id="formHapusKategori" method="POST" action="" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <!-- ============================================================ -->
+    <!-- MODAL KONFIRMASI HAPUS KATEGORI (Custom — mengganti confirm()) -->
+    <!-- ============================================================ -->
+    <div id="modalKonfirmasiHapus"
+        class="fixed inset-0 bg-black bg-opacity-60 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+            <div class="p-6">
+
+                <!-- Icon -->
+                <div class="flex justify-center mb-4">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center border-4 border-red-200 shadow-inner">
+                        <i class="fas fa-trash-alt text-2xl text-red-500"></i>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-1">Hapus Kategori?</h3>
+                <p class="text-gray-500 text-sm text-center mb-3">Anda akan menghapus kategori:</p>
+
+                <!-- Nama Kategori -->
+                <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4 text-center">
+                    <p id="konfirmasiNamaKategori" class="font-bold text-gray-800 text-base"></p>
+                </div>
+
+                <!-- Warning -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-5 flex items-start gap-2">
+                    <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5 flex-shrink-0 text-sm"></i>
+                    <p class="text-xs text-amber-700 leading-relaxed">
+                        Kategori yang masih dipakai oleh produk <strong>tidak bisa dihapus</strong>.
+                        Pastikan tidak ada produk yang menggunakan kategori ini.
+                    </p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeKonfirmasiHapus()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-all text-sm border-2 border-gray-200 hover:border-gray-300">
+                        <i class="fas fa-times mr-2"></i>Batal
+                    </button>
+                    <button type="button" onclick="konfirmasiHapusKategori()"
+                        class="flex-1 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                        <i class="fas fa-trash mr-2"></i>Ya, Hapus
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
             // ============================================================
-            // FORMAT HARGA — Titik ribuan otomatis (format Indonesia)
+            // FORMAT HARGA
             // ============================================================
-
             const hargaDisplay = document.getElementById('harga_produk_display');
             const hargaHidden = document.getElementById('harga_produk');
 
-            /**
-             * Format angka ke string ribuan Indonesia
-             * Contoh: 50000 → "50.000"
-             */
             function formatRibuan(angka) {
                 if (angka === null || angka === undefined || angka === '') return '';
                 const num = parseInt(String(angka).replace(/[^\d]/g, ''));
-                if (isNaN(num)) return '';
-                return num.toLocaleString('id-ID');
+                return isNaN(num) ? '' : num.toLocaleString('id-ID');
             }
 
-            // Event: saat user mengetik di input harga
             hargaDisplay.addEventListener('input', function() {
                 const cursorPos = this.selectionStart;
                 const oldLen = this.value.length;
-
-                // Ambil hanya digit
                 const angkaStr = this.value.replace(/[^\d]/g, '');
-
                 if (angkaStr === '') {
                     this.value = '';
                     hargaHidden.value = '';
                     resetHargaError();
                     return;
                 }
-
                 const angkaInt = parseInt(angkaStr);
-                const formatted = angkaInt.toLocaleString('id-ID'); // "50.000"
-
+                const formatted = angkaInt.toLocaleString('id-ID');
                 this.value = formatted;
                 hargaHidden.value = angkaInt;
-
-                // Kembalikan posisi kursor
                 const newLen = this.value.length;
                 const newPos = Math.max(0, cursorPos + (newLen - oldLen));
                 try {
                     this.setSelectionRange(newPos, newPos);
                 } catch (e) {}
-
                 resetHargaError();
             });
 
-            // Blokir karakter non-angka
             hargaDisplay.addEventListener('keydown', function(e) {
                 const allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
                     'Home', 'End'
@@ -461,7 +592,6 @@
                 if (!/^\d$/.test(e.key)) e.preventDefault();
             });
 
-            // Sinkronisasi nilai saat blur
             hargaDisplay.addEventListener('blur', function() {
                 const angka = this.value.replace(/[^\d]/g, '');
                 hargaHidden.value = angka ? parseInt(angka) : '';
@@ -473,51 +603,34 @@
             }
 
             // ============================================================
-            // STOK — Paksa tidak negatif, blokir karakter invalid
+            // STOK
             // ============================================================
             const stokInput = document.getElementById('stock_produk');
-
             stokInput.addEventListener('keydown', function(e) {
                 if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
             });
-
             stokInput.addEventListener('input', function() {
                 this.value = this.value.replace(/[^\d]/g, '');
                 if (this.value !== '' && parseInt(this.value) < 0) this.value = 0;
             });
 
             // ============================================================
-            // DESKRIPSI — Character Counter & Limit
+            // DESKRIPSI — Character Counter
             // ============================================================
             const deskripsiInput = document.getElementById('deskripsi_produk');
             const charCount = document.getElementById('charCount');
             const maxChars = 500;
 
             deskripsiInput.addEventListener('input', function() {
-                const currentLength = this.value.length;
-                charCount.textContent = currentLength;
-
-                // Batasi karakter
-                if (currentLength > maxChars) {
-                    this.value = this.value.substring(0, maxChars);
-                    charCount.textContent = maxChars;
-                }
-
-                // Ubah warna jika mendekati limit (90% = 450 karakter)
-                if (currentLength > maxChars * 0.9) {
-                    charCount.classList.add('text-red-600', 'font-bold');
-                    charCount.classList.remove('text-gray-400');
-                } else if (currentLength > maxChars * 0.7) {
-                    charCount.classList.add('text-orange-600', 'font-bold');
-                    charCount.classList.remove('text-gray-400', 'text-red-600');
-                } else {
-                    charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
-                    charCount.classList.add('text-gray-400');
-                }
+                const len = this.value.length;
+                if (len > maxChars) this.value = this.value.substring(0, maxChars);
+                charCount.textContent = Math.min(len, maxChars);
+                charCount.className = len > maxChars * 0.9 ? 'font-semibold text-red-600' :
+                    len > maxChars * 0.7 ? 'font-semibold text-orange-600' : 'font-semibold';
             });
 
             // ============================================================
-            // GAMBAR — Preview & Remove
+            // GAMBAR
             // ============================================================
             function removeImage() {
                 document.getElementById('preview').src = '';
@@ -533,7 +646,7 @@
                     return;
                 }
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     document.getElementById('preview').src = e.target.result;
                     document.getElementById('imagePreview').classList.remove('hidden');
                     document.getElementById('hapusGambar').value = '0';
@@ -542,40 +655,32 @@
             }
 
             // ============================================================
-            // VALIDASI FORM SEBELUM SUBMIT
+            // VALIDASI FORM PRODUK
             // ============================================================
             document.getElementById('formProduk').addEventListener('submit', function(e) {
                 let valid = true;
-
-                const namaInput = document.getElementById('nama_produk');
-                const hargaError = document.getElementById('harga_error');
-                const stokError = document.getElementById('stok_error');
-
-                // Reset semua error
-                hargaError.classList.add('hidden');
-                stokError.classList.add('hidden');
+                document.getElementById('harga_error').classList.add('hidden');
+                document.getElementById('stok_error').classList.add('hidden');
                 hargaDisplay.classList.remove('border-red-500');
                 stokInput.classList.remove('border-red-500');
 
-                // Validasi nama
+                const namaInput = document.getElementById('nama_produk');
                 if (!namaInput.value.trim()) {
                     namaInput.focus();
                     valid = false;
                 }
 
-                // Validasi harga — baca dari hidden (angka murni)
                 const hargaVal = hargaHidden.value.trim();
                 if (hargaVal === '' || isNaN(parseInt(hargaVal)) || parseInt(hargaVal) < 0) {
-                    hargaError.classList.remove('hidden');
+                    document.getElementById('harga_error').classList.remove('hidden');
                     hargaDisplay.classList.add('border-red-500');
                     if (valid) hargaDisplay.focus();
                     valid = false;
                 }
 
-                // Validasi stok
                 const stokVal = stokInput.value.trim();
                 if (stokVal === '' || isNaN(parseInt(stokVal)) || parseInt(stokVal) < 0) {
-                    stokError.classList.remove('hidden');
+                    document.getElementById('stok_error').classList.remove('hidden');
                     stokInput.classList.add('border-red-500');
                     if (valid) stokInput.focus();
                     valid = false;
@@ -585,7 +690,7 @@
             });
 
             // ============================================================
-            // SEARCH & FILTER TABEL
+            // SEARCH & FILTER
             // ============================================================
             document.getElementById('searchTable').addEventListener('input', filterProducts);
             document.getElementById('filterKategori').addEventListener('change', filterProducts);
@@ -593,50 +698,35 @@
             function filterProducts() {
                 const search = document.getElementById('searchTable').value.toLowerCase();
                 const kategori = document.getElementById('filterKategori').value;
-
                 document.querySelectorAll('.produk-row').forEach(row => {
-                    const matchSearch = row.textContent.toLowerCase().includes(search);
-                    const matchKategori = !kategori || row.dataset.kategori === kategori;
-                    row.style.display = (matchSearch && matchKategori) ? '' : 'none';
+                    row.style.display = (row.textContent.toLowerCase().includes(search) &&
+                        (!kategori || row.dataset.kategori === kategori)) ? '' : 'none';
                 });
-
                 document.querySelectorAll('.produk-card').forEach(card => {
-                    const matchSearch = card.textContent.toLowerCase().includes(search);
-                    const matchKategori = !kategori || card.dataset.kategori === kategori;
-                    card.style.display = (matchSearch && matchKategori) ? '' : 'none';
+                    card.style.display = (card.textContent.toLowerCase().includes(search) &&
+                        (!kategori || card.dataset.kategori === kategori)) ? '' : 'none';
                 });
             }
 
             // ============================================================
-            // MODAL — Open / Close / Edit
+            // MODAL PRODUK
             // ============================================================
             function openModal() {
                 document.getElementById('modalTitle').textContent = 'Tambah Produk';
                 document.getElementById('formProduk').action = '{{ route('produk.store') }}';
                 document.getElementById('methodField').value = 'POST';
                 document.getElementById('formProduk').reset();
-
-                // Reset harga
                 hargaDisplay.value = '';
                 hargaHidden.value = '';
                 hargaDisplay.classList.remove('border-red-500');
-
-                // Reset gambar
                 document.getElementById('imagePreview').classList.add('hidden');
                 document.getElementById('hapusGambar').value = '0';
                 document.getElementById('existingImage').value = '';
-
-                // Reset deskripsi & counter
                 deskripsiInput.value = '';
                 charCount.textContent = '0';
-                charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
-                charCount.classList.add('text-gray-400');
-
-                // Reset error
                 document.getElementById('harga_error').classList.add('hidden');
                 document.getElementById('stok_error').classList.add('hidden');
                 stokInput.classList.remove('border-red-500');
-
                 document.getElementById('modalProduk').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
@@ -645,8 +735,6 @@
                 document.getElementById('modalTitle').textContent = 'Edit Produk';
                 document.getElementById('formProduk').action = `/produk/${produk.id_produk}`;
                 document.getElementById('methodField').value = 'PUT';
-
-                // Reset form & error
                 document.getElementById('formProduk').reset();
                 document.getElementById('gambar_produk').value = '';
                 document.getElementById('hapusGambar').value = '0';
@@ -655,37 +743,19 @@
                 hargaDisplay.classList.remove('border-red-500');
                 stokInput.classList.remove('border-red-500');
 
-                // Isi data produk
                 document.getElementById('nama_produk').value = produk.nama_produk;
                 document.getElementById('code_produk').value = produk.code_produk || '';
                 document.getElementById('id_produk_kategori').value = produk.id_produk_kategori || '';
 
-                // ✅ Harga: tampilan berformat + hidden angka murni
                 const hargaAsli = parseInt(produk.harga_produk) || 0;
-                hargaDisplay.value = formatRibuan(hargaAsli); // "50.000"
-                hargaHidden.value = hargaAsli; // 50000
-
-                // ✅ Stok: tampilkan 0 jika negatif
+                hargaDisplay.value = formatRibuan(hargaAsli);
+                hargaHidden.value = hargaAsli;
                 stokInput.value = Math.max(0, parseInt(produk.stock_produk) || 0);
 
-                // ✅ Deskripsi: isi jika ada
                 const deskripsi = produk.deskripsi_produk || '';
                 deskripsiInput.value = deskripsi;
                 charCount.textContent = deskripsi.length;
 
-                // Update warna counter sesuai jumlah karakter
-                if (deskripsi.length > maxChars * 0.9) {
-                    charCount.classList.add('text-red-600', 'font-bold');
-                    charCount.classList.remove('text-gray-400', 'text-orange-600');
-                } else if (deskripsi.length > maxChars * 0.7) {
-                    charCount.classList.add('text-orange-600', 'font-bold');
-                    charCount.classList.remove('text-gray-400', 'text-red-600');
-                } else {
-                    charCount.classList.remove('text-red-600', 'text-orange-600', 'font-bold');
-                    charCount.classList.add('text-gray-400');
-                }
-
-                // Gambar existing
                 if (produk.gambar_produk) {
                     document.getElementById('preview').src = `/uploads/produk/${produk.gambar_produk}`;
                     document.getElementById('imagePreview').classList.remove('hidden');
@@ -704,14 +774,104 @@
                 document.body.style.overflow = 'auto';
             }
 
-            // Tutup modal dengan ESC
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape') closeModal();
+            // ============================================================
+            // MODAL KATEGORI
+            // ============================================================
+            const ROUTE_KATEGORI_STORE = '{{ route('kategori.store') }}';
+
+            function openModalKategori() {
+                document.getElementById('modalKategoriTitle').textContent = 'Tambah Kategori';
+                document.getElementById('formKategori').setAttribute('action', ROUTE_KATEGORI_STORE);
+                document.getElementById('kategoriMethodField').value = 'POST';
+                document.getElementById('nama_kategori').value = '';
+                document.getElementById('nama_kategori_error').classList.add('hidden');
+                document.getElementById('nama_kategori').classList.remove('border-red-500');
+                document.getElementById('btnSubmitKategori').innerHTML = '<i class="fas fa-save mr-2"></i>Simpan';
+                document.getElementById('modalKategori').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => document.getElementById('nama_kategori').focus(), 100);
+            }
+
+            function editKategori(id, nama) {
+                document.getElementById('modalKategoriTitle').textContent = 'Edit Kategori';
+                document.getElementById('formKategori').setAttribute('action', `/kategori/${id}`);
+                document.getElementById('kategoriMethodField').value = 'PUT';
+                document.getElementById('nama_kategori').value = nama;
+                document.getElementById('nama_kategori_error').classList.add('hidden');
+                document.getElementById('nama_kategori').classList.remove('border-red-500');
+                document.getElementById('btnSubmitKategori').innerHTML = '<i class="fas fa-save mr-2"></i>Update';
+                document.getElementById('modalKategori').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => document.getElementById('nama_kategori').focus(), 100);
+            }
+
+            function closeModalKategori() {
+                document.getElementById('formKategori').setAttribute('action', ROUTE_KATEGORI_STORE);
+                document.getElementById('kategoriMethodField').value = 'POST';
+                document.getElementById('modalKategori').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            // ============================================================
+            // MODAL KONFIRMASI HAPUS KATEGORI (Custom)
+            // ============================================================
+            let hapusKategoriId = null;
+
+            function hapusKategori(id, nama) {
+                hapusKategoriId = id;
+                document.getElementById('konfirmasiNamaKategori').textContent = nama;
+                document.getElementById('modalKonfirmasiHapus').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeKonfirmasiHapus() {
+                hapusKategoriId = null;
+                document.getElementById('modalKonfirmasiHapus').classList.add('hidden');
+            }
+
+            function konfirmasiHapusKategori() {
+                if (!hapusKategoriId) return;
+                const form = document.getElementById('formHapusKategori');
+                form.setAttribute('action', `/kategori/${hapusKategoriId}`);
+                form.submit();
+            }
+
+            // Validasi form kategori
+            document.getElementById('formKategori').addEventListener('submit', function(e) {
+                const namaKat = document.getElementById('nama_kategori');
+                const namaKatError = document.getElementById('nama_kategori_error');
+                namaKatError.classList.add('hidden');
+                namaKat.classList.remove('border-red-500');
+                if (!namaKat.value.trim()) {
+                    namaKatError.classList.remove('hidden');
+                    namaKat.classList.add('border-red-500');
+                    namaKat.focus();
+                    e.preventDefault();
+                }
             });
 
-            // Tutup modal klik di luar
+            // ESC tutup semua modal
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    closeKonfirmasiHapus();
+                    closeModal();
+                    closeModalKategori();
+                }
+            });
+
+            // Klik luar modal produk
             document.getElementById('modalProduk').addEventListener('click', e => {
                 if (e.target.id === 'modalProduk') closeModal();
+            });
+
+            // Klik luar modal kategori
+            document.getElementById('modalKategori').addEventListener('click', e => {
+                if (e.target.id === 'modalKategori') closeModalKategori();
+            });
+
+            // Klik luar modal konfirmasi hapus
+            document.getElementById('modalKonfirmasiHapus').addEventListener('click', e => {
+                if (e.target.id === 'modalKonfirmasiHapus') closeKonfirmasiHapus();
             });
         </script>
     @endpush

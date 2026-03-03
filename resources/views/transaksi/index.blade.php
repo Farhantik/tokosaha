@@ -6,11 +6,6 @@
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
-        .category-btn.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-
         .product-detail-modal {
             backdrop-filter: blur(8px);
         }
@@ -92,12 +87,6 @@
         .pay-method-btn.active-bayarnanti {
             border-color: #8b5cf6;
             background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-        }
-
-        .btn-bayar-nanti-active {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
-            color: white !important;
-            border-color: #7c3aed !important;
         }
 
         .panel-produk,
@@ -262,12 +251,76 @@
             border-color: #dc2626;
         }
 
-        .cc-qty {
-            min-width: 20px;
+        /* ── Editable Qty Input ── */
+        .cc-qty-input {
+            width: 40px;
             text-align: center;
             font-weight: 700;
             font-size: 13px;
             color: #1e293b;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 2px 2px;
+            background: #f8fafc;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .cc-qty-input:focus {
+            border-color: #10b981;
+            background: #fff;
+        }
+
+        .cc-qty-input::-webkit-outer-spin-button,
+        .cc-qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* ── Tab Filter ── */
+        .tab-filter-btn {
+            padding: 0.4rem 0.85rem;
+            border-radius: 0.6rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-filter-btn:hover {
+            border-color: #10b981;
+            color: #059669;
+        }
+
+        .tab-filter-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #10b981;
+            color: white;
+        }
+
+        .tab-filter-btn.terlaris-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #f59e0b;
+            color: white;
+        }
+
+        /* ── Badge Terlaris ── */
+        .badge-terlaris {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 5px;
+            border-radius: 6px;
+            z-index: 10;
         }
 
         /* Pagination styles */
@@ -311,53 +364,34 @@
         <!-- Header -->
         <div class="bg-white rounded-2xl shadow-lg px-6 py-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
-
-                <!-- Title -->
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
                     <i class="fas fa-cash-register mr-2 text-emerald-600"></i>Transaksi Kasir
                 </h1>
-
-                <!-- Right Side Buttons -->
                 <div class="flex flex-wrap items-center gap-3">
-
                     @if (!Auth::user()->isOwner())
-                        <!-- Button Dashboard -->
                         <a href="{{ route('dashboard') }}"
                             class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm
                             {{ request()->routeIs('dashboard') ? 'bg-gray-700 text-white shadow-md' : 'bg-gray-100 hover:bg-gray-700 text-gray-600 hover:text-white' }}">
-                            <i class="fas fa-home"></i>
-                            <span class="hidden sm:inline">Dashboard</span>
+                            <i class="fas fa-home"></i><span class="hidden sm:inline">Dashboard</span>
                         </a>
-
-                        <!-- Button Kasir -->
                         <a href="{{ route('kasir.index') }}"
                             class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm
                             {{ request()->routeIs('kasir.*') ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white' }}">
-                            <i class="fas fa-cash-register"></i>
-                            <span class="hidden sm:inline">Buka/Tutup Kasir</span>
+                            <i class="fas fa-cash-register"></i><span class="hidden sm:inline">Buka/Tutup Kasir</span>
                         </a>
-
-                        <!-- Button Laporan -->
                         <a href="{{ route('laporan.index') }}"
                             class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm
                             {{ request()->routeIs('laporan.*') && !request()->routeIs('keuangan.*') ? 'bg-indigo-600 text-white shadow-md' : 'bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white' }}">
-                            <i class="fas fa-chart-line"></i>
-                            <span class="hidden sm:inline">Laporan</span>
+                            <i class="fas fa-chart-line"></i><span class="hidden sm:inline">Laporan</span>
                         </a>
-
-                        <!-- Divider -->
                         <div class="w-px h-8 bg-gray-200 hidden sm:block mx-1"></div>
                     @endif
-
-                    <!-- Button Daftar Piutang -->
                     <button id="btnShowPiutang"
                         class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm bg-orange-50 hover:bg-orange-600 text-orange-600 hover:text-white">
                         <i class="fas fa-clock"></i>
                         <span class="hidden sm:inline">Daftar Piutang</span>
                         <span class="sm:hidden">Piutang</span>
                     </button>
-
-                    <!-- Button Keranjang (Mobile Only) -->
                     <button id="btnShowCart"
                         class="lg:hidden flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white">
                         <i class="fas fa-shopping-cart"></i>
@@ -365,7 +399,6 @@
                         <span id="cartBadge"
                             class="bg-emerald-600 text-white px-2 py-0.5 rounded-full text-xs font-bold">0</span>
                     </button>
-
                 </div>
             </div>
         </div>
@@ -376,7 +409,6 @@
             <div class="lg:col-span-2 col-produk">
                 <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6 panel-produk h-full">
 
-                    <!-- Panel Header -->
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-gray-800 flex items-center">
                             <div
@@ -387,64 +419,55 @@
                         </h2>
                     </div>
 
-                    <!-- Category Filter Dropdown -->
-                    <div class="mb-4">
-                        <div class="relative inline-block w-full sm:w-auto">
-                            <button id="categoryDropdownBtn" onclick="toggleCategoryDropdown()"
-                                class="w-full sm:w-auto flex items-center justify-between gap-3 px-5 py-2.5 bg-white border-2 border-gray-200 hover:border-emerald-500 rounded-xl font-semibold text-sm text-gray-700 transition-all shadow-sm min-w-[200px]">
-                                <span class="flex items-center gap-2">
-                                    <i class="fas fa-th-large text-emerald-600" id="categoryIcon"></i>
-                                    <span id="categoryLabel">Semua Kategori</span>
-                                </span>
-                                <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200"
-                                    id="categoryChevron"></i>
+                    {{-- ── Tab Filter: Terlaris + Kategori Dinamis ── --}}
+                    <div class="mb-4 overflow-x-auto">
+                        <div class="flex gap-2 pb-1" id="tabFilterContainer" style="min-width: max-content;">
+
+                            {{-- Semua --}}
+                            <button class="tab-filter-btn active" data-filter="all" data-type="all"
+                                onclick="TabFilter.select(this)">
+                                <i class="fas fa-th-large mr-1"></i> Semua
                             </button>
 
-                            <!-- Dropdown Menu -->
-                            <div id="categoryDropdown"
-                                class="hidden absolute left-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-30 min-w-[220px] overflow-hidden">
-                                <button
-                                    class="category-btn active w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
-                                    data-category="all" data-label="Semua Kategori" data-icon="fa-th-large"
-                                    onclick="selectCategory(this)">
-                                    <i class="fas fa-th-large text-emerald-600 w-5"></i>
-                                    <span>Semua</span>
+                            {{-- Terlaris --}}
+                            <button class="tab-filter-btn terlaris-btn" data-filter="terlaris" data-type="terlaris"
+                                onclick="TabFilter.select(this)">
+                                <i class="fas fa-fire mr-1"></i> Terlaris
+                            </button>
+
+                            <div class="w-px bg-gray-200 self-stretch mx-1"></div>
+
+                            {{-- Kategori dari DB --}}
+                            @foreach ($kategori as $kat)
+                                @php
+                                    $iconMap = [
+                                        'makanan' => ['icon' => 'fa-utensils', 'color' => '#f97316'],
+                                        'minuman' => ['icon' => 'fa-coffee', 'color' => '#3b82f6'],
+                                        'snack' => ['icon' => 'fa-cookie-bite', 'color' => '#eab308'],
+                                        'kebutuhan rumah tangga' => ['icon' => 'fa-home', 'color' => '#8b5cf6'],
+                                        'kebersihan' => ['icon' => 'fa-spray-can', 'color' => '#06b6d4'],
+                                        'kesehatan' => ['icon' => 'fa-heartbeat', 'color' => '#ef4444'],
+                                        'elektronik' => ['icon' => 'fa-plug', 'color' => '#6366f1'],
+                                    ];
+                                    $key = strtolower($kat->nama_kategori);
+                                    $meta = $iconMap[$key] ?? ['icon' => 'fa-tag', 'color' => '#6b7280'];
+                                    $icon = $kat->icon ?? $meta['icon'];
+                                    $color = $kat->warna ?? $meta['color'];
+                                @endphp
+                                <button class="tab-filter-btn" data-filter="{{ strtolower($kat->nama_kategori) }}"
+                                    data-type="kategori" onclick="TabFilter.select(this)">
+                                    <i class="fas {{ $icon }} mr-1" style="color: {{ $color }}"></i>
+                                    {{ $kat->nama_kategori }}
                                 </button>
-                                <div class="border-t border-gray-100"></div>
-                                <button
-                                    class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
-                                    data-category="makanan" data-label="Makanan" data-icon="fa-utensils"
-                                    onclick="selectCategory(this)">
-                                    <i class="fas fa-utensils text-orange-500 w-5"></i>
-                                    <span>Makanan</span>
-                                </button>
-                                <div class="border-t border-gray-100"></div>
-                                <button
-                                    class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
-                                    data-category="minuman" data-label="Minuman" data-icon="fa-coffee"
-                                    onclick="selectCategory(this)">
-                                    <i class="fas fa-coffee text-blue-500 w-5"></i>
-                                    <span>Minuman</span>
-                                </button>
-                                <div class="border-t border-gray-100"></div>
-                                <button
-                                    class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
-                                    data-category="snack" data-label="Snack" data-icon="fa-cookie-bite"
-                                    onclick="selectCategory(this)">
-                                    <i class="fas fa-cookie-bite text-yellow-500 w-5"></i>
-                                    <span>Snack</span>
-                                </button>
-                                <div class="border-t border-gray-100"></div>
-                                <button
-                                    class="category-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
-                                    data-category="kebutuhan rumah tangga" data-label="Kebutuhan RT" data-icon="fa-home"
-                                    onclick="selectCategory(this)">
-                                    <i class="fas fa-home text-purple-500 w-5"></i>
-                                    <span>Kebutuhan RT</span>
-                                </button>
-                            </div>
+                            @endforeach
+
                         </div>
                     </div>
+
+                    {{-- Data terlaris untuk JS --}}
+                    <script>
+                        window.TERLARIS_IDS = @json($terlarisIds ?? []);
+                    </script>
 
                     <!-- Search -->
                     <div class="mb-4">
@@ -460,14 +483,35 @@
                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-1"
                         style="max-height: calc(130vh - 22rem); min-height: 300px;">
                         @foreach ($produk as $item)
-                            <div class="produk-item group border-2 border-gray-200 rounded-xl p-3 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 cursor-pointer {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
+                            @php
+                                $isTerlaris = in_array($item->id_produk, $terlarisIds ?? []);
+                                $terlarisRank = $isTerlaris
+                                    ? array_search($item->id_produk, $terlarisIds ?? []) + 1
+                                    : null;
+                            @endphp
+                            <div class="produk-item group border-2 {{ $isTerlaris ? 'border-amber-200' : 'border-gray-200' }} rounded-xl p-3
+                                hover:border-emerald-500 hover:shadow-xl transition-all duration-300 cursor-pointer
+                                {{ $item->stock_produk <= 0 ? 'opacity-50' : '' }}"
                                 data-id="{{ $item->id_produk }}" data-nama="{{ $item->nama_produk }}"
                                 data-harga="{{ $item->harga_produk }}" data-stok="{{ $item->stock_produk }}"
                                 data-kategori="{{ strtolower($item->kategori_produk ?? 'lainnya') }}"
                                 data-kode="{{ $item->kode_produk ?? '-' }}"
                                 data-deskripsi="{{ $item->deskripsi_produk ?? 'Tidak ada deskripsi' }}"
-                                data-gambar="{{ $item->gambar_produk ?? '' }}">
+                                data-gambar="{{ $item->gambar_produk ?? '' }}"
+                                data-terlaris="{{ $isTerlaris ? 'true' : 'false' }}">
                                 <div class="text-center relative">
+
+                                    {{-- Badge Terlaris --}}
+                                    @if ($isTerlaris)
+                                        <span class="badge-terlaris">
+                                            @if ($terlarisRank <= 3)
+                                                🏆 #{{ $terlarisRank }}
+                                            @else
+                                                <i class="fas fa-fire"></i> Laris
+                                            @endif
+                                        </span>
+                                    @endif
+
                                     <button
                                         class="info-btn absolute top-1 right-1 bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors z-10 opacity-0 group-hover:opacity-100"
                                         data-product-id="{{ $item->id_produk }}">
@@ -498,6 +542,12 @@
                                         class="text-xs mt-1 {{ $item->stock_produk <= 10 ? 'text-red-600 font-bold' : 'text-gray-500' }}">
                                         Stok: {{ $item->stock_produk }}
                                     </p>
+                                    @if ($isTerlaris && $item->total_terjual)
+                                        <p class="text-xs text-amber-600 font-semibold mt-0.5">
+                                            <i class="fas fa-chart-bar" style="font-size:9px;"></i>
+                                            {{ $item->total_terjual }}x terjual
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -523,7 +573,6 @@
                             class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0</span>
                     </div>
 
-                    <!-- Cart Items -->
                     <div id="cartItems"
                         style="max-height: 340px; overflow-y: auto; overflow-x: hidden; margin-bottom: 16px;">
                         <div class="text-center py-8">
@@ -532,7 +581,6 @@
                         </div>
                     </div>
 
-                    <!-- Total & Payment -->
                     <div class="border-t-2 border-gray-200 pt-4 space-y-3">
                         <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-3">
                             <div class="flex justify-between text-lg font-bold text-gray-800">
@@ -541,7 +589,6 @@
                             </div>
                         </div>
 
-                        <!-- Payment Section Desktop -->
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
@@ -549,7 +596,6 @@
                             <div id="paymentRowsDesktop" class="space-y-2"></div>
                         </div>
 
-                        <!-- Kembalian -->
                         <div id="kembalianSectionDesktop"
                             class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
                             <div class="flex justify-between text-lg">
@@ -558,7 +604,6 @@
                             </div>
                         </div>
 
-                        <!-- Info Piutang -->
                         <div id="infoPiutang" class="hidden">
                             <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-4">
                                 <div class="flex items-start">
@@ -593,12 +638,10 @@
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                        <i class="fas fa-shopping-cart text-emerald-600 mr-2"></i>
-                        Keranjang Belanja
+                        <i class="fas fa-shopping-cart text-emerald-600 mr-2"></i>Keranjang Belanja
                     </h2>
-                    <button id="btnCloseCart" class="text-gray-500 hover:text-gray-700 text-2xl">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button id="btnCloseCart" class="text-gray-500 hover:text-gray-700 text-2xl"><i
+                            class="fas fa-times"></i></button>
                 </div>
 
                 <div id="cartItemsMobile" class="mb-4 overflow-y-auto overflow-x-hidden"
@@ -617,7 +660,6 @@
                         </div>
                     </div>
 
-                    <!-- Payment Section Mobile -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-gray-700 font-semibold text-sm">Metode Pembayaran</label>
@@ -629,7 +671,6 @@
                         <div id="paymentRowsMobile" class="space-y-2"></div>
                     </div>
 
-                    <!-- Kembalian Mobile -->
                     <div id="kembalianSectionMobile" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3">
                         <div class="flex justify-between text-lg">
                             <span class="text-gray-700 font-semibold">Kembalian:</span>
@@ -637,7 +678,6 @@
                         </div>
                     </div>
 
-                    <!-- Info Piutang Mobile -->
                     <div id="infoPiutangMobile" class="hidden">
                         <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-3">
                             <div class="flex items-start">
@@ -672,12 +712,10 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl font-bold text-gray-800 flex items-center">
-                            <i class="fas fa-info-circle text-blue-500 mr-3"></i>
-                            Detail Produk
+                            <i class="fas fa-info-circle text-blue-500 mr-3"></i>Detail Produk
                         </h3>
-                        <button id="closeProductDetailBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button id="closeProductDetailBtn" class="text-gray-500 hover:text-gray-700 text-2xl"><i
+                                class="fas fa-times"></i></button>
                     </div>
                     <div id="productDetailContent" class="space-y-4"></div>
                     <div class="mt-6 flex gap-3">
@@ -704,13 +742,11 @@
                         <h3 class="text-2xl font-bold text-white flex items-center">
                             <i class="fas fa-clock mr-3"></i>Daftar Piutang
                         </h3>
-                        <button id="closePiutangModalBtn" class="text-white hover:text-gray-200 text-2xl">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button id="closePiutangModalBtn" class="text-white hover:text-gray-200 text-2xl"><i
+                                class="fas fa-times"></i></button>
                     </div>
                 </div>
                 <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                    <!-- Filter Tabs -->
                     <div class="mb-4 flex gap-2">
                         <button
                             class="piutang-filter-btn active px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-semibold text-sm"
@@ -725,8 +761,6 @@
                             class="piutang-filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold text-sm"
                             data-status="lunas">Lunas</button>
                     </div>
-
-                    <!-- Per Page Selector -->
                     <div class="mb-3 flex items-center gap-2">
                         <span class="text-sm text-gray-500">Tampilkan:</span>
                         <select id="piutangPerPageSelect"
@@ -739,8 +773,6 @@
                         </select>
                         <span class="text-sm text-gray-500">data per halaman</span>
                     </div>
-
-                    <!-- List Container -->
                     <div id="piutangList" class="space-y-3">
                         <div class="text-center py-8">
                             <i class="fas fa-spinner fa-spin text-4xl text-gray-300 mb-2"></i>
@@ -759,9 +791,8 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl font-bold text-gray-800">Detail Piutang</h3>
-                        <button id="closeDetailPiutangBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button id="closeDetailPiutangBtn" class="text-gray-500 hover:text-gray-700 text-2xl"><i
+                                class="fas fa-times"></i></button>
                     </div>
                     <div id="detailPiutangContent"></div>
                 </div>
@@ -775,7 +806,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ====================================================================
-        // UTILITY: FORMAT ANGKA RIBUAN
+        // UTILITY
         // ====================================================================
         function formatRibuanInput(input) {
             let cursorPos = input.selectionStart;
@@ -801,9 +832,6 @@
             return parseFloat(String(value).replace(/\./g, '').replace(',', '.')) || 0;
         }
 
-        // ====================================================================
-        // GLOBAL FALLBACK
-        // ====================================================================
         function toggleBayarNantiGlobal() {
             if (window.PaymentManager && typeof window.PaymentManager.toggleBayarNanti === 'function') {
                 window.PaymentManager.toggleBayarNanti();
@@ -813,33 +841,6 @@
                 }, 150);
             }
         }
-
-        // ====================================================================
-        // CATEGORY DROPDOWN
-        // ====================================================================
-        function toggleCategoryDropdown() {
-            const dropdown = document.getElementById('categoryDropdown');
-            const chevron = document.getElementById('categoryChevron');
-            dropdown.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        }
-
-        function selectCategory(btn) {
-            document.getElementById('categoryLabel').textContent = btn.dataset.label;
-            document.getElementById('categoryIcon').className = `fas ${btn.dataset.icon} text-emerald-600`;
-            document.getElementById('categoryDropdown').classList.add('hidden');
-            document.getElementById('categoryChevron').classList.remove('rotate-180');
-            CategoryFilter.filterByCategory(btn);
-        }
-
-        document.addEventListener('click', function(e) {
-            const btn = document.getElementById('categoryDropdownBtn');
-            const dropdown = document.getElementById('categoryDropdown');
-            if (btn && dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-                document.getElementById('categoryChevron').classList.remove('rotate-180');
-            }
-        });
 
         // ====================================================================
         // APP STATE
@@ -861,7 +862,6 @@
             const AppState = window.AppState;
 
             const DOM = {
-                categoryBtns: document.querySelectorAll('.category-btn'),
                 produkList: document.querySelectorAll('.produk-item'),
                 searchProduk: document.getElementById('searchProduk'),
                 cartItems: document.getElementById('cartItems'),
@@ -929,6 +929,48 @@
                         confirmButtonText: confirmText,
                         cancelButtonText: 'Batal'
                     });
+                }
+            };
+
+            // ================================================================
+            // TAB FILTER (menggantikan CategoryFilter + SearchManager)
+            // ================================================================
+            const TabFilter = {
+                currentFilter: 'all',
+                currentType: 'all',
+
+                select(btn) {
+                    document.querySelectorAll('.tab-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.currentFilter = btn.dataset.filter;
+                    this.currentType = btn.dataset.type;
+                    this.apply();
+                },
+
+                apply() {
+                    const search = DOM.searchProduk?.value.toLowerCase() || '';
+                    DOM.produkList.forEach(item => {
+                        const nama = item.dataset.nama.toLowerCase();
+                        const kode = item.dataset.kode.toLowerCase();
+                        const kategori = item.dataset.kategori;
+                        const terlaris = item.dataset.terlaris === 'true';
+
+                        const matchSearch = !search || nama.includes(search) || kode.includes(search);
+                        let matchFilter = true;
+                        if (this.currentType === 'terlaris') matchFilter = terlaris;
+                        else if (this.currentType === 'kategori') matchFilter = kategori === this
+                            .currentFilter;
+
+                        item.style.display = (matchSearch && matchFilter) ? 'block' : 'none';
+                    });
+                }
+            };
+
+            window.TabFilter = TabFilter;
+
+            const SearchManager = {
+                init() {
+                    DOM.searchProduk?.addEventListener('input', () => TabFilter.apply());
                 }
             };
 
@@ -1045,9 +1087,7 @@
                         if (DOM.kembalianMobile) DOM.kembalianMobile.textContent = kembalianText;
                     }
                     let canProcess = AppState.cart.length > 0;
-                    if (!hasBayarNanti) {
-                        canProcess = canProcess && this.getTotalPaid() >= AppState.totalBelanja;
-                    }
+                    if (!hasBayarNanti) canProcess = canProcess && this.getTotalPaid() >= AppState.totalBelanja;
                     if (DOM.btnProses) DOM.btnProses.disabled = !canProcess;
                     if (DOM.btnProsesMobile) DOM.btnProsesMobile.disabled = !canProcess;
                 },
@@ -1066,7 +1106,7 @@
                     const showQrisNote = row.method === 'qris';
                     const showBayarNanti = row.method === 'bayar_nanti';
                     const inputHtml = (id, label, borderClass = 'border-gray-200', placeholder =
-                            'Masukkan nominal') =>
+                        'Masukkan nominal') =>
                         `<div><label class="block text-xs text-gray-500 mb-1">${label}</label>
                         <input type="text" inputmode="numeric" id="${id}" placeholder="${placeholder}" value="${displayValue}"
                             class="w-full px-3 py-2 bg-white border-2 ${borderClass} rounded-lg text-sm focus:border-emerald-500 focus:outline-none"
@@ -1090,7 +1130,7 @@
                             class="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-emerald-400 text-emerald-600 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition">
                             <i class="fas fa-plus"></i> Tambah Metode Bayar</button>` : '';
                     const rowsHTML = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, false)).join(
-                        '');
+                    '');
                     const rowsHTMLMobile = AppState.paymentRows.map((row, i) => this.buildRowHTML(row, i, true))
                         .join('');
                     if (DOM.paymentRowsDesktop) DOM.paymentRowsDesktop.innerHTML = rowsHTML + addBtnHTML;
@@ -1101,47 +1141,9 @@
 
             window.PaymentManager = PaymentManager;
 
-            const CategoryFilter = {
-                init() {
-                    DOM.categoryBtns.forEach(btn => {
-                        btn.addEventListener('click', (e) => this.filterByCategory(e.currentTarget));
-                    });
-                },
-                filterByCategory(btn) {
-                    const category = btn.dataset.category;
-                    DOM.categoryBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    DOM.produkList.forEach(item => {
-                        const itemCategory = item.dataset.kategori;
-                        const matchCategory = category === 'all' || itemCategory === category;
-                        const searchValue = DOM.searchProduk?.value.toLowerCase() || '';
-                        const nama = item.dataset.nama.toLowerCase();
-                        const kode = item.dataset.kode.toLowerCase();
-                        const matchSearch = !searchValue || nama.includes(searchValue) || kode.includes(
-                            searchValue);
-                        item.style.display = (matchCategory && matchSearch) ? 'block' : 'none';
-                    });
-                }
-            };
-
-            const SearchManager = {
-                init() {
-                    DOM.searchProduk?.addEventListener('input', (e) => this.searchProducts(e.target.value));
-                },
-                searchProducts(searchValue) {
-                    const search = searchValue.toLowerCase();
-                    const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
-                    DOM.produkList.forEach(item => {
-                        const nama = item.dataset.nama.toLowerCase();
-                        const kode = item.dataset.kode.toLowerCase();
-                        const itemCategory = item.dataset.kategori;
-                        const matchSearch = !search || nama.includes(search) || kode.includes(search);
-                        const matchCategory = activeCategory === 'all' || itemCategory === activeCategory;
-                        item.style.display = (matchSearch && matchCategory) ? 'block' : 'none';
-                    });
-                }
-            };
-
+            // ================================================================
+            // PRODUCT DETAIL MANAGER
+            // ================================================================
             const ProductDetailManager = {
                 init() {
                     document.querySelectorAll('.info-btn').forEach(btn => {
@@ -1177,7 +1179,7 @@
                             <div class="flex items-center justify-center">
                                 ${gambarUrl
                                     ? `<img src="${gambarUrl}" alt="${AppState.currentDetailProduct.nama}" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                                   <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
+                                           <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl items-center justify-center" style="display:none;"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                     : `<div class="w-full h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center"><i class="fas fa-box text-6xl text-blue-600"></i></div>`
                                 }
                             </div>
@@ -1244,6 +1246,9 @@
                 }
             };
 
+            // ================================================================
+            // CART MANAGER
+            // ================================================================
             const CartManager = {
                 init() {
                     DOM.produkList.forEach(item => {
@@ -1284,7 +1289,6 @@
                         Utils.showToast('Ditambahkan ke keranjang');
                     }
                 },
-                // ── CART ITEM HTML ──
                 buildCartItemHTML(item) {
                     return `
                     <div class="cart-item-card">
@@ -1296,7 +1300,10 @@
                             <span class="cart-item-total">${Utils.formatRupiah(item.harga * item.qty)}</span>
                             <div class="cart-ctrl">
                                 <button onclick="window.cartChangeQty('${item.id}',-1)" class="cc-btn sub"><i class="fas fa-minus"></i></button>
-                                <span class="cc-qty">${item.qty}</span>
+                                <input type="number" class="cc-qty-input" value="${item.qty}" min="1" max="${item.stok}"
+                                    onclick="this.select()"
+                                    onchange="window.cartSetQty('${item.id}', this)"
+                                    onkeydown="if(event.key==='Enter'){this.blur()}">
                                 <button onclick="window.cartChangeQty('${item.id}',1)" class="cc-btn add"><i class="fas fa-plus"></i></button>
                                 <button onclick="window.cartRemoveItem('${item.id}')" class="cc-btn del"><i class="fas fa-trash"></i></button>
                             </div>
@@ -1344,6 +1351,18 @@
                         }
                     }
                 },
+                setQty(id, inputEl) {
+                    const item = AppState.cart.find(i => i.id === id);
+                    if (!item) return;
+                    let newQty = parseInt(inputEl.value) || 1;
+                    if (newQty < 1) newQty = 1;
+                    if (newQty > item.stok) {
+                        Utils.showError('Stok Tidak Cukup!', `Stok tersedia: ${item.stok} pcs`);
+                        newQty = item.stok;
+                    }
+                    item.qty = newQty;
+                    this.updateCart();
+                },
                 async removeItem(id) {
                     const item = AppState.cart.find(i => i.id === id);
                     const result = await Utils.showConfirm('Hapus Item?',
@@ -1378,6 +1397,9 @@
                 }
             };
 
+            // ================================================================
+            // TRANSACTION MANAGER
+            // ================================================================
             const TransactionManager = {
                 init() {
                     DOM.btnProses?.addEventListener('click', () => this.processTransaction());
@@ -1610,7 +1632,7 @@
             };
 
             // ================================================================
-            // PIUTANG MANAGER — dengan pagination
+            // PIUTANG MANAGER
             // ================================================================
             const PiutangManager = {
                 init() {
@@ -1654,7 +1676,6 @@
 
                     const totalItems = filtered.length;
                     const totalPages = Math.max(1, Math.ceil(totalItems / AppState.piutangPerPage));
-
                     if (AppState.piutangPage > totalPages) AppState.piutangPage = totalPages;
                     if (AppState.piutangPage < 1) AppState.piutangPage = 1;
 
@@ -1725,38 +1746,27 @@
                         const maxVisible = 5;
                         let pageStart = Math.max(1, AppState.piutangPage - Math.floor(maxVisible / 2));
                         let pageEnd = Math.min(totalPages, pageStart + maxVisible - 1);
-                        if (pageEnd - pageStart < maxVisible - 1) {
-                            pageStart = Math.max(1, pageEnd - maxVisible + 1);
-                        }
-
+                        if (pageEnd - pageStart < maxVisible - 1) pageStart = Math.max(1, pageEnd - maxVisible + 1);
                         const pageButtons = [];
                         for (let i = pageStart; i <= pageEnd; i++) {
-                            const isActive = i === AppState.piutangPage;
-                            pageButtons.push(`<button onclick="window.piutangGoToPage(${i})"
-                                class="piutang-page-btn ${isActive ? 'active' : ''}">${i}</button>`);
+                            pageButtons.push(
+                                `<button onclick="window.piutangGoToPage(${i})" class="piutang-page-btn ${i === AppState.piutangPage ? 'active' : ''}">${i}</button>`
+                                );
                         }
-
                         paginationHTML = `
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t-2 border-gray-100">
-                            <p class="text-sm text-gray-500 order-2 sm:order-1">
-                                Menampilkan
-                                <span class="font-bold text-gray-700">${start + 1}–${end}</span>
-                                dari
-                                <span class="font-bold text-gray-700">${totalItems}</span>
-                                data
-                            </p>
+                            <p class="text-sm text-gray-500 order-2 sm:order-1">Menampilkan <span class="font-bold text-gray-700">${start + 1}–${end}</span> dari <span class="font-bold text-gray-700">${totalItems}</span> data</p>
                             <div class="flex items-center gap-1 order-1 sm:order-2">
-                                <button onclick="window.piutangGoToPage(1)" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''} title="Halaman pertama"><i class="fas fa-angle-double-left text-xs"></i></button>
-                                <button onclick="window.piutangGoToPage(${AppState.piutangPage - 1})" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''} title="Halaman sebelumnya"><i class="fas fa-chevron-left text-xs"></i></button>
-                                ${pageStart > 1 ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
+                                <button onclick="window.piutangGoToPage(1)" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''}><i class="fas fa-angle-double-left text-xs"></i></button>
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage - 1})" class="piutang-page-btn" ${AppState.piutangPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left text-xs"></i></button>
+                                ${pageStart > 1 ? '<span class="text-gray-400 px-1 text-sm">...</span>' : ''}
                                 ${pageButtons.join('')}
-                                ${pageEnd < totalPages ? `<span class="text-gray-400 px-1 text-sm">...</span>` : ''}
-                                <button onclick="window.piutangGoToPage(${AppState.piutangPage + 1})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''} title="Halaman berikutnya"><i class="fas fa-chevron-right text-xs"></i></button>
-                                <button onclick="window.piutangGoToPage(${totalPages})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''} title="Halaman terakhir"><i class="fas fa-angle-double-right text-xs"></i></button>
+                                ${pageEnd < totalPages ? '<span class="text-gray-400 px-1 text-sm">...</span>' : ''}
+                                <button onclick="window.piutangGoToPage(${AppState.piutangPage + 1})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right text-xs"></i></button>
+                                <button onclick="window.piutangGoToPage(${totalPages})" class="piutang-page-btn" ${AppState.piutangPage === totalPages ? 'disabled' : ''}><i class="fas fa-angle-double-right text-xs"></i></button>
                             </div>
                         </div>`;
                     }
-
                     DOM.piutangList.innerHTML = `<div class="space-y-3">${cardsHTML}</div>${paginationHTML}`;
                 },
                 async showDetailPiutang(idPenjualan) {
@@ -1779,7 +1789,8 @@
                                 lunas: 'Lunas'
                             };
                             const sisaTagihan = (data.sisa_tagihan !== undefined && data.sisa_tagihan !==
-                                null) ? parseFloat(data.sisa_tagihan) : parseFloat(data.total_pembayaran);
+                                null) ?
+                                parseFloat(data.sisa_tagihan) : parseFloat(data.total_pembayaran);
                             const sudahDibayar = parseFloat(data.total_pembayaran) - sisaTagihan;
                             DOM.detailPiutangContent.innerHTML = `
                                 <div class="space-y-4">
@@ -1834,7 +1845,6 @@
                     </div>`;
                 },
                 async bayarPiutang(idPenjualan, totalPembayaran, sisaTagihan) {
-                    const self = this;
                     window._piutangRows = [{
                         method: 'tunai',
                         amount: sisaTagihan
@@ -2000,7 +2010,14 @@
                                 icon: 'success',
                                 title: newStatus === 'lunas' ? 'Pembayaran Lunas!' :
                                     'Bayar Sebagian Berhasil!',
-                                html: `<div class="bg-green-50 rounded-xl p-4"><p class="text-sm text-gray-600">Piutang #${idPenjualan}</p><p class="font-bold text-green-600 mt-1">Status: ${newStatus === 'lunas' ? 'LUNAS' : 'BAYAR SEBAGIAN'}</p><p class="text-sm text-gray-600 mt-2">Dibayar: ${Utils.formatRupiah(totalPaid)}</p>${kembalian > 0 ? `<p class="text-sm font-bold text-blue-600">Kembalian Tunai: ${Utils.formatRupiah(kembalian)}</p>` : ''}${newStatus === 'bayar_sebagian' ? `<p class="text-sm font-bold text-orange-600">Sisa: ${Utils.formatRupiah(sisaTagihan - totalPaid)}</p>` : ''}${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}</div>`,
+                                html: `<div class="bg-green-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">Piutang #${idPenjualan}</p>
+                                    <p class="font-bold text-green-600 mt-1">Status: ${newStatus === 'lunas' ? 'LUNAS' : 'BAYAR SEBAGIAN'}</p>
+                                    <p class="text-sm text-gray-600 mt-2">Dibayar: ${Utils.formatRupiah(totalPaid)}</p>
+                                    ${kembalian > 0 ? `<p class="text-sm font-bold text-blue-600">Kembalian Tunai: ${Utils.formatRupiah(kembalian)}</p>` : ''}
+                                    ${newStatus === 'bayar_sebagian' ? `<p class="text-sm font-bold text-orange-600">Sisa: ${Utils.formatRupiah(sisaTagihan - totalPaid)}</p>` : ''}
+                                    ${piutangPrintSuccess ? '<p class="text-xs text-green-600 mt-2">✓ Struk sudah dicetak otomatis</p>' : ''}
+                                </div>`,
                                 showCancelButton: !piutangPrintSuccess,
                                 confirmButtonText: 'OK',
                                 cancelButtonText: '<i class="fas fa-print mr-2"></i>Cetak Struk',
@@ -2029,6 +2046,7 @@
             // ── Global bindings ──
             window.cartChangeQty = (id, delta) => CartManager.changeQty(id, delta);
             window.cartRemoveItem = (id) => CartManager.removeItem(id);
+            window.cartSetQty = (id, inputEl) => CartManager.setQty(id, inputEl);
             window.piutangShowDetail = (id) => PiutangManager.showDetailPiutang(id);
             window.piutangBayar = (id, total, sisa) => PiutangManager.bayarPiutang(id, total, sisa ?? total);
 
@@ -2055,7 +2073,6 @@
 
             function initApp() {
                 PaymentManager.init();
-                CategoryFilter.init();
                 SearchManager.init();
                 ProductDetailManager.init();
                 CartManager.init();

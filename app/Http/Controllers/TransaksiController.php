@@ -17,7 +17,30 @@ class TransaksiController extends Controller
             ->orderBy('produk.nama_produk', 'asc')
             ->get();
 
-        return view('transaksi.index', compact('produk'));
+        $kategori = DB::table('produk_kategori')
+            ->orderBy('nama_kategori', 'asc')
+            ->get();
+
+        $terlarisQuery = DB::table('penjualan_detail')
+            ->join('penjualan', 'penjualan_detail.id_penjualan', '=', 'penjualan.id_penjualan')
+            ->select(
+                'penjualan_detail.id_produk',
+                DB::raw('SUM(penjualan_detail.qty_produk) as total_terjual')
+            )
+            ->groupBy('penjualan_detail.id_produk')
+            ->orderByDesc('total_terjual')
+            ->limit(10)
+            ->get();
+
+        $terlarisIds = $terlarisQuery->pluck('id_produk')->toArray();
+        $terlarisMap = $terlarisQuery->pluck('total_terjual', 'id_produk')->toArray();
+
+        $produk = $produk->map(function ($item) use ($terlarisMap) {
+            $item->total_terjual = $terlarisMap[$item->id_produk] ?? null;
+            return $item;
+        });
+
+        return view('transaksi.index', compact('produk', 'kategori', 'terlarisIds'));
     }
 
     public function store(Request $request)
@@ -33,7 +56,6 @@ class TransaksiController extends Controller
                 'total_bayar'              => 'required|numeric|min:0',
                 'total_pembayaran'         => 'required|numeric|min:0',
                 'status_pembayaran'        => 'required|in:lunas,belum_bayar,bayar_sebagian',
-                // ✅ FIX: tambahkan validasi payment_methods
                 'payment_methods'          => 'nullable|array',
                 'payment_methods.*.method' => 'nullable|string',
                 'payment_methods.*.amount' => 'nullable|numeric',
@@ -50,7 +72,6 @@ class TransaksiController extends Controller
                 throw new \Exception('Kasir belum dibuka. Silakan buka kasir terlebih dahulu.');
             }
 
-            // Cek stok semua item sebelum proses
             foreach ($validated['items'] as $item) {
                 $produk = DB::table('produk')
                     ->where('id_produk', $item['id_produk'])
@@ -85,7 +106,6 @@ class TransaksiController extends Controller
                 $kembalian   = 0;
             }
 
-            // ✅ FIX UTAMA: Proses payment_methods
             $pmInput = $validated['payment_methods'] ?? [];
             $pmFinal = [];
 
@@ -98,7 +118,6 @@ class TransaksiController extends Controller
                 $pmFinal[] = ['method' => $method, 'amount' => $amount];
             }
 
-            // Fallback otomatis jika frontend tidak kirim payment_methods
             if (empty($pmFinal)) {
                 if ($status === 'lunas') {
                     $pmFinal = [['method' => 'tunai', 'amount' => $totalBayar]];
@@ -112,7 +131,6 @@ class TransaksiController extends Controller
                 }
             }
 
-            // ✅ FIX: Simpan payment_methods ke database
             $idPenjualan = DB::table('penjualan')->insertGetId([
                 'id_kasir'             => $kasirAktif->id_kasir,
                 'tanggal_penjualan'    => now(),
@@ -121,7 +139,7 @@ class TransaksiController extends Controller
                 'kembalian_pembayaran' => $kembalian,
                 'status_pembayaran'    => $status,
                 'sisa_tagihan'         => $sisaTagihan,
-                'payment_methods'      => json_encode($pmFinal), // ← KOLOM INI YANG SEBELUMNYA HILANG
+                'payment_methods'      => json_encode($pmFinal),
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -189,7 +207,7 @@ class TransaksiController extends Controller
                     'kembalian_pembayaran' => $kembalian,
                     'sisa_tagihan'         => $sisaTagihan,
                     'status_pembayaran'    => $status,
-                    'payment_methods'      => $pmFinal, // ← dikembalikan untuk auto-print
+                    'payment_methods'      => $pmFinal,
                     'auto_print'           => $settings->auto_print ?? false,
                     'printer_name'         => $settings->printer_name ?? '',
                     'print_url'            => route('transaksi.struk.printer', $idPenjualan)
@@ -301,7 +319,6 @@ class TransaksiController extends Controller
             $validated = $request->validate([
                 'total_bayar'              => 'required|numeric|min:1',
                 'status_pembayaran'        => 'nullable|in:lunas,bayar_sebagian',
-                // ✅ FIX: validasi payment_methods dengan detail field
                 'payment_methods'          => 'nullable|array',
                 'payment_methods.*.method' => 'nullable|string',
                 'payment_methods.*.amount' => 'nullable|numeric',
@@ -334,7 +351,6 @@ class TransaksiController extends Controller
 
             $totalBayarAkumulasi = (float) $penjualan->total_bayar + $totalBayarBaru;
 
-            // ✅ FIX: Gabung payment_methods lama + baru
             $pmLama = [];
             if (!empty($penjualan->payment_methods)) {
                 $decoded = json_decode($penjualan->payment_methods, true);
@@ -353,7 +369,7 @@ class TransaksiController extends Controller
                 'kembalian_pembayaran' => $kembalian,
                 'status_pembayaran'    => $statusBaru,
                 'sisa_tagihan'         => $sisaBaru,
-                'payment_methods'      => json_encode($pmGabung), // ← KOLOM INI YANG SEBELUMNYA TIDAK DIUPDATE
+                'payment_methods'      => json_encode($pmGabung),
             ]);
 
             DB::commit();
@@ -370,7 +386,7 @@ class TransaksiController extends Controller
                     'kembalian_pembayaran'  => $kembalian,
                     'sisa_tagihan'          => $sisaBaru,
                     'status_pembayaran'     => $statusBaru,
-                    'payment_methods'       => $pmGabung, // ← dikembalikan untuk auto-print
+                    'payment_methods'       => $pmGabung,
                     'auto_print'            => $settings->auto_print ?? false,
                     'printer_name'          => $settings->printer_name ?? '',
                     'print_url'             => route('transaksi.struk.printer', $id)
