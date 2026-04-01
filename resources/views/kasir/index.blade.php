@@ -23,6 +23,12 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                @if (auth()->user()->role_user === 'kasir')
+                    <a href="{{ route('transaksi.index') }}"
+                        class="px-3 sm:px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="fas fa-arrow-left mr-1.5"></i>Kembali
+                    </a>
+                @endif
                 @if (auth()->user()->role_user === 'owner' && $kasirAktif)
                     <button id="btnAutoCloseAll"
                         class="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]">

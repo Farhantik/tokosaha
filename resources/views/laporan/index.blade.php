@@ -18,6 +18,12 @@
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                @if (auth()->user()->role_user === 'kasir')
+                    <a href="{{ route('transaksi.index') }}"
+                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all text-sm sm:text-base">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali
+                    </a>
+                @endif
                 <a href="{{ route('laporan.export.pdf') }}?tanggal_mulai={{ $tanggalMulai }}&tanggal_selesai={{ $tanggalSelesai }}"
                     target="_blank"
                     class="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all text-sm sm:text-base">
