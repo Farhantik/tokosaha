@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Point of Sale</title>
+    <title>Login - WPOS</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -202,12 +203,12 @@
                 <!-- Main Heading -->
                 <div class="mb-8">
                     <div class="flex items-center mb-4">
-                        <div
-                            class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center mr-4 shadow-xl">
-                            <i class="fas fa-store text-white text-3xl"></i>
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden mr-4 shadow-xl flex-shrink-0">
+                            <img src="{{ asset('images/logo-wpos.png') }}" alt="WPOS Logo"
+                                class="w-full h-full object-contain">
                         </div>
                         <div>
-                            <h1 class="text-4xl lg:text-5xl font-black">Point of Sale</h1>
+                            <h1 class="text-4xl lg:text-5xl font-black">WPOS</h1>
                             <p class="text-emerald-200 font-medium">Point of Sale System</p>
                         </div>
                     </div>
@@ -277,19 +278,19 @@
                 <div class="text-center pt-8 pb-6 px-6">
                     <!-- Logo -->
                     <div class="inline-block mb-4 logo-float">
-                        <div
-                            class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-xl flex items-center justify-center relative">
+                        <div class="w-20 h-20 rounded-2xl shadow-xl overflow-hidden relative">
                             <div
                                 class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl blur-xl opacity-50">
                             </div>
-                            <i class="fas fa-store text-white text-4xl relative z-10"></i>
+                            <img src="{{ asset('images/logo-wpos.png') }}" alt="WPOS Logo"
+                                class="w-full h-full object-contain relative z-10">
                         </div>
                     </div>
 
                     <!-- Brand Name -->
                     <h2
                         class="text-3xl font-black mb-1 bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 bg-clip-text text-transparent">
-                        Point of Sale
+                        WPOS
                     </h2>
 
                     <!-- Subtitle -->
@@ -333,8 +334,10 @@
                         @csrf
 
                         <!-- Honeypot fields untuk trick browser agar tidak autofill field asli -->
-                        <input type="text" name="username_fake" style="display:none;" tabindex="-1" autocomplete="username">
-                        <input type="password" name="password_fake" style="display:none;" tabindex="-1" autocomplete="current-password">
+                        <input type="text" name="username_fake" style="display:none;" tabindex="-1"
+                            autocomplete="username">
+                        <input type="password" name="password_fake" style="display:none;" tabindex="-1"
+                            autocomplete="current-password">
 
                         <!-- Username Field -->
                         <div>
@@ -345,8 +348,7 @@
                                 </div>
                                 <span>Username</span>
                             </label>
-                            <input type="text" name="username" value="{{ old('username') }}"
-                                autocomplete="off"
+                            <input type="text" name="username" value="{{ old('username') }}" autocomplete="off"
                                 class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none input-focus text-gray-800 placeholder-gray-400 text-sm"
                                 placeholder="Masukkan username" required>
                         </div>
@@ -361,8 +363,7 @@
                                 <span>Password</span>
                             </label>
                             <div class="relative">
-                                <input type="password" name="password" id="passwordInput"
-                                    autocomplete="new-password"
+                                <input type="password" name="password" id="passwordInput" autocomplete="new-password"
                                     class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 focus:outline-none input-focus text-gray-800 placeholder-gray-400 text-sm pr-12"
                                     placeholder="Masukkan password" required>
                                 <!-- Toggle Show/Hide Password -->
@@ -384,7 +385,7 @@
 
                 <!-- Footer -->
                 <p class="text-center text-xs text-gray-500 mt-4 pb-5">
-                    © 2026 Point of Sale. All rights reserved.
+                    © 2026 WPOS. All rights reserved.
                 </p>
             </div>
         </div>
@@ -396,7 +397,7 @@
         const passwordInput = document.getElementById('passwordInput');
         const eyeIcon = document.getElementById('eyeIcon');
 
-        togglePassword.addEventListener('click', function () {
+        togglePassword.addEventListener('click', function() {
             const isPassword = passwordInput.type === 'password';
             passwordInput.type = isPassword ? 'text' : 'password';
             eyeIcon.classList.toggle('fa-eye', !isPassword);
@@ -404,8 +405,8 @@
         });
 
         // Extra: clear autofilled values on page load jika tidak ada interaksi user
-        window.addEventListener('load', function () {
-            setTimeout(function () {
+        window.addEventListener('load', function() {
+            setTimeout(function() {
                 const pwd = document.getElementById('passwordInput');
                 // Hanya kosongkan jika browser autofill (bukan nilai dari old() Laravel)
                 if (pwd && pwd.value && !pwd.dataset.userTyped) {
@@ -415,7 +416,7 @@
         });
 
         // Tandai bahwa user mengetik sendiri
-        document.getElementById('passwordInput').addEventListener('input', function () {
+        document.getElementById('passwordInput').addEventListener('input', function() {
             this.dataset.userTyped = 'true';
         });
     </script>

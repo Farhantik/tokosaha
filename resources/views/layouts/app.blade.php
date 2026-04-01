@@ -16,6 +16,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <style>
         * {
@@ -573,7 +574,9 @@
     </style>
 
     @stack('styles')
+
 </head>
+
 
 <body>
     <div class="flex min-h-screen">
@@ -595,9 +598,9 @@
                     <!-- Logo & Brand -->
                     <div class="p-4 flex-shrink-0 border-b border-emerald-700/40">
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                            <div
-                                class="bg-gradient-to-br from-emerald-400 to-green-600 p-2.5 rounded-xl flex-shrink-0 logo-glow">
-                                <i class="fas fa-store text-white text-sm"></i>
+                            <div class="w-20 h-20 relative z-10">
+                                <img src="{{ asset('images/logo-wpos.png') }}" alt="WPOS"
+                                    class="w-full h-full object-contain">
                             </div>
                             <div class="logo-text sidebar-text">
                                 <div class="text-white text-sm font-bold leading-tight">
@@ -890,8 +893,9 @@
 
                     <!-- Brand -->
                     <div class="flex items-center gap-2">
-                        <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-1.5 rounded-lg shadow-sm">
-                            <i class="fas fa-store text-white text-xs"></i>
+                        <div class="flex-shrink-0 w-10 h-10">
+                            <img src="{{ asset('images/logo-wpos.png') }}" alt="WPOS"
+                                class="w-full h-full object-contain">
                         </div>
                         <div class="flex items-center gap-1.5">
                             <span class="footer-brand text-sm">
