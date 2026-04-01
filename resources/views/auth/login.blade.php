@@ -194,14 +194,14 @@
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
-    <div class="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center">
+<body class="min-h-screen flex items-start lg:items-center justify-center p-4 lg:p-8 overflow-y-auto">
+    <div class="w-full max-w-6xl flex flex-col lg:flex-row gap-4 lg:items-center items-start py-6 lg:py-0">
 
         <!-- Left Section - Info Content -->
-        <div class="w-full lg:w-1/2 text-white slide-in-left">
+        <div class="w-full lg:w-1/2 text-white slide-in-left pb-2 lg:pb-0">
             <div class="max-w-xl">
                 <!-- Main Heading -->
-                <div class="mb-8">
+                <div class="mb-4 lg:mb-8">
                     <div class="flex items-center mb-4">
                         <div class="w-16 h-16 rounded-2xl overflow-hidden mr-4 shadow-xl flex-shrink-0">
                             <img src="{{ asset('images/logo-wpos.png') }}" alt="WPOS Logo"
@@ -219,7 +219,7 @@
                 </div>
 
                 <!-- Features List -->
-                <div class="space-y-4">
+                <div class="space-y-2 lg:space-y-4">
                     <div class="flex items-start feature-item">
                         <div
                             class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl flex items-center justify-center mr-4 flex-shrink-0 shadow-lg">
@@ -272,10 +272,10 @@
         </div>
 
         <!-- Right Section - Login Form -->
-        <div class="w-full lg:w-1/2 max-w-md slide-in-right">
+        <div class="w-full lg:w-1/2 max-w-md slide-in-right lg:mt-0" style="margin-top: 140px;">
             <div class="glass-card rounded-3xl shadow-2xl">
                 <!-- Header Section -->
-                <div class="text-center pt-8 pb-6 px-6">
+                <div class="text-center pt-2 pb-6 px-6 mt-6">
                     <!-- Logo -->
                     <div class="inline-block mb-4 logo-float">
                         <div class="w-20 h-20 rounded-2xl shadow-xl overflow-hidden relative">
